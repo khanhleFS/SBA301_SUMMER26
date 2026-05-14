@@ -1,0 +1,16 @@
+Register
+{
+  "fullName": "Le Quoc Khanh",
+  "email": "Khanhle0209c@gmail.com",
+  "phone": "0786953236",
+  "password": "Khanh@2009",
+  "confirmPassword": "Khanh@2009",
+  "address": "Ho Chi Minh, Viet Nam",
+  "isActive": true
+}
+
+Login
+{
+  "email": "Khanhle0209c@gmail.com",
+  "password": "Khanh@2009"
+}
