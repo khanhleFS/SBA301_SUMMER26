@@ -1,146 +1,95 @@
-import { Search, ShoppingCart, User, ChevronDown } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { Search, User, Moon, Sun, BookOpen } from 'lucide-react'
 import Container from './container'
-
-const navItems = [
-	// ... (rest of navItems)
-	{
-		label: 'Sản phẩm',
-		href: '/products',
-		submenu: [
-			{ title: 'Danh mục', items: ['Sữa chua uống', 'Sữa tươi', 'Sữa cô đặc', 'Sữa bột'] },
-			{ title: 'Độ tuổi', items: ['Trẻ sơ sinh', 'Bé 1-3 tuổi', 'Trẻ 3-6 tuổi', 'Học sinh'] },
-			{ title: 'Loại sản phẩm', items: ['Sữa uống', 'Sữa bột', 'Sữa chua', 'Tư nhân đánh dấu'] },
-		],
-	},
-	{
-		label: 'Trẻ nhỏ',
-		href: '/kids',
-		submenu: [
-			{ title: 'Độ tuổi', items: ['Sơ sinh', '6 tháng', '1 tuổi', '2 tuổi'] },
-			{ title: 'Nhu cầu dinh dưỡng', items: ['Tăng cân', 'Tiêu hóa', 'Miễn dịch', 'Phát triển não'] },
-			{ title: 'Dòng sản phẩm', items: ['Vinamilk Premium', 'Vinamilk Alpha', 'Vinamilk Gold', 'Vinamilk Pro'] },
-		],
-	},
-	{
-		label: 'Thiếu niên',
-		href: '/teen',
-		submenu: [
-			{ title: 'Độ tuổi', items: ['6-9 tuổi', '9-12 tuổi', '12-15 tuổi', '15-18 tuổi'] },
-			{ title: 'Nhu cầu dinh dưỡng', items: ['Chiều cao', 'Xương chắc khỏe', 'Tập trung học tập', 'Năng lượng'] },
-			{ title: 'Sản phẩm nổi bật', items: ['Vinamilk Teen', 'Vinamilk Growth', 'Vinamilk Smart', 'Vinamilk Active'] },
-		],
-	},
-	{
-		label: 'Người lớn',
-		href: '/adults',
-		submenu: [
-			{ title: 'Độ tuổi', items: ['20-40 tuổi', '40-60 tuổi', 'Trên 60 tuổi', 'Cho nữ'] },
-			{ title: 'Nhu cầu sức khỏe', items: ['Xương chắc khỏe', 'Tim mạch khỏe', 'Tiêu hóa tốt', 'Miễn dịch mạnh'] },
-			{ title: 'Dòng sản phẩm', items: ['Vinamilk Ensure', 'Vinamilk Gold Adult', 'Vinamilk Pure', 'Vinamilk Organic'] },
-		],
-	},
-	{
-		label: 'Thương hiệu',
-		href: '/brands',
-		submenu: [
-			{ title: 'Về Vinamilk', items: ['Lịch sử', 'Tầm nhìn', 'Giá trị', 'Đội ngũ'] },
-			{ title: 'Cam kết', items: ['Chất lượng', 'Bền vững', 'Cộng đồng', 'Đổi mới'] },
-			{ title: 'Tin tức', items: ['Bản tin', 'Sự kiện', 'Giải thưởng', 'Tin công ty'] },
-		],
-	},
-]
-
-const iconButtons = [
-	{ label: 'Search', icon: Search, href: '/search' },
-	{ label: 'Cart', icon: ShoppingCart, href: '/cart' },
-	{ label: 'Account', icon: User, href: '/account' },
-]
+import StaggeredMenu from '@/components/creative/staggered-menu/StaggeredMenu'
 
 export default function SiteHeader() {
-	const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [isDark, setIsDark] = useState(false)
 
-	return (
-		<header className="sticky top-0 z-40 bg-gray-950">
-			{/* Main header row */}
-			<Container>
-				<div className="flex h-20 items-center justify-between" onMouseLeave={() => setActiveMenu(null)}>
-					<Link to="/" className="flex shrink-0 items-center gap-1">
-						<div className="flex flex-col leading-tight">
-							<span className="text-2xl font-bold text-white">Vinamilk</span>
-							<span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-								Est 1976
-							</span>
-						</div>
-					</Link>
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolled = window.scrollY > 20
+      setIsScrolled(prev => (prev === scrolled ? prev : scrolled))
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
-					{/* Center navigation */}
-					<nav className="flex flex-1 items-center justify-center gap-1">
-						{navItems.map((item) => (
-							<div
-								key={item.label}
-								className="relative"
-								onMouseEnter={() => item.submenu && setActiveMenu(item.label)}
-							>
-								<Link
-									to={item.href}
-									className="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-white transition-colors hover:text-gray-300"
-								>
-									{item.label}
-									{item.submenu && <ChevronDown className="h-4 w-4" />}
-								</Link>
+  const toggleTheme = () => {
+    const html = document.documentElement
+    if (html.classList.contains('dark')) {
+      html.classList.remove('dark')
+      setIsDark(false)
+    } else {
+      html.classList.add('dark')
+      setIsDark(true)
+    }
+  }
 
-								{/* Mega menu dropdown - fixed to page */}
-								{item.submenu && activeMenu === item.label && (
-									<div className="fixed left-0 top-20 z-30 w-full border-t border-gray-800 bg-gradient-to-b from-gray-900/95 to-gray-900/85 backdrop-blur-md text-white">
-										<Container className="py-8">
-											<div className="grid grid-cols-3 gap-8">
-												{item.submenu.map((column) => (
-													<div key={column.title} className="space-y-4">
-														<h3 className="text-sm font-bold uppercase tracking-wider text-gray-300">
-															{column.title}
-														</h3>
-														<ul className="space-y-2">
-															{column.items.map((subitem) => (
-																<li key={subitem}>
-																	<Link
-																		to="#"
-																		className="text-sm text-gray-400 transition-colors hover:text-white"
-																	>
-																		{subitem}
-																	</Link>
-																</li>
-															))}
-														</ul>
-													</div>
-												))}
-											</div>
-										</Container>
-									</div>
-								)}
-							</div>
-						))}
-					</nav>
+  const baseMenuItems = useMemo(() => [
+    { label: 'Trang chủ', link: '/' },
+    { label: 'Khám phá', link: '/discover' },
+    { label: 'Thư viện', link: '/library' },
+    { label: 'Viết lách', link: '/write' },
+  ], [])
 
-					{/* Right icon buttons */}
-					<div className="flex shrink-0 items-center gap-4">
-						{iconButtons.map((item) => {
-							const Icon = item.icon
-							return (
-								<Link
-									key={item.label}
-									to={item.href}
-									aria-label={item.label}
-									className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
-								>
-									<Icon className="h-5 w-5" />
-								</Link>
-							)
-						})}
-					</div>
-				</div>
-			</Container>
-		</header>
-	)
+  const socialItems = useMemo(() => [
+    { label: 'FB', link: '#' },
+    { label: 'IG', link: '#' },
+    { label: 'X', link: '#' },
+  ], [])
+
+  return (
+    <header
+      className={`fixed top-0 w-full z-50 transition-[background-color,padding,border-color,backdrop-filter] duration-300 py-4 ${isScrolled ? 'bg-background/80 backdrop-blur-xl border-b border-black/5 dark:border-white/5' : 'bg-transparent'
+        }`}
+    >
+      <Container className="flex items-center justify-between gap-6">
+        {/* Logo Section */}
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="w-9 h-9 md:w-10 md:h-10 bg-primary rounded-xl flex items-center justify-center transition-transform group-hover:scale-110">
+            <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-white dark:text-background" />
+          </div>
+          <span className="font-bold text-xl md:text-2xl tracking-tighter text-primary">Storya</span>
+        </Link>
+
+        {/* Search Bar - Center (Desktop) */}
+        <div className="hidden md:flex flex-1 max-w-md relative group">
+          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          </div>
+          <input
+            type="text"
+            placeholder="Tìm kiếm truyện, tác giả..."
+            className="w-full bg-muted border border-border/50 rounded-2xl py-2.5 pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className="hidden sm:flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted transition-colors text-foreground"
+          >
+            {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+
+          <Link to="/account" className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted transition-colors text-foreground">
+            <User className="h-5 w-5" />
+          </Link>
+
+          <StaggeredMenu
+            items={baseMenuItems}
+            socialItems={socialItems}
+            accentColor="var(--primary)"
+            colors={['var(--lumina-dim)', 'var(--primary)']}
+            menuButtonColor="var(--foreground)"
+            openMenuButtonColor="var(--foreground)"
+          />
+        </div>
+      </Container>
+    </header>
+  )
 }
