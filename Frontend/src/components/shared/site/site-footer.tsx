@@ -1,99 +1,112 @@
-import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { BookOpen, Search, User } from 'lucide-react'
 import Container from './container'
 
 export default function SiteFooter() {
-	const containerRef = useRef<HTMLDivElement>(null)
-	const [width, setWidth] = useState<number>(0)
+  return (
+    <footer className="bg-background dark:bg-background pt-24 pb-12 transition-colors duration-500 border-t border-black/5 dark:border-white/5">
+      <Container>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 mb-20">
+          {/* Brand Section */}
+          <div className="lg:col-span-4 space-y-8">
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center transition-transform group-hover:scale-105">
+                <BookOpen className="h-6 w-6 text-white dark:text-background" />
+              </div>
+              <span className="font-bold text-2xl tracking-tight text-primary">Storya</span>
+            </Link>
+            <p className="text-base text-muted-foreground leading-relaxed font-medium max-w-sm">
+              Nơi những câu chuyện Indie tìm thấy ánh sáng. Trải nghiệm đọc Light Novel tinh tế, đa nền tảng và tràn đầy cảm hứng.
+            </p>
+            <div className="flex items-center gap-3">
+              {['FB', 'IG', 'X', 'YT'].map((social) => (
+                <a
+                  key={social}
+                  href="#"
+                  className="w-10 h-10 rounded-full border border-border/50 dark:border-white/10 flex items-center justify-center text-xs font-bold text-muted-foreground hover:border-primary hover:text-primary transition-all"
+                >
+                  {social}
+                </a>
+              ))}
+            </div>
+          </div>
 
-	useEffect(() => {
-		const updateWidth = () => {
-			if (containerRef.current) {
-				const style = window.getComputedStyle(containerRef.current)
-				const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
-				setWidth(containerRef.current.offsetWidth - paddingX)
-			}
-		}
+          {/* Links Sections */}
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-12 lg:gap-4">
+            <FooterColumn
+              title="Khám phá"
+              links={[
+                { label: 'Trang chủ', to: '/' },
+                { label: 'Thể loại', to: '/discover' },
+                { label: 'Mới nhất', to: '/latest' },
+                { label: 'Bảng xếp hạng', to: '/ranking' },
+              ]}
+            />
+            <FooterColumn
+              title="Sáng tác"
+              links={[
+                { label: 'Viết truyện', to: '/write' },
+                { label: 'Hướng dẫn', to: '/guide' },
+                { label: 'Cộng đồng', to: '/community' },
+              ]}
+            />
+            <FooterColumn
+              title="Công ty"
+              links={[
+                { label: 'Về chúng tôi', to: '/about' },
+                { label: 'Tuyển dụng', to: '/careers' },
+                { label: 'Liên hệ', to: '/contact' },
+              ]}
+            />
+            <FooterColumn
+              title="Hỗ trợ"
+              links={[
+                { label: 'Trợ giúp', to: '/faq' },
+                { label: 'Bảo mật', to: '/privacy' },
+                { label: 'Điều khoản', to: '/terms' },
+              ]}
+            />
+          </div>
+        </div>
 
-		updateWidth()
-		window.addEventListener('resize', updateWidth)
-		return () => window.removeEventListener('resize', updateWidth)
-	}, [])
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-border/50 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+            <p className="text-sm font-medium text-muted-foreground">
+              © {new Date().getFullYear()} Storya Inc.
+            </p>
+            <div className="flex items-center gap-6 text-sm font-medium text-muted-foreground/60">
+              <Link to="/terms" className="hover:text-foreground transition-colors">Điều khoản</Link>
+              <Link to="/privacy" className="hover:text-foreground transition-colors">Bảo mật</Link>
+              <Link to="/cookies" className="hover:text-foreground transition-colors">Cookies</Link>
+            </div>
+          </div>
 
-	return (
-		<footer className="bg-black text-white overflow-hidden">
-			<Container ref={containerRef} className="pt-20 pb-0">
-				{/* Top Section */}
-				<div className="flex flex-col md:flex-row justify-between gap-12 mb-32 md:mb-48">
-					<div className="max-w-md">
-						<h2 className="text-2xl md:text-3xl font-medium leading-[1.2] tracking-tight text-white">
-							Always open to new projects and collaborations — drop a line if you'd like to connect.
-						</h2>
-					</div>
-					<div className="flex gap-16 md:gap-24">
-						<div className="flex flex-col gap-1 text-sm md:text-base font-medium">
-							<Link to="/" className="hover:text-gray-400 transition-colors">Home</Link>
-							<Link to="/" className="hover:text-gray-400 transition-colors">Work</Link>
-							<Link to="/" className="hover:text-gray-400 transition-colors">About</Link>
-							<Link to="/" className="hover:text-gray-400 transition-colors">Notes</Link>
-							<Link to="/" className="hover:text-gray-400 transition-colors">Contact</Link>
-						</div>
-						<div className="flex flex-col gap-1 text-sm md:text-base font-medium">
-							<Link to="/" className="hover:text-gray-400 transition-colors">Style Guide</Link>
-							<Link to="/" className="hover:text-gray-400 transition-colors">Components</Link>
-							<Link to="/" className="hover:text-gray-400 transition-colors">Licenses</Link>
-							<Link to="/" className="hover:text-gray-400 transition-colors">Changelog</Link>
-						</div>
-					</div>
-				</div>
+          <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 bg-muted px-4 py-1.5 rounded-full border border-border/50">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+            System Operational
+            <span className="mx-2 opacity-20">|</span>
+            VN
+          </div>
+        </div>
+      </Container>
+    </footer>
+  )
+}
 
-				{/* Middle Section */}
-				<div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-4">
-					<div className="flex flex-wrap gap-x-8 gap-y-2 text-sm md:text-base font-medium">
-						<Link to="/" className="hover:text-gray-400 transition-colors">Twitter (X)</Link>
-						<Link to="/" className="hover:text-gray-400 transition-colors">BlueSky</Link>
-						<Link to="/" className="hover:text-gray-400 transition-colors">Behance</Link>
-						<Link to="/" className="hover:text-gray-400 transition-colors">LinkedIn</Link>
-					</div>
-					<div className="text-xs md:text-sm text-white/50 font-medium">
-						Powered by <Link to="/" className="text-white hover:text-gray-300 underline decoration-white/20 underline-offset-4 transition-colors">Webflow</Link>. Created by <Link to="/" className="text-white hover:text-gray-300 underline decoration-white/20 underline-offset-4 transition-colors">Robin</Link>.
-					</div>
-				</div>
-			</Container>
-
-			{/* Bottom Section - Proportional SVG Logo */}
-			<Container className="pt-8 pb-0">
-				<svg
-					width={width || '100%'}
-					viewBox="0 0 1000 220"
-					preserveAspectRatio="xMidYMid meet"
-					xmlns="http://www.w3.org/2000/svg"
-					className="text-white"
-					aria-label="R® LESSE"
-				>
-					<defs>
-						<linearGradient id="logoGradient" x1="0" y1="0" x2="0" y2="1">
-							<stop offset="0%" stopColor="currentColor" stopOpacity="1" />
-							<stop offset="100%" stopColor="currentColor" stopOpacity="0.2" />
-						</linearGradient>
-					</defs>
-					<text
-						x="0"
-						y="190"
-						textLength="1000"
-						lengthAdjust="spacing"
-						fill="url(#logoGradient)"
-						style={{
-							fontFamily: "var(--font-sans), system-ui, sans-serif",
-							fontWeight: 900,
-							fontSize: '240',
-							letterSpacing: '-16'
-						}}
-					>
-						R® LESSE
-					</text>
-				</svg>
-			</Container>
-		</footer>
-	)
+function FooterColumn({ title, links }: { title: string; links: { label: string; to: string }[] }) {
+  return (
+    <div className="space-y-6">
+      <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground/40">{title}</h4>
+      <ul className="space-y-4">
+        {links.map((link) => (
+          <li key={link.label}>
+            <Link to={link.to} className="text-[14px] font-medium text-muted-foreground hover:text-primary transition-colors">
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
 }

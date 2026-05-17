@@ -1,6 +1,7 @@
 import { Outlet, Navigate } from 'react-router-dom'
 import SiteHeader from '../components/shared/site/site-header'
 import SiteFooter from '../components/shared/site/site-footer'
+import SmoothScroll from '../components/shared/SmoothScroll'
 
 interface SiteLayoutProps {
 	/**
@@ -22,20 +23,22 @@ export default function SiteLayout({ requireAuth = false }: SiteLayoutProps) {
 	}
 
 	return (
-		<div className="
-			min-h-screen bg-white text-gray-900 
-			[--content-padding-x:1rem] 
-			[--content-max-width:1440px] 
-			sm:[--content-padding-x:1.5rem] 
-			lg:[--content-padding-x:2rem]"
-		>
-			<SiteHeader />
+		<SmoothScroll>
+			<div className="
+				min-h-screen bg-background text-foreground transition-colors duration-500
+				[--content-padding-x:1rem] 
+				[--content-max-width:1440px] 
+				sm:[--content-padding-x:1.5rem] 
+				lg:[--content-padding-x:2rem]"
+			>
+				<SiteHeader />
+				
+				<main className="py-8 md:py-12 lg:py-16">
+					<Outlet />
+				</main>
 
-			<main className="py-12 lg:py-16">
-				<Outlet />
-			</main>
-
-			<SiteFooter />
-		</div>
+				<SiteFooter />
+			</div>
+		</SmoothScroll>
 	)
 }
