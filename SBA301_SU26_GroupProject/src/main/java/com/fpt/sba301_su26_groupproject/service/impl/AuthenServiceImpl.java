@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.UUID;
 
 @Service
 public class AuthenServiceImpl implements AuthenService {
@@ -88,7 +89,7 @@ public class AuthenServiceImpl implements AuthenService {
     }
 
     @Override
-    public ProfileDTO getProfile(long id) {
+    public ProfileDTO getProfile(UUID id) {
         User user = userRepository.findById(id).orElse(null);
         if (user == null) {
             throw new AuthenException("Người dùng không tồn tại");
@@ -102,7 +103,7 @@ public class AuthenServiceImpl implements AuthenService {
     }
 
     @Override
-    public void updateProfile(long id, ProfileDTO profile) {
+    public void updateProfile(UUID id, ProfileDTO profile) {
         User user = userRepository.findById(id).orElse(null);
         if (user == null) {
             throw new AuthenException("Người dùng không tồn tại");

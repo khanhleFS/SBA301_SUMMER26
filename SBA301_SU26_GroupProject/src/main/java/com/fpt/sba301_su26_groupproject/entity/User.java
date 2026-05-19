@@ -3,8 +3,10 @@ package com.fpt.sba301_su26_groupproject.entity;
 import com.fpt.sba301_su26_groupproject.common.infrastructure.BaseEntity;
 import com.fpt.sba301_su26_groupproject.entity.Enumeration.UserRole;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "users")
@@ -37,4 +39,9 @@ public class User extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;
+
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "coin_balance", nullable = false)
+    private Integer coinBalance;
 }

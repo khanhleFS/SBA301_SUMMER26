@@ -4,6 +4,8 @@ import com.fpt.sba301_su26_groupproject.dto.authen.LoginRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.authen.ProfileDTO;
 import com.fpt.sba301_su26_groupproject.dto.authen.ResgisterRequestDTO;
 
+import java.util.UUID;
+
 public interface AuthenService {
     void login(LoginRequestDTO request);
 
@@ -13,9 +15,9 @@ public interface AuthenService {
 
     void resetPassword(String email, String oldPassword, String newPassword);
 
-    ProfileDTO getProfile(long id);
+    ProfileDTO getProfile(UUID id);
 
-    void updateProfile(long id, ProfileDTO profile);
+    void updateProfile(UUID id, ProfileDTO profile);
 
     boolean isEmailValid(String email);
 }
