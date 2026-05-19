@@ -2,6 +2,8 @@
 
 import React, { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
+import { User, Sun, Moon, LogOut, SunMoon, Check } from 'lucide-react';
 import { gsap } from 'gsap';
 import './StaggeredMenu.css';
 
@@ -33,6 +35,10 @@ export interface StaggeredMenuProps {
   closeOnClickAway?: boolean;
   onMenuOpen?: () => void;
   onMenuClose?: () => void;
+  isDark?: boolean;
+  toggleTheme?: () => void;
+  themeMode?: 'light' | 'dark' | 'system';
+  setThemeMode?: (mode: 'light' | 'dark' | 'system') => void;
 }
 
 const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
@@ -43,15 +49,17 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   displaySocials = true,
   displayItemNumbering = true,
   className = '',
-  logoUrl = '',
   menuButtonColor = '#fff',
   openMenuButtonColor = '#fff',
   accentColor = '#5227FF',
   changeMenuColorOnOpen = true,
-  isFixed = false,
   closeOnClickAway = true,
   onMenuOpen,
-  onMenuClose
+  onMenuClose,
+  isDark = false,
+  toggleTheme,
+  themeMode = 'system',
+  setThemeMode
 }) => {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -451,9 +459,9 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 {items && items.length ? (
                   items.map((it, idx) => (
                     <li className="sm-panel-itemWrap" key={it.label + idx}>
-                      <a className="sm-panel-item" href={it.link} aria-label={it.ariaLabel} data-index={idx + 1} onClick={closeMenu}>
+                      <Link className="sm-panel-item" to={it.link} aria-label={it.ariaLabel} data-index={idx + 1} onClick={closeMenu}>
                         <span className="sm-panel-itemLabel">{it.label}</span>
-                      </a>
+                      </Link>
                     </li>
                   ))
                 ) : (
@@ -464,20 +472,114 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                   </li>
                 )}
               </ul>
-              {displaySocials && socialItems && socialItems.length > 0 && (
-                <div className="sm-socials" aria-label="Social links">
-                  <h3 className="sm-socials-title">Socials</h3>
-                  <ul className="sm-socials-list" role="list">
-                    {socialItems.map((s, i) => (
-                      <li key={s.label + i} className="sm-socials-item">
-                        <a href={s.link} target="_blank" rel="noopener noreferrer" className="sm-socials-link">
-                          {s.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+              
+              <div className="sm-socials mt-auto pt-4 border-t border-border/10 flex flex-col w-full" aria-label="Tài khoản và cài đặt giao diện">
+                
+                {/* 3-Mode Visual Square Cards Grid */}
+                <div className="sm-socials-link grid grid-cols-3 gap-2.5 w-full mb-4 select-none">
+                  
+                  {/* Light Mode Card */}
+                  <div 
+                    onClick={() => setThemeMode?.('light')} 
+                    className={`relative w-full py-3 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-all hover:scale-102 border ${
+                      themeMode === 'light' 
+                        ? 'border-primary bg-primary/20 text-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background' 
+                        : 'border-border/40 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {themeMode === 'light' && (
+                      <div 
+                        style={{ backgroundColor: '#4F378A' }}
+                        className="absolute -top-1 -right-1 h-4 w-4 text-white rounded-full flex items-center justify-center z-10 shadow-sm border border-background"
+                      >
+                        <Check className="h-2.5 w-2.5 stroke-[3.5]" />
+                      </div>
+                    )}
+                    <Sun className="h-5 w-5 mb-1.5" />
+                    <span className="text-[10px] font-bold">
+                      Sáng
+                    </span>
+                  </div>
+
+                  {/* Dark Mode Card */}
+                  <div 
+                    onClick={() => setThemeMode?.('dark')} 
+                    className={`relative w-full py-3 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-all hover:scale-102 border ${
+                      themeMode === 'dark' 
+                        ? 'border-primary bg-primary/20 text-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background' 
+                        : 'border-border/40 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {themeMode === 'dark' && (
+                      <div 
+                        style={{ backgroundColor: '#4F378A' }}
+                        className="absolute -top-1 -right-1 h-4 w-4 text-white rounded-full flex items-center justify-center z-10 shadow-sm border border-background"
+                      >
+                        <Check className="h-2.5 w-2.5 stroke-[3.5]" />
+                      </div>
+                    )}
+                    <Moon className="h-5 w-5 mb-1.5" />
+                    <span className="text-[10px] font-bold">
+                      Tối
+                    </span>
+                  </div>
+
+                  {/* System Mode Card */}
+                  <div 
+                    onClick={() => setThemeMode?.('system')} 
+                    className={`relative w-full py-3 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-all hover:scale-102 border ${
+                      themeMode === 'system' 
+                        ? 'border-primary bg-primary/20 text-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background' 
+                        : 'border-border/40 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {themeMode === 'system' && (
+                      <div 
+                        style={{ backgroundColor: '#4F378A' }}
+                        className="absolute -top-1 -right-1 h-4 w-4 text-white rounded-full flex items-center justify-center z-10 shadow-sm border border-background"
+                      >
+                        <Check className="h-2.5 w-2.5 stroke-[3.5]" />
+                      </div>
+                    )}
+                    <SunMoon className="h-5 w-5 mb-1.5" />
+                    <span className="text-[10px] font-bold">
+                      Hệ thống
+                    </span>
+                  </div>
+
                 </div>
-              )}
+
+                {/* User Row: (avt) user name (logout icon) */}
+                <div className="sm-socials-link flex items-center justify-between gap-3 w-full pt-1">
+                  <div className="flex items-center gap-3">
+                    {/* (avt) Avatar */}
+                    <Link 
+                      to="/profile" 
+                      className="h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/20 flex items-center justify-center text-primary transition-all hover:scale-105" 
+                      onClick={closeMenu}
+                      title="Hồ sơ cá nhân"
+                    >
+                      <User className="h-4.5 w-4.5" />
+                    </Link>
+                    {/* User Name */}
+                    <span className="text-xs font-semibold text-foreground truncate max-w-[150px]">
+                      Khánh Lê
+                    </span>
+                  </div>
+
+                  {/* (logout icon) Logout Icon Button */}
+                  <button 
+                    onClick={() => {
+                      alert('Đăng xuất thành công!');
+                      closeMenu();
+                    }}
+                    className="h-8 w-8 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive flex items-center justify-center transition-colors bg-transparent border-0 outline-none cursor-pointer"
+                    title="Đăng xuất"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </aside>
           

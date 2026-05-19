@@ -1,5 +1,5 @@
 import Container from "@/components/shared/site/container"
-import CircularGallery from "@/components/creative/circular-gallery/CircularGallery"
+import CircularGallery from "@/components/custom/circular-gallery/CircularGallery"
 
 const trendingItems = [
   { image: 'https://placehold.co/600x800/4F378A/FFFFFF?text=Trending+1', text: 'Thành Phố Sương Mù' },
@@ -10,7 +10,11 @@ const trendingItems = [
   { image: 'https://placehold.co/600x800/4F378A/FFFFFF?text=Trending+6', text: 'Huyền Bí' },
 ]
 
-export default function TrendingGallery() {
+interface TrendingGalleryProps {
+  onReady?: () => void
+}
+
+export default function TrendingGallery({ onReady }: TrendingGalleryProps) {
   return (
     <section className="mb-20 md:mb-32 relative z-10 -mt-16 md:-mt-50">
       <div className="h-[400px] sm:h-[600px] md:h-[900px] w-full relative transition-colors">
@@ -23,6 +27,7 @@ export default function TrendingGallery() {
             scrollEase={0.1}
             scrollSpeed={1.5}
             font={typeof window !== 'undefined' && window.innerWidth < 768 ? "italic 20px Literata" : "italic 40px Literata"}
+            onReady={onReady}
           />
         </div>
       </div>

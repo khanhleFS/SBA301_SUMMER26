@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, ElementType } from 'react';
+import { useRef, useEffect, useState, type ElementType } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 // If GSAPSplitText is not available because it's a premium plugin, we might need a fallback or assume it's provided via local package.
