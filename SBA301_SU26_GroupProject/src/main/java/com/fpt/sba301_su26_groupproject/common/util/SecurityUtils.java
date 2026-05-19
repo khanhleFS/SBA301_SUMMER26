@@ -7,13 +7,15 @@ import lombok.experimental.UtilityClass;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.UUID;
+
 @UtilityClass
 public class SecurityUtils {
 
     /**
      * Lấy ID của người dùng hiện tại từ CustomUserDetails
      */
-    public static Long getCurrentUserId() {
+    public static UUID getCurrentUserId() {
         User user = getCurrentUser();
         return (user != null) ? user.getId() : null;
     }
