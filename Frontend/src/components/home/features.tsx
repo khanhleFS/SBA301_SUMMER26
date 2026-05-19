@@ -1,7 +1,7 @@
 import { Sparkles, Smartphone, Users, Moon, ChevronDown, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Container from "@/components/shared/site/container"
-import SplitText from "@/components/creative/split-text/SplitText"
+import SplitText from "@/components/custom/split-text/SplitText"
 
 
 const features = [
@@ -104,18 +104,18 @@ export default function Features() {
                 <div className="mockup-phone-display">
                   <div className="relative w-full h-full overflow-hidden bg-background @container">
                     <div className="diff absolute inset-0 w-full h-full">
-                      
+
                       {/* DARK SIDE (Item 1) */}
                       <div className="diff-item-1">
                         <div className="bg-[#0F0D13] text-white flex flex-col h-full w-[100cqw] pointer-events-none">
-                           <MockupContent isDark={true} />
+                          <MockupContent isDark={true} />
                         </div>
                       </div>
 
                       {/* LIGHT SIDE (Item 2) */}
                       <div className="diff-item-2">
                         <div className="bg-[#FDF8FD] text-[#0F0D13] flex flex-col h-full w-[100cqw] pointer-events-none">
-                           <MockupContent isDark={false} />
+                          <MockupContent isDark={false} />
                         </div>
                       </div>
 
@@ -192,7 +192,7 @@ export default function Features() {
             </div>
 
             <div className="pt-6">
-              <Link to="/write" className="inline-flex items-center gap-3 bg-foreground text-background px-8 py-4 rounded-full font-bold hover:scale-105 transition-all duration-300 group">
+              <Link to="/search" className="inline-flex items-center gap-3 bg-foreground text-background px-8 py-4 rounded-full font-bold hover:scale-105 transition-all duration-300 group">
                 Khám phá ngay
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
