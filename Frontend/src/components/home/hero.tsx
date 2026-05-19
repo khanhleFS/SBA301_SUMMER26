@@ -1,6 +1,7 @@
+import { Link } from 'react-router-dom'
 import { Sparkles } from 'lucide-react'
 import Container from "@/components/shared/site/container"
-import GradientText from '@/components/creative/gradient-text/GradientText'
+import GradientText from '@/components/custom/gradient-text/GradientText'
 
 export default function Hero() {
   return (
@@ -13,7 +14,7 @@ export default function Hero() {
 
         <div className="space-y-4">
           <h1 className="font-serif text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-medium text-foreground max-w-5xl mx-auto leading-[1.2] md:leading-[1.1] italic animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-150">
-            “Không chỉ là <GradientText colors={["#5227FF","#FF9FFC","#B497CF"]} animationSpeed={8} showBorder={false} className="inline-flex font-bold font-serif italic pb-2">truyện</GradientText>,<br className="hidden md:block" />là cả một thế giới.”
+            “Không chỉ là <GradientText colors={["#5227FF", "#FF9FFC", "#B497CF"]} animationSpeed={8} showBorder={false} className="inline-flex font-bold font-serif italic pb-2">truyện</GradientText>,<br className="hidden md:block" />là cả một thế giới.”
           </h1>
           <p className="text-sm md:text-lg text-muted-foreground max-w-xl mx-auto font-medium animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
             Khám phá những vũ trụ song song qua từng trang sách tại Storya.
@@ -21,12 +22,12 @@ export default function Hero() {
         </div>
 
         <div className="flex items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-500">
-          <button className="btn-primary py-2.5">
+          <Link to="/search" className="btn-primary py-2.5">
             Bắt đầu đọc
-          </button>
-          <button className="btn-secondary py-2.5">
+          </Link>
+          <Link to="/search" className="btn-secondary py-2.5">
             Khám phá
-          </button>
+          </Link>
         </div>
       </Container>
     </section>

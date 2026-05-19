@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Container from "@/components/shared/site/container"
-import SplitText from "@/components/creative/split-text/SplitText"
+import SplitText from "@/components/custom/split-text/SplitText"
 
 const mangaList = [
   { id: 1, title: 'The Last Echo', author: 'Elara', category: 'Phiêu lưu', chapter: 'Chương 124', time: '15 phút trước', image: 'https://placehold.co/400x533/E6E1E5/4F378A?text=Echo' },
@@ -47,7 +47,7 @@ export default function LatestUpdates() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
           {mangaList.map((manga) => (
             <Link key={manga.id} to={`/manga/${manga.id}`} className="group block space-y-3 md:space-y-6">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-2xl md:rounded-[32px] bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-2">
+              <div className="relative aspect-[3/4] overflow-hidden rounded-xl md:rounded-[32px] bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-2">
                 <img
                   src={manga.image}
                   alt={manga.title}
