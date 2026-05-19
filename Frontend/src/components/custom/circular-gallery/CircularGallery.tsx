@@ -130,6 +130,7 @@ class Media {
   isBefore: boolean = false;
   isAfter: boolean = false;
   padding: number = 0;
+  onLoad?: () => void;
 
   constructor({
     geometry,
@@ -145,7 +146,8 @@ class Media {
     bend,
     textColor,
     borderRadius = 0,
-    font
+    font,
+    onLoad
   }: any) {
     this.extra = 0;
     this.geometry = geometry;
@@ -162,6 +164,7 @@ class Media {
     this.textColor = textColor;
     this.borderRadius = borderRadius;
     this.font = font;
+    this.onLoad = onLoad;
     this.createShader();
     this.createMesh();
     this.createTitle();
@@ -238,6 +241,10 @@ class Media {
     img.onload = () => {
       texture.image = img;
       this.program.uniforms.uImageSizes.value = [img.naturalWidth, img.naturalHeight];
+      if (this.onLoad) this.onLoad();
+    };
+    img.onerror = () => {
+      if (this.onLoad) this.onLoad();
     };
   }
   createMesh() {
@@ -351,7 +358,8 @@ class AppGallery {
       borderRadius = 0,
       font = 'bold 30px Newsreader',
       scrollSpeed = 2,
-      scrollEase = 0.05
+      scrollEase = 0.05,
+      onReady
     }: any = {}
   ) {
     this.container = container;
@@ -363,7 +371,21 @@ class AppGallery {
     this.createScene();
     this.onResize();
     this.createGeometry();
-    this.createMedias(items, bend, textColor, borderRadius, font);
+
+    let loadedCount = 0;
+    const totalCount = (items && items.length ? items.length : 0) * 2;
+    const checkReady = () => {
+      loadedCount++;
+      if (loadedCount >= totalCount && onReady) {
+        onReady();
+      }
+    };
+
+    if (totalCount === 0 && onReady) {
+      onReady();
+    }
+
+    this.createMedias(items, bend, textColor, borderRadius, font, checkReady);
     this.update();
     this.addEventListeners();
   }
@@ -391,7 +413,7 @@ class AppGallery {
       widthSegments: 40
     });
   }
-  createMedias(items: any[], bend = 1, textColor: string, borderRadius: number, font: string) {
+  createMedias(items: any[], bend = 1, textColor: string, borderRadius: number, font: string, checkReady: () => void) {
     const galleryItems = items && items.length ? items : [];
     this.mediasImages = galleryItems.concat(galleryItems);
     this.medias = this.mediasImages.map((data, index) => {
@@ -409,7 +431,8 @@ class AppGallery {
         bend,
         textColor,
         borderRadius,
-        font
+        font,
+        onLoad: checkReady
       });
     });
   }
@@ -521,7 +544,8 @@ export default function CircularGallery({
   borderRadius = 0.05,
   font = 'bold 30px Newsreader',
   scrollSpeed = 2,
-  scrollEase = 0.05
+  scrollEase = 0.05,
+  onReady
 }: any) {
   const containerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<AppGallery | null>(null);
@@ -543,7 +567,16 @@ export default function CircularGallery({
     };
 
     const actualTextColor = resolveColor(textColor);
-    const app = new AppGallery(containerRef.current, { items, bend, textColor: actualTextColor, borderRadius, font, scrollSpeed, scrollEase });
+    const app = new AppGallery(containerRef.current, { 
+      items, 
+      bend, 
+      textColor: actualTextColor, 
+      borderRadius, 
+      font, 
+      scrollSpeed, 
+      scrollEase,
+      onReady 
+    });
     appRef.current = app;
 
     const observer = new IntersectionObserver(

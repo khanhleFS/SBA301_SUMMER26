@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { BookOpen, Search, User } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
 import Container from './container'
 
 export default function SiteFooter() {
