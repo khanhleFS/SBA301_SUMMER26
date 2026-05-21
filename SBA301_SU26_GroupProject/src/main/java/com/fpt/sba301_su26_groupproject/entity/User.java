@@ -43,5 +43,6 @@ public class User extends BaseEntity {
     @NotNull
     @ColumnDefault("0")
     @Column(name = "coin_balance", nullable = false)
-    private Integer coinBalance;
+    @Builder.Default
+    private Integer coinBalance = 0;
 }

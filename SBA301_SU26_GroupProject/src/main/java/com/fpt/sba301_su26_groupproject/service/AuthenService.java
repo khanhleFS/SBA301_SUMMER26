@@ -20,4 +20,6 @@ public interface AuthenService {
     void updateProfile(UUID id, ProfileDTO profile);
 
     boolean isEmailValid(String email);
+
+    boolean verifyRegisterOtp(String email, String otpCode);
 }
