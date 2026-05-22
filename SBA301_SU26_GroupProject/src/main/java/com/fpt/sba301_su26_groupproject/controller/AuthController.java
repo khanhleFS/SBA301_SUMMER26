@@ -123,4 +123,18 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Có lỗi xảy ra: " + e.getMessage());
         }
     }
+
+    @PostMapping("/verify-register-otp")
+    public ResponseEntity<String> verifyRegisterOtp(@Valid @RequestBody com.fpt.sba301_su26_groupproject.dto.authen.VerifyOTPRequestDTO requestDTO) {
+        try {
+            boolean success = authenService.verifyRegisterOtp(requestDTO.email(), requestDTO.otpCode());
+            if (success) {
+                return ResponseEntity.ok("Xác thực thành công. Tài khoản đã được kích hoạt.");
+            } else {
+                return ResponseEntity.badRequest().body("Xác thực thất bại");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi xác thực: " + e.getMessage());
+        }
+    }
 }
