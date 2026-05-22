@@ -5,15 +5,19 @@ import com.fpt.sba301_su26_groupproject.dto.authen.LoginRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.authen.ProfileDTO;
 import com.fpt.sba301_su26_groupproject.dto.authen.ResgisterRequestDTO;
 import com.fpt.sba301_su26_groupproject.entity.Enumeration.UserRole;
+import com.fpt.sba301_su26_groupproject.entity.OTP;
 import com.fpt.sba301_su26_groupproject.entity.User;
+import com.fpt.sba301_su26_groupproject.repository.OTPRepository;
 import com.fpt.sba301_su26_groupproject.repository.UserRepository;
 import com.fpt.sba301_su26_groupproject.service.AuthenService;
 import com.fpt.sba301_su26_groupproject.service.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -25,6 +29,8 @@ public class AuthenServiceImpl implements AuthenService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private MailService mailService;
+    @Autowired
+    private OTPRepository otpRepository;
 
     @Override
     public void login(LoginRequestDTO request) {
@@ -37,14 +43,15 @@ public class AuthenServiceImpl implements AuthenService {
     }
 
     @Override
+    @Transactional
     public boolean register(ResgisterRequestDTO request) {
         if(userRepository.findByEmail(request.email()).isPresent()) {
             throw new AuthenException("Email đã tồn tại");
         }
         if(userRepository.findByPhone(request.phone()).isPresent()) {
-            throw new AuthenException("số điện thoại đã tồn tại");
+            throw new AuthenException("Số điện thoại đã tồn tại");
         }
-
+        // Tạo User nhưng CƯỠNG CHẾ trạng thái là chưa kích hoạt
         User user = User.builder()
                 .username(request.fullName())
                 .email(request.email())
@@ -55,6 +62,24 @@ public class AuthenServiceImpl implements AuthenService {
                 .isActive(request.isActive() != null ? request.isActive() : true)
                 .build();
         userRepository.save(user);
+        // Sinh OTP 6 số
+        String otpCode = String.format("%06d", new SecureRandom().nextInt(999999));
+
+        // Xóa OTP cũ nếu có và lưu OTP mới (hết hạn sau 5 phút)
+        otpRepository.deleteByEmail(request.email(),  otpCode);
+        OTP otp = OTP.builder()
+                .email(request.email())
+                .otpCode(otpCode)
+                .expiryTime(Instant.now().plusSeconds(5 * 60)) // 5 phút
+                .build();
+        otpRepository.save(otp);
+        // Gửi mail
+        try {
+            mailService.sendHtml(request.email(), "Xác nhận đăng ký tài khoản",
+                    "<h1>Mã OTP xác nhận của bạn là: " + otpCode + "</h1><p>Mã này sẽ hết hạn sau 5 phút.</p>");
+        } catch (Exception e) {
+            throw new AuthenException("Lỗi gửi email: " + e.getMessage());
+        }
         return true;
     }
 
@@ -130,6 +155,24 @@ public class AuthenServiceImpl implements AuthenService {
     @Override
     public boolean isEmailValid(String email) {
         return userRepository.findByEmail(email).isPresent();
+    }
+
+    @Override
+    @Transactional
+    public boolean verifyRegisterOtp(String email, String otpCode) {
+        OTP otp = otpRepository.findByEmailAndOtpCode(email, otpCode)
+                .orElseThrow(() -> new AuthenException("Mã OTP không hợp lệ"));
+        if (otp.getExpiryTime().isBefore(Instant.now())) {
+            throw new AuthenException("Mã OTP đã hết hạn");
+        }
+        // Kích hoạt User
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AuthenException("Không tìm thấy người dùng"));
+        user.setIsActive(true);
+        userRepository.save(user);
+        // Xóa OTP sau khi dùng thành công
+        otpRepository.deleteByEmail(email, otpCode);
+        return true;
     }
 
     public String generateRandomPassword() {
