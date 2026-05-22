@@ -45,8 +45,6 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   position = 'right',
   colors = ['#B497CF', '#5227FF'],
   items = [],
-  socialItems = [],
-  displaySocials = true,
   displayItemNumbering = true,
   className = '',
   menuButtonColor = '#fff',
@@ -56,8 +54,6 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   closeOnClickAway = true,
   onMenuOpen,
   onMenuClose,
-  isDark = false,
-  toggleTheme,
   themeMode = 'system',
   setThemeMode
 }) => {

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { storyDetailService, type StoryDetailInfo, type ChapterItem } from '../services/story-detail-service'
 
 interface StoryDetailContextType {
@@ -15,7 +15,7 @@ interface StoryDetailContextType {
   isSortedAsc: boolean
   toggleSort: () => void
   currentPage: number
-  setCurrentPage: (page: number) => void
+  setCurrentPage: (page: number | ((p: number) => number)) => void
   itemsPerPage: number
   totalPages: number
   paginatedChapters: ChapterItem[]

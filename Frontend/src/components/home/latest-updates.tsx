@@ -16,11 +16,11 @@ export default function LatestUpdates() {
   return (
     <section className="py-12 md:py-20">
       <Container>
-        <div className="flex items-end justify-between mb-8 md:mb-12">
+        <div className="flex items-center justify-between mb-8 md:mb-12">
           <div className="space-y-1 md:space-y-2">
             <SplitText
               tag="h2"
-              className="text-2xl md:text-4xl font-bold tracking-tight text-foreground"
+              className="text-2xl md:text-4xl font-serif font-bold tracking-tight text-foreground leading-tight md:leading-snug"
               delay={15}
               duration={1}
               splitType="words"
@@ -28,7 +28,6 @@ export default function LatestUpdates() {
             >
               Cập nhật mới nhất
             </SplitText>
-            <div className="h-1 w-12 md:h-1.5 md:w-20 bg-primary/20 rounded-full" />
           </div>
           <Link to="/latest" className="group flex items-center gap-2 text-xs md:text-sm font-bold text-primary">
             <SplitText

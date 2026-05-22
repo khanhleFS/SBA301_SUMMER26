@@ -1,16 +1,11 @@
 .animated-gradient-text {
   position: relative;
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
+  display: inline;
   font-weight: inherit;
-  backdrop-filter: blur(10px);
   transition: box-shadow 0.5s ease-out;
-  overflow: hidden;
+  overflow: visible;
   cursor: pointer;
-  border-radius: 1.25rem;
-  vertical-align: middle;
+  vertical-align: baseline;
 }
 
 .animated-gradient-text.with-border {
@@ -47,10 +42,29 @@
   display: inline-block;
   position: relative;
   z-index: 2;
+  padding-bottom: 2px;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+}
+
+@keyframes gradient-horizontal-yoyo {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes gradient-horizontal-loop {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+@keyframes gradient-vertical-yoyo {
+  0%, 100% { background-position: 50% 0%; }
+  50% { background-position: 50% 100%; }
+}
+@keyframes gradient-vertical-loop {
+  0% { background-position: 50% 0%; }
+  100% { background-position: 50% 100%; }
 }
 
 

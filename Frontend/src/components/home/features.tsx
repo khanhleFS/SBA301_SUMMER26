@@ -140,7 +140,7 @@ export default function Features() {
             <div className="space-y-6">
               <SplitText
                 tag="h2"
-                className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.1]"
+                className="text-4xl md:text-6xl font-serif font-bold tracking-tight text-foreground leading-[1.1]"
                 delay={10}
                 duration={1.2}
                 splitType="words"

@@ -32,8 +32,8 @@ export default function SiteLayout({ requireAuth = false }: SiteLayoutProps) {
 				lg:[--content-padding-x:2rem]"
 			>
 				<SiteHeader />
-				
-				<main className="py-8 md:py-12 lg:py-16">
+
+				<main className="pt-20 pb-8 md:pt-8 md:pb-12 lg:pb-16">
 					<Outlet />
 				</main>
 

@@ -97,7 +97,7 @@ export const SplitGradientText = ({
 
           const totalWidth = el.offsetWidth;
           const splitSpans = el.querySelectorAll('.split-char, .split-word, .split-line');
-          
+
           splitSpans.forEach((span: any) => {
             const left = span.offsetLeft;
             Object.assign(span.style, {
@@ -108,6 +108,7 @@ export const SplitGradientText = ({
               backgroundClip: 'text',
               webkitTextFillColor: 'transparent',
               color: 'transparent',
+              padding: '0.1em 0',
               display: 'inline-block'
             });
           });
@@ -166,8 +167,8 @@ export const SplitGradientText = ({
 
   const style = {
     textAlign,
-    overflow: 'hidden',
-    display: 'inline-block',
+    overflow: 'visible',
+    display: 'inline',
     whiteSpace: 'normal' as const,
     wordWrap: 'break-word' as const,
     willChange: 'transform, opacity'
@@ -175,7 +176,7 @@ export const SplitGradientText = ({
   const Tag = tag;
 
   return (
-    <Tag ref={ref} style={style} className={`gradient-split-text inline-block ${className}`}>
+    <Tag ref={ref} style={style} className={`gradient-split-text ${className}`}>
       {children}
     </Tag>
   );

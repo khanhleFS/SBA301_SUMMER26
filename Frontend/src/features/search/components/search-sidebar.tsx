@@ -1,10 +1,12 @@
 import { useSearchContext } from '../context/search-context'
 import { SlidersHorizontal, RotateCcw } from 'lucide-react'
 import SpotlightCard from '@/components/custom/spot-light-card/SpotlightCard'
+import { SidebarFiltersSkeleton } from './search-skeleton'
 
 export function SearchSidebar() {
   const {
     filterGroups,
+    isFiltersLoading,
     selectedCategory,
     setSelectedCategory,
     selectedChapters,
@@ -49,49 +51,53 @@ export function SearchSidebar() {
           </button>
         </div>
 
-        {/* Dynamic Filter Groups */}
-        {filterGroups.map((group) => {
-          const selectedValue = getSelectedValue(group.id)
-          
-          return (
-            <div 
-              key={group.id} 
-              className={`space-y-3 ${group.id === 'category' ? 'hidden lg:block' : ''}`}
-            >
-              <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">
-                {group.title}
-              </h3>
-              
-              <div className={
-                group.type === 'pills' 
-                  ? 'flex flex-wrap gap-2' 
-                  : group.type === 'grid-2' 
-                    ? 'grid grid-cols-2 gap-2' 
-                    : 'grid grid-cols-3 gap-2'
-              }>
-                {group.options.map((opt) => {
-                  const isActive = selectedValue === opt.value
-                  
-                  return (
-                    <button 
-                      key={opt.value}
-                      onClick={() => handleSelectFilter(group.id, opt.value)}
-                      className={`px-3 py-2 rounded-lg font-semibold text-xs border transition-all text-center cursor-pointer select-none ${
-                        group.type === 'pills' ? 'rounded-full py-1.5' : ''
-                      } ${
-                        isActive 
-                          ? 'bg-primary/20 text-primary border-primary/30 font-semibold' 
-                          : 'bg-surface-container border-outline/10 text-on-surface-variant hover:border-primary/30'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  )
-                })}
+        {/* Dynamic Filter Groups or loading skeleton */}
+        {isFiltersLoading ? (
+          <SidebarFiltersSkeleton />
+        ) : (
+          filterGroups.map((group) => {
+            const selectedValue = getSelectedValue(group.id)
+            
+            return (
+              <div 
+                key={group.id} 
+                className={`space-y-3 ${group.id === 'category' ? 'hidden lg:block' : ''}`}
+              >
+                <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">
+                  {group.title}
+                </h3>
+                
+                <div className={
+                  group.type === 'pills' 
+                    ? 'flex flex-wrap gap-2' 
+                    : group.type === 'grid-2' 
+                      ? 'grid grid-cols-2 gap-2' 
+                      : 'grid grid-cols-3 gap-2'
+                }>
+                  {group.options.map((opt) => {
+                    const isActive = selectedValue === opt.value
+                    
+                    return (
+                      <button 
+                        key={opt.value}
+                        onClick={() => handleSelectFilter(group.id, opt.value)}
+                        className={`px-3 py-2 rounded-lg font-semibold text-xs border transition-all text-center cursor-pointer select-none ${
+                          group.type === 'pills' ? 'rounded-full py-1.5' : ''
+                        } ${
+                          isActive 
+                            ? 'bg-primary/20 text-primary border-primary/30 font-semibold' 
+                            : 'bg-surface-container border-outline/10 text-on-surface-variant hover:border-primary/30'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })
+        )}
 
       </SpotlightCard>
     </aside>

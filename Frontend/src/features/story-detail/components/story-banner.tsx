@@ -49,10 +49,10 @@ export function StoryBanner({ inLibrary, onLibraryToggle, onScrollToChapters }: 
                   {storyInfo.status === 'Ongoing' ? 'Đang ra' : 'Hoàn thành'}
                 </span>
               </div>
-              <h1 className="font-serif text-5xl font-bold text-foreground leading-tight drop-shadow-md">
+              <h1 className="font-serif text-5xl font-bold text-primary leading-tight drop-shadow-md">
                 {storyInfo.title}
               </h1>
-              <p className="text-xl font-serif text-primary opacity-90 italic font-medium">Tác giả: {storyInfo.author}</p>
+              <p className="text-xl font-serif text-on-surface opacity-90 italic font-medium">Tác giả: {storyInfo.author}</p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <button
                   onClick={onScrollToChapters}
@@ -96,7 +96,7 @@ export function StoryBanner({ inLibrary, onLibraryToggle, onScrollToChapters }: 
             src={displayCover}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent pointer-events-none" />
-          
+
           {/* Mobile Cover Content */}
           <div className="absolute bottom-6 left-4 right-4 space-y-3">
             <div className="flex flex-wrap gap-1.5">
