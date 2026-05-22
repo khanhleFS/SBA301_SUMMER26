@@ -14,7 +14,6 @@ import {
   Maximize2,
   Minimize2
 } from 'lucide-react'
-import Container from '@/components/shared/site/container'
 import Dock from './components/dock'
 import ReaderSuggestions from './components/reader-suggestions'
 import ChapterSelector from './components/chapter-selector'
@@ -61,6 +60,9 @@ function ReaderContent() {
   const [showDock, setShowDock] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [activeSelector, setActiveSelector] = useState<'top' | 'bottom' | null>(null)
+  const showDockRef = useRef(false)
+  const scrollProgressRef = useRef(0)
+  const scrollFrameRef = useRef<number | null>(null)
 
   // Track responsive screen width for dynamic Dock and drawer rendering
   useEffect(() => {
@@ -80,28 +82,53 @@ function ReaderContent() {
 
   // Track page scroll progress & content boundaries
   useEffect(() => {
-    const handleScroll = () => {
+    const updateScrollState = () => {
+      scrollFrameRef.current = null
+
       const winScroll = document.body.scrollTop || document.documentElement.scrollTop
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight
       const scrolled = height > 0 ? (winScroll / height) * 100 : 0
-      setScrollProgress(scrolled)
+      const roundedProgress = Math.round(scrolled)
 
+      if (roundedProgress !== scrollProgressRef.current) {
+        scrollProgressRef.current = roundedProgress
+        setScrollProgress(roundedProgress)
+      }
+
+      let nextShowDock: boolean
       if (readingContainerRef.current) {
         const rect = readingContainerRef.current.getBoundingClientRect()
 
         // Show dock ONLY when:
         // - The user has scrolled past the very top (rect.top < 120px)
         // - The user has NOT yet scrolled past the bottom boundary of the reading card (rect.bottom > 220px)
-        const isInsideReadingContent = rect.top < 120 && rect.bottom > 220
-        setShowDock(isInsideReadingContent)
+        nextShowDock = rect.top < 120 && rect.bottom > 220
       } else {
         // Fallback standard behavior
-        setShowDock(winScroll > 150 && scrolled < 92)
+        nextShowDock = winScroll > 150 && scrolled < 92
+      }
+
+      if (nextShowDock !== showDockRef.current) {
+        showDockRef.current = nextShowDock
+        setShowDock(nextShowDock)
       }
     }
 
+    const handleScroll = () => {
+      if (scrollFrameRef.current !== null) {
+        return
+      }
+      scrollFrameRef.current = window.requestAnimationFrame(updateScrollState)
+    }
+
+    updateScrollState()
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current)
+      }
+    }
   }, [currentChapKey])
 
   // KEYBOARD NAVIGATION (WASD + Arrows)
@@ -199,24 +226,24 @@ function ReaderContent() {
   // 📍 DOCK ITEMS DEFINITION (Filtered dynamically for mobile view)
   const dockItems = [
     {
-      icon: <ArrowLeft className="size-5 text-primary" />,
+      icon: <ArrowLeft className="size-5 text-on-primary" />,
       label: 'Quay lại',
       onClick: () => navigate(`/${novelSlug || 'vong-am-toa-thap-neon-walker'}`)
     },
     {
-      icon: <Bookmark className="size-5 text-primary" />,
+      icon: <Bookmark className="size-5 text-on-primary" />,
       label: 'Đánh dấu',
       onClick: () => alert('Đã đánh dấu chương này thành công!')
     },
     ...(isMobile ? [] : [
       {
-        icon: fullFrame ? <Minimize2 className="size-5 text-primary" /> : <Maximize2 className="size-5 text-primary" />,
+        icon: fullFrame ? <Minimize2 className="size-5 text-on-primary" /> : <Maximize2 className="size-5 text-on-primary" />,
         label: fullFrame ? 'Khung chuẩn' : 'Tràn khung',
-        onClick: () => setFullFrame(prev => !prev)
+        onClick: () => setFullFrame(!fullFrame)
       }
     ]),
     {
-      icon: <Settings className="size-5 text-primary" />,
+      icon: <Settings className="size-5 text-on-primary" />,
       label: 'Cấu hình',
       onClick: () => {
         if (isMobile) {
@@ -248,10 +275,7 @@ function ReaderContent() {
         We apply the brightness filter ONLY here, keeping the configuration overlays
         and mobile HUD layouts completely clean and 100% relative to the Viewport!
       */}
-      <div
-        className="w-full h-full"
-        style={{ filter: `brightness(${brightness}%)` }}
-      >
+      <div className="w-full h-full">
         {/* --- CORE READING CONTAINER (Dynamic Card-based or Full-Frame wide viewport) --- */}
         <div
           ref={readingContainerRef}
@@ -447,16 +471,16 @@ function ReaderContent() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/65 backdrop-blur-md z-[120] flex items-center justify-center p-4 cursor-pointer"
+      className="fixed inset-0 bg-black/60 z-[120] flex items-center justify-center p-4 cursor-pointer"
       onClick={() => setShowSettings(false)}
     >
       <motion.div
         initial={{ scale: 0.9, y: 20, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.9, y: 20, opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        transition={{ type: 'tween', duration: 0.18, ease: 'easeOut' }}
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-sm p-6 rounded-3xl border shadow-2xl backdrop-blur-2xl cursor-default ${currentTheme.panelBg}`}
+        className={`w-full max-w-sm p-6 rounded-3xl border shadow-xl backdrop-blur-sm transform-gpu will-change-transform cursor-default ${currentTheme.panelBg}`}
       >
         <div className="space-y-5">
 
@@ -492,7 +516,7 @@ function ReaderContent() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+        className="absolute inset-0 bg-black/60 transition-opacity duration-200"
         onClick={() => setShowSettings(false)}
       />
 
@@ -501,8 +525,8 @@ function ReaderContent() {
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-        className={`relative w-full border-t border-outline/10 rounded-t-lg p-5 shadow-2xl max-h-[80vh] overflow-y-auto z-10 ${currentTheme.panelBg}`}
+        transition={{ type: 'tween', duration: 0.2, ease: 'easeOut' }}
+        className={`relative w-full border-t border-outline/10 rounded-t-lg p-5 shadow-xl transform-gpu will-change-transform max-h-[80vh] overflow-y-auto z-10 ${currentTheme.panelBg}`}
       >
         {/* Drag Handle */}
         <div className="w-12 h-1 bg-current opacity-20 rounded-full mx-auto mb-4" />
@@ -671,7 +695,7 @@ className = {`fixed bottom-0 left-0 w-full z-50 bg-surface-container-low/95 back
   < div className = "bg-surface-container-low p-2.5 rounded-xl border border-outline/5 flex items-center justify-between" >
               <span className="text-[10px] uppercase font-bold text-on-surface-variant">Tràn khung Full-screen</span>
               <button
-                onClick={() => setFullFrame(prev => !prev)}
+                onClick={() => setFullFrame(!fullFrame)}
                 className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${fullFrame ? 'border-primary bg-primary/10 text-primary' : 'border-outline/10 text-on-surface-variant'
                   }`}
               >
@@ -727,7 +751,7 @@ className = {`fixed bottom-0 left-0 w-full z-50 bg-surface-container-low/95 back
 }
 
 export default function ReaderFeature() {
-  const { novelSlug, chapterSlug } = useParams<{ novelSlug: string, chapterSlug: string }>()
+  const { chapterSlug } = useParams<{ chapterSlug: string }>()
   return (
     <ReaderProvider initialChapterId={chapterSlug || 'chuong-1-tia-lua-dau-tien-1'}>
       <ReaderContent />

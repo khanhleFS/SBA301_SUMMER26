@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { useParams } from 'react-router-dom'
 import { readerService, type ChapterDetails } from '../services/reader-service'
 
 export type ThemeType = 'nocturne' | 'charcoal' | 'sepia' | 'ivory' | 'day'
@@ -29,6 +30,7 @@ interface ReaderContextType {
 const ReaderContext = createContext<ReaderContextType | undefined>(undefined)
 
 export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-dau-tien-1' }: { children: ReactNode, initialChapterId?: string }) {
+  const { novelSlug } = useParams<{ novelSlug: string }>()
   const [currentChapterId, setCurrentChapterId] = useState<string>(initialChapterId)
   const [activeChapter, setActiveChapter] = useState<ChapterDetails | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -57,17 +59,17 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
   const [fullFrame, setFullFrame] = useState(false)
   const [brightness, setBrightness] = useState(100)
 
-  // Fetch chapter data when ID changes
+  // Fetch chapter data when ID or novelSlug changes
   useEffect(() => {
     setIsLoading(true)
-    readerService.getChapter(currentChapterId).then(chapter => {
+    readerService.getChapter(currentChapterId, novelSlug).then(chapter => {
       setActiveChapter(chapter)
       setIsLoading(false)
     }).catch(error => {
       console.error("Failed to load chapter", error)
       setIsLoading(false)
     })
-  }, [currentChapterId])
+  }, [currentChapterId, novelSlug])
 
   // Sync theme with document
   useEffect(() => {

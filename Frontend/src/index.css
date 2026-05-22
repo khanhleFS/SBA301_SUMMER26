@@ -1,6 +1,6 @@
 @import "tailwindcss";
-@plugin "daisyui";
 @import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500&display=swap');
+@plugin "daisyui";
 
 /* Configure Tailwind v4 to use class-based dark mode */
 @custom-variant dark (&:is(.dark *));
@@ -169,11 +169,13 @@
 
 @layer utilities {
   .text-gradient-animated {
-    background: linear-gradient(to right, var(--primary), #B497CF);
+    background: linear-gradient(to right, var(--primary), #B497CF, var(--primary));
+    background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     -webkit-text-fill-color: transparent;
+    animation: gradient-horizontal-yoyo 6s ease-in-out infinite;
   }
 
 
@@ -281,4 +283,44 @@ html.lenis {
 
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
+}
+
+/* =====================================================
+   Pure-CSS Search Page Particle Backdrop
+   Uses nth-child pseudo-elements — zero JS, zero RAF
+   ===================================================== */
+@keyframes particle-float {
+  0%   { transform: translateY(0px) scale(1);   opacity: 0.15; }
+  50%  { transform: translateY(-28px) scale(1.2); opacity: 0.35; }
+  100% { transform: translateY(0px) scale(1);   opacity: 0.15; }
+}
+
+.search-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.search-particles::before,
+.search-particles::after {
+  content: '';
+  position: absolute;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--primary-container), transparent 80%);
+  animation: particle-float 14s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.search-particles::before {
+  width: 6px; height: 6px;
+  top: 12%; left: 8%;
+  animation-delay: 0s;
+  animation-duration: 16s;
+}
+
+.search-particles::after {
+  width: 4px; height: 4px;
+  top: 55%; left: 78%;
+  animation-delay: 5s;
+  animation-duration: 20s;
 }

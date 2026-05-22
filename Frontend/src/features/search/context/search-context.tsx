@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { storyService, type FilterGroup } from '../services/story-service'
 import type { Story } from '../components/search-card'
@@ -17,6 +17,7 @@ interface SearchContextType {
   isLoading: boolean
   categories: string[]
   filterGroups: FilterGroup[]
+  isFiltersLoading: boolean
   clearFilters: () => void
 }
 
@@ -33,8 +34,10 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const [filteredStories, setFilteredStories] = useState<Story[]>([])
   const [filterGroups, setFilterGroups] = useState<FilterGroup[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isFiltersLoading, setIsFiltersLoading] = useState(true)
 
-  const categories = storyService.getCategories()
+  // Dynamically map categories from the loaded API filter groups (the category options)
+  const categories = filterGroups.find(g => g.id === 'category')?.options.map(opt => opt.value) || []
 
   const clearFilters = () => {
     setSelectedCategory('Tất cả thể loại')
@@ -44,8 +47,13 @@ export function SearchProvider({ children }: { children: ReactNode }) {
 
   // Load filter groups once on mount
   useEffect(() => {
+    setIsFiltersLoading(true)
     storyService.getSearchFilters().then(groups => {
       setFilterGroups(groups)
+      setIsFiltersLoading(false)
+    }).catch(err => {
+      console.error(err)
+      setIsFiltersLoading(false)
     })
   }, [])
 
@@ -78,6 +86,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       isLoading,
       categories,
       filterGroups,
+      isFiltersLoading,
       clearFilters
     }}>
       {children}

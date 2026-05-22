@@ -10,7 +10,7 @@ import { ParticleBackdrop } from './components/particle-backdrop'
 import { SearchCard } from './components/search-card'
 import { SearchSidebar } from './components/search-sidebar'
 import { SearchPagination } from './components/search-pagination'
-import { SearchSkeletonList } from './components/search-skeleton'
+import { SearchPageSkeleton, SearchSkeletonList } from './components/search-skeleton'
 import { SearchBanner } from './components/search-banner'
 
 function SearchContent() {
@@ -26,6 +26,7 @@ function SearchContent() {
   const {
     filteredStories,
     isLoading,
+    isFiltersLoading,
     clearFilters,
     categories,
     selectedCategory,
@@ -33,7 +34,8 @@ function SearchContent() {
     selectedChapters,
     setSelectedChapters,
     selectedStatus,
-    setSelectedStatus
+    setSelectedStatus,
+    filterGroups
   } = useSearchContext()
 
   // Keep local input field synchronized when URL search params are updated or reset!
@@ -62,6 +64,15 @@ function SearchContent() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setSearchParams(inputValue.trim() ? { q: inputValue.trim() } : {})
+  }
+
+  if (isLoading && isFiltersLoading && filteredStories.length === 0) {
+    return (
+      <>
+        <ParticleBackdrop />
+        <SearchPageSkeleton />
+      </>
+    )
   }
 
   return (
@@ -122,19 +133,28 @@ function SearchContent() {
                 <div className="h-4 w-px bg-outline/10 shrink-0" />
 
                 {/* Danh mục lọc nhanh */}
-                {categories.map((cat, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${
-                      selectedCategory === cat
-                        ? 'bg-primary/20 text-primary border-primary/30 shadow-sm'
-                        : 'bg-surface-container border-outline/10 text-on-surface-variant'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+                {isFiltersLoading ? (
+                  Array.from({ length: 5 }).map((_, idx) => (
+                    <div 
+                      key={idx} 
+                      className="h-7 w-16 bg-surface-container-highest rounded-full shrink-0 animate-pulse" 
+                    />
+                  ))
+                ) : (
+                  categories.map((cat, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${
+                        selectedCategory === cat
+                          ? 'bg-primary/20 text-primary border-primary/30 shadow-sm'
+                          : 'bg-surface-container border-outline/10 text-on-surface-variant'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))
+                )}
               </div>
             </div>
           </section>
@@ -213,76 +233,57 @@ function SearchContent() {
             
             {/* Nội dung lọc nâng cao - Áp dụng "Fit In Space" inline flex wrap */}
             <div className="space-y-4">
-              
-              {/* 1. THỂ LOẠI (Fit-in-space Flex Wrap cực kỳ gọn gàng) */}
-              <div className="space-y-1.5">
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">Thể loại</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {categories.map((cat, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`py-1 px-2.5 rounded-md font-semibold text-[10px] border transition-all cursor-pointer select-none ${
-                        selectedCategory === cat
-                          ? 'bg-primary/20 text-primary border-primary/30 font-bold'
-                          : 'bg-surface-container border-outline/10 text-on-surface-variant hover:border-primary/25'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {isFiltersLoading ? (
+                Array.from({ length: 3 }).map((_, gIdx) => (
+                  <div key={gIdx} className="space-y-2 animate-pulse">
+                    <div className="h-3.5 w-16 bg-surface-container-highest rounded" />
+                    <div className="flex flex-wrap gap-1.5">
+                      {Array.from({ length: 4 }).map((_, idx) => (
+                        <div key={idx} className="h-6 w-16 bg-surface-container-highest rounded-md" />
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                filterGroups.map((group) => {
+                  const selectedValue = 
+                    group.id === 'category' ? selectedCategory :
+                    group.id === 'chapters' ? selectedChapters :
+                    selectedStatus
 
-              {/* 2. CHƯƠNG HIỆN TẠI (Fit-in-space Flex Wrap cực kỳ gọn gàng) */}
-              <div className="space-y-1.5">
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">Chương hiện tại</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { label: 'Tất cả', value: 'Any' },
-                    { label: 'Chương 500+', value: '500' },
-                    { label: 'Chương 1000+', value: '1000' },
-                    { label: 'Chương 1500+', value: '1500' }
-                  ].map((opt) => (
-                    <button 
-                      key={opt.value}
-                      onClick={() => setSelectedChapters(opt.value)}
-                      className={`py-1 px-2.5 rounded-md font-semibold text-[10px] border transition-all cursor-pointer select-none ${
-                        selectedChapters === opt.value 
-                          ? 'bg-primary/20 text-primary border-primary/30 font-bold' 
-                          : 'bg-surface-container border-outline/10 text-on-surface-variant hover:border-primary/25'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                  const handleSelectFilter = (value: string) => {
+                    if (group.id === 'category') setSelectedCategory(value)
+                    else if (group.id === 'chapters') setSelectedChapters(value)
+                    else if (group.id === 'status') setSelectedStatus(value)
+                  }
 
-              {/* 3. TRẠNG THÁI (Fit-in-space Flex Wrap cực kỳ gọn gàng) */}
-              <div className="space-y-1.5">
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">Trạng thái</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { label: 'Tất cả', value: 'All' },
-                    { label: 'Đang ra', value: 'Ongoing' },
-                    { label: 'Hoàn thành', value: 'Completed' }
-                  ].map((opt) => (
-                    <button 
-                      key={opt.value}
-                      onClick={() => setSelectedStatus(opt.value)}
-                      className={`py-1 px-2.5 rounded-md font-semibold text-[10px] border transition-all cursor-pointer select-none ${
-                        selectedStatus === opt.value 
-                          ? 'bg-primary/20 text-primary border-primary/30 font-bold' 
-                          : 'bg-surface-container border-outline/10 text-on-surface-variant hover:border-primary/25'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
+                  return (
+                    <div key={group.id} className="space-y-1.5">
+                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                        {group.title}
+                      </h3>
+                      <div className="flex flex-wrap gap-1.5">
+                        {group.options.map((opt) => {
+                          const isActive = selectedValue === opt.value
+                          return (
+                            <button
+                              key={opt.value}
+                              onClick={() => handleSelectFilter(opt.value)}
+                              className={`py-1 px-2.5 rounded-md font-semibold text-[10px] border transition-all cursor-pointer select-none ${
+                                isActive
+                                  ? 'bg-primary/20 text-primary border-primary/30 font-bold'
+                                  : 'bg-surface-container border-outline/10 text-on-surface-variant hover:border-primary/25'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
             </div>
 
             {/* Nút lưu áp dụng (Apply Filter Button) */}

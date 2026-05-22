@@ -1,0 +1,49 @@
+import { AtSign, Calendar, Mail, UserRound } from 'lucide-react'
+import { SectionTitle } from './section-title'
+import { surfaceCardClass } from './profile-styles'
+import { useProfile } from '../context/profile.context'
+import type { LucideIcon } from 'lucide-react'
+
+interface InfoRow {
+  label: string
+  value: string
+  icon: LucideIcon
+}
+
+export function PersonalInfoSection() {
+  const { data } = useProfile()
+  const user = data?.user
+
+  const personalInfo: InfoRow[] = [
+    { label: 'Tên người dùng', value: user?.username ?? '—', icon: AtSign },
+    { label: 'Thành viên từ', value: user?.memberSince ?? '—', icon: Calendar },
+    { label: 'Địa chỉ Email', value: user?.email ?? '—', icon: Mail }
+  ]
+
+  return (
+    <section>
+      <div className={`overflow-hidden rounded-lg ${surfaceCardClass}`}>
+        <div className="border-b border-outline/5 px-5 py-4">
+          <SectionTitle icon={UserRound}>Thông tin cá nhân</SectionTitle>
+        </div>
+        <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[1fr_1fr_1.5fr] lg:gap-6">
+          {personalInfo.map(({ label, value, icon: Icon }) => (
+            <div key={label} className="flex min-w-0 items-center gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                <Icon className="h-5 w-5 text-primary/70" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant/60">
+                  {label}
+                </p>
+                <p className="mt-1 truncate text-sm font-medium text-on-surface">
+                  {value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

@@ -22,13 +22,14 @@ const AuthorCTA: React.FC = () => {
             <div className="space-y-4">
               <SplitText
                 tag="h2"
-                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]"
+                className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-foreground leading-[1.1] pb-2 overflow-visible"
                 delay={10}
                 duration={1.2}
                 splitType="words"
                 textAlign="left"
               >
-                Biến câu chuyện của bạn thành <span className="text-gradient-animated text-6xl md:text-7xl leading-none">kiệt tác</span>
+                Biến câu chuyện của bạn thành <br />
+                <span className="text-gradient-animated">tinh hoa</span>
               </SplitText>
               <SplitText
                 className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed"

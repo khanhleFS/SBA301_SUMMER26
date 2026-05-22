@@ -289,8 +289,11 @@ class Media {
     }
 
     this.speed = scroll.current - scroll.last;
-    this.program.uniforms.uTime.value += 0.04;
-    this.program.uniforms.uSpeed.value = this.speed;
+    const isMoving = Math.abs(this.speed) > 0.001;
+    if (isMoving) {
+      this.program.uniforms.uTime.value += 0.04;
+    }
+    this.program.uniforms.uSpeed.value = isMoving ? this.speed : 0;
 
     const planeOffset = this.plane.scale.x / 2;
     const viewportOffset = this.viewport.width / 2;
@@ -348,6 +351,7 @@ class AppGallery {
   boundOnTouchMove: any;
   boundOnTouchUp: any;
   isActive: boolean = true;
+  needsRender: boolean = true;
 
   constructor(
     container: any,
@@ -365,6 +369,7 @@ class AppGallery {
     this.container = container;
     this.scrollSpeed = scrollSpeed;
     this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0 };
+    this.update = this.update.bind(this);
     this.onCheckDebounce = debounce(this.onCheck.bind(this), 200);
     this.createRenderer();
     this.createCamera();
@@ -376,13 +381,15 @@ class AppGallery {
     const totalCount = (items && items.length ? items.length : 0) * 2;
     const checkReady = () => {
       loadedCount++;
-      if (loadedCount >= totalCount && onReady) {
-        onReady();
+      if (loadedCount >= totalCount) {
+        this.needsRender = true;
+        if (onReady) onReady();
       }
     };
 
-    if (totalCount === 0 && onReady) {
-      onReady();
+    if (totalCount === 0) {
+      this.needsRender = true;
+      if (onReady) onReady();
     }
 
     this.createMedias(items, bend, textColor, borderRadius, font, checkReady);
@@ -479,17 +486,25 @@ class AppGallery {
     if (this.medias) {
       this.medias.forEach(media => media.onResize({ screen: this.screen, viewport: this.viewport }));
     }
+    this.needsRender = true;
   }
   update() {
     if (!this.isActive) return;
     this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease);
     const direction = this.scroll.current > this.scroll.last ? 'right' : 'left';
+    const isMoving = Math.abs(this.scroll.current - this.scroll.last) > 0.001;
+
     if (this.medias) {
       this.medias.forEach(media => media.update(this.scroll, direction));
     }
-    this.renderer.render({ scene: this.scene, camera: this.camera });
+
+    if (isMoving || this.needsRender) {
+      this.renderer.render({ scene: this.scene, camera: this.camera });
+      this.needsRender = false;
+    }
+
     this.scroll.last = this.scroll.current;
-    this.raf = window.requestAnimationFrame(this.update.bind(this));
+    this.raf = window.requestAnimationFrame(this.update);
   }
   pause() {
     this.isActive = false;
@@ -499,6 +514,7 @@ class AppGallery {
   resume() {
     if (this.isActive) return;
     this.isActive = true;
+    this.needsRender = true;
     this.addEventListeners();
     this.update();
   }
@@ -598,7 +614,15 @@ export default function CircularGallery({
       observer.disconnect();
       app.destroy();
     };
-  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (appRef.current) {
+      appRef.current.scroll.ease = scrollEase;
+      appRef.current.scrollSpeed = scrollSpeed;
+    }
+  }, [scrollEase, scrollSpeed]);
 
   return <div className="circular-gallery" ref={containerRef} />;
 }
