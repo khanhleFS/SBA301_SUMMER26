@@ -2,7 +2,7 @@
 
 import React, { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { User, Sun, Moon, LogOut, SunMoon, Check } from 'lucide-react';
 import { gsap } from 'gsap';
 import './StaggeredMenu.css';
@@ -338,6 +338,10 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   );
 
 
+  const navigate = useNavigate();
+
+  const navTimeoutRef = useRef<number | null>(null);
+
   const toggleMenu = useCallback(() => {
     const target = !openRef.current;
     openRef.current = target;
@@ -363,6 +367,16 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       animateColor(false);
     }
   }, [playClose, animateIcon, animateColor, onMenuClose]);
+
+  // clear pending navigation timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (navTimeoutRef.current) {
+        clearTimeout(navTimeoutRef.current);
+        navTimeoutRef.current = null;
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const lenis = (window as any).lenis;
@@ -455,9 +469,24 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 {items && items.length ? (
                   items.map((it, idx) => (
                     <li className="sm-panel-itemWrap" key={it.label + idx}>
-                      <Link className="sm-panel-item" to={it.link} aria-label={it.ariaLabel} data-index={idx + 1} onClick={closeMenu}>
+                      <a
+                        className="sm-panel-item"
+                        href={it.link}
+                        aria-label={it.ariaLabel}
+                        data-index={idx + 1}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          // start closing animation and navigate after it finishes
+                          closeMenu()
+                          if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
+                          navTimeoutRef.current = window.setTimeout(() => {
+                            navigate(it.link)
+                            navTimeoutRef.current = null
+                          }, 340)
+                        }}
+                      >
                         <span className="sm-panel-itemLabel">{it.label}</span>
-                      </Link>
+                      </a>
                     </li>
                   ))
                 ) : (
@@ -549,14 +578,22 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 <div className="sm-socials-link flex items-center justify-between gap-3 w-full pt-1">
                   <div className="flex items-center gap-3">
                     {/* (avt) Avatar */}
-                    <Link 
-                      to="/profile" 
-                      className="h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/20 flex items-center justify-center text-primary transition-all hover:scale-105" 
-                      onClick={closeMenu}
+                    <a
+                      href="/profile"
+                      className="h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/20 flex items-center justify-center text-primary transition-all hover:scale-105"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        closeMenu()
+                        if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
+                        navTimeoutRef.current = window.setTimeout(() => {
+                          navigate('/profile')
+                          navTimeoutRef.current = null
+                        }, 340)
+                      }}
                       title="Hồ sơ cá nhân"
                     >
                       <User className="h-4.5 w-4.5" />
-                    </Link>
+                    </a>
                     {/* User Name */}
                     <span className="text-xs font-semibold text-foreground truncate max-w-[150px]">
                       Khánh Lê

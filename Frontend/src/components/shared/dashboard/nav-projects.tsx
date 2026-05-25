@@ -30,12 +30,15 @@ export function NavProjects({
   const { isMobile } = useSidebar()
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup className="px-8 py-6 group-data-[collapsible=icon]:hidden group-data-[collapsible=icon]:px-4 group-data-[collapsible=icon]:py-4">
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton
+              asChild
+              className="hover:bg-primary/10 hover:text-[var(--primary)] data-[state=open]:bg-primary/15 data-[state=open]:text-[var(--primary)]"
+            >
               <a href={item.url}>
                 {item.icon}
                 <span>{item.name}</span>
@@ -75,7 +78,7 @@ export function NavProjects({
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
+          <SidebarMenuButton className="text-sidebar-foreground/70 hover:bg-primary/10 hover:text-[var(--primary)]">
             <MoreHorizontalIcon className="text-sidebar-foreground/70" />
             <span>More</span>
           </SidebarMenuButton>

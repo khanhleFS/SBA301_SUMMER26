@@ -3,7 +3,6 @@
 import * as React from "react"
 
 import { NavMain } from "@/components/shared/dashboard/nav-main"
-import { NavProjects } from "@/components/shared/dashboard/nav-projects"
 import { NavUser } from "@/components/shared/dashboard/nav-user"
 import { TeamSwitcher } from "@/components/shared/dashboard/team-switcher"
 import {
@@ -13,7 +12,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon, TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon, FrameIcon, PieChartIcon, MapIcon } from "lucide-react"
+import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon, TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon } from "lucide-react"
 
 // This is sample data.
 const data = {
@@ -147,45 +146,18 @@ const data = {
       ],
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: (
-        <FrameIcon
-        />
-      ),
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: (
-        <PieChartIcon
-        />
-      ),
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: (
-        <MapIcon
-        />
-      ),
-    },
-  ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="px-8 py-6 group-data-[collapsible=icon]:px-4 group-data-[collapsible=icon]:py-4">
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="p-6 group-data-[collapsible=icon]:p-4">
         <NavUser user={data.user} />
       </SidebarFooter>
       <SidebarRail />
