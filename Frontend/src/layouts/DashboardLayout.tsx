@@ -1,3 +1,6 @@
+"use client"
+
+import type React from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { AppSidebar } from '@/components/shared/dashboard/app-sidebar'
 import {
@@ -29,33 +32,43 @@ export default function DashboardLayout() {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      defaultOpen={true}
+      className="h-screen overflow-hidden bg-primary text-[var(--on-primary)]"
+      style={{
+        '--sidebar': 'var(--inverse-primary)',
+        '--sidebar-foreground': 'var(--on-primary-container)',
+        '--sidebar-accent': 'var(--primary)',
+        '--sidebar-accent-foreground': 'var(--on-primary)',
+        '--sidebar-border': 'color-mix(in srgb, var(--primary) 22%, white)',
+        '--sidebar-ring': 'var(--primary)',
+      } as React.CSSProperties}
+    >
       <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 h-6"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Dashboard
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Content</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+      <SidebarInset className="flex h-screen min-h-0 flex-col overflow-hidden bg-transparent">
+        <div className="flex-1 min-h-0 p-4">
+          <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl">
+            <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+              <div className="flex flex-none items-center gap-2 border-b border-gray-100 px-6 py-4">
+                <SidebarTrigger size="icon" className="shrink-0 rounded-full bg-primary text-[var(--on-primary)] hover:bg-primary/90 hover:text-[var(--on-primary)]" />
+                <Separator orientation="vertical" className="h-6" />
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem className="hidden md:block">
+                      <BreadcrumbLink href="#">Dashboard</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator className="hidden md:block" />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Content</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 pr-3">
+                <Outlet />
+              </div>
+            </div>
           </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <Outlet />
         </div>
       </SidebarInset>
     </SidebarProvider>
