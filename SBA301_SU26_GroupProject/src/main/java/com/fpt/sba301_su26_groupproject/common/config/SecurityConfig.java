@@ -31,30 +31,32 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers(HttpMethod.POST, "/forgot-password", "/reset-password").permitAll()
                         .requestMatchers(SecurityConstants.PUBLIC_MATCHERS).permitAll()
-                        // Admin-only section
-//                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // Customer-only pages — ADMIN is blocked from these
-//                        .requestMatchers("/cart/**", "/checkout/**", "/payment/**").hasRole("USER")
-//                        // Tạo yêu cầu rút tiền chỉ dành cho USER (admin không rút tiền qua form này)
-//                        .requestMatchers(HttpMethod.POST, "/wallet/withdraw").hasRole("USER")
-//                        // Xem trang ví: cả USER và ADMIN đều được (nhưng thấy nội dung khác nhau)
-//                        .requestMatchers("/wallet", "/wallet/**").authenticated()
+                        // Require AUTHOR role for author novel management APIs
+                        .requestMatchers("/api/author/**").hasRole("AUTHOR")
                         .anyRequest().authenticated())
                 .securityContext(context -> context
                         .securityContextRepository(securityContextRepository()))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
                             System.out.println("Authentication failed: " + authException.getMessage());
-                            response.sendRedirect("/login");
+                            if (request.getRequestURI().startsWith("/api/")) {
+                                response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                            } else {
+                                response.sendRedirect("/login");
+                            }
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            // Redirect ADMIN away from customer pages → admin dashboard
-                            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                            if (auth != null && auth.getAuthorities().stream()
-                                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                                response.sendRedirect("/admin");
+                            if (request.getRequestURI().startsWith("/api/")) {
+                                response.sendError(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN, "Forbidden");
                             } else {
-                                response.sendRedirect("/home");
+                                // Redirect ADMIN away from customer pages → admin dashboard
+                                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                                if (auth != null && auth.getAuthorities().stream()
+                                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                                    response.sendRedirect("/admin");
+                                } else {
+                                    response.sendRedirect("/home");
+                                }
                             }
                         }))
                 .logout(logout -> logout
