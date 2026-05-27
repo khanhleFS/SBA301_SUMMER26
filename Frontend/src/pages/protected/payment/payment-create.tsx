@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Wallet, Coins, CheckCircle2, Landmark, Zap } from 'lucide-react'
+import { Coins, CheckCircle2, Landmark, Zap } from 'lucide-react'
 import Container from '@/components/shared/site/container'
 import { WalletCard } from '@/features/profile/components/wallet-card'
 

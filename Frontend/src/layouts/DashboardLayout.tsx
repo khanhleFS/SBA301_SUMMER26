@@ -1,7 +1,7 @@
 "use client"
 
 import type React from 'react'
-import { Outlet, Navigate } from 'react-router-dom'
+import { useLocation, Navigate, Outlet } from 'react-router-dom'
 import { AppSidebar } from '@/components/shared/dashboard/app-sidebar'
 import {
   Breadcrumb,
@@ -22,6 +22,22 @@ export default function DashboardLayout() {
   // TODO: Replace with real auth/admin logic
   const isAuthenticated = true
   const isAdmin = true
+  const location = useLocation()
+
+  const pageTitle = (() => {
+    switch (location.pathname) {
+      case '/admin/dashboard':
+        return 'Tổng quan'
+      case '/admin/finance':
+        return 'Quản lý tài chính'
+      case '/admin/leaderboard':
+        return 'Leader board'
+      case '/admin/dashboard-old':
+        return 'Dashboard cũ'
+      default:
+        return 'Content'
+    }
+  })()
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
@@ -46,10 +62,10 @@ export default function DashboardLayout() {
     >
       <AppSidebar />
       <SidebarInset className="flex h-screen min-h-0 flex-col overflow-hidden bg-transparent">
-        <div className="flex-1 min-h-0 p-4">
-          <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl">
-            <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-              <div className="flex flex-none items-center gap-2 border-b border-gray-100 px-6 py-4">
+        <div className="flex-1 min-h-0 py-4 pr-4">
+          <div className="flex h-full min-h-0 w-full max-w-none">
+            <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-md border border-gray-100 bg-surface-container-low shadow-sm">
+              <div className="flex flex-none items-center gap-2 border-b border-black/10 px-6 py-4">
                 <SidebarTrigger size="icon" className="shrink-0 rounded-full bg-primary text-[var(--on-primary)] hover:bg-primary/90 hover:text-[var(--on-primary)]" />
                 <Separator orientation="vertical" className="h-6" />
                 <Breadcrumb>
@@ -59,7 +75,7 @@ export default function DashboardLayout() {
                     </BreadcrumbItem>
                     <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
-                      <BreadcrumbPage>Content</BreadcrumbPage>
+                      <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
                     </BreadcrumbItem>
                   </BreadcrumbList>
                 </Breadcrumb>
