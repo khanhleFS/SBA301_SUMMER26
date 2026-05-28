@@ -2,14 +2,14 @@ package com.fpt.sba301_su26_groupproject.service;
 
 import com.fpt.sba301_su26_groupproject.dto.authen.LoginRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.authen.ProfileDTO;
-import com.fpt.sba301_su26_groupproject.dto.authen.ResgisterRequestDTO;
+import com.fpt.sba301_su26_groupproject.dto.authen.RegisterRequestDTO;
 
 import java.util.UUID;
 
 public interface AuthenService {
     void login(LoginRequestDTO request);
 
-    boolean register(ResgisterRequestDTO request);
+    boolean register(RegisterRequestDTO request);
 
     void forgotPassword(String email);
 

@@ -3,7 +3,7 @@ package com.fpt.sba301_su26_groupproject.service.impl;
 import com.fpt.sba301_su26_groupproject.common.exception.AuthenException;
 import com.fpt.sba301_su26_groupproject.dto.authen.LoginRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.authen.ProfileDTO;
-import com.fpt.sba301_su26_groupproject.dto.authen.ResgisterRequestDTO;
+import com.fpt.sba301_su26_groupproject.dto.authen.RegisterRequestDTO;
 import com.fpt.sba301_su26_groupproject.entity.Enumeration.UserRole;
 import com.fpt.sba301_su26_groupproject.entity.OTP;
 import com.fpt.sba301_su26_groupproject.entity.User;
@@ -44,7 +44,7 @@ public class AuthenServiceImpl implements AuthenService {
 
     @Override
     @Transactional
-    public boolean register(ResgisterRequestDTO request) {
+    public boolean register(RegisterRequestDTO request) {
         if(userRepository.findByEmail(request.email()).isPresent()) {
             throw new AuthenException("Email đã tồn tại");
         }

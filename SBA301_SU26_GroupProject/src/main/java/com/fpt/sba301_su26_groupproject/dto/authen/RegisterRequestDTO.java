@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record ResgisterRequestDTO (
+public record RegisterRequestDTO(
         @NotBlank(message = "Họ tên không được để trống.")
         @Size(min = 2, max = 50, message = "Họ tên phải từ 2 đến 50 ký tự.")
         @Pattern(regexp = "^\\S.*\\S$|^\\S$", message = "Họ tên không được có khoảng trắng ở đầu hoặc cuối.")

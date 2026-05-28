@@ -3,6 +3,7 @@ package com.fpt.sba301_su26_groupproject.service.impl;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelResponseDTO;
 import com.fpt.sba301_su26_groupproject.entity.*;
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.NovelStatus;
 import com.fpt.sba301_su26_groupproject.repository.CategoryRepository;
 import com.fpt.sba301_su26_groupproject.repository.NovelCategoryRepository;
 import com.fpt.sba301_su26_groupproject.repository.NovelRepository;
@@ -33,11 +34,14 @@ public class NovelServiceImpl implements NovelService {
                 .orElseThrow(() -> new RuntimeException("Author not found"));
 
         Novel novel = new Novel();
-        novel.setTitle(requestDTO.getTitle());
-        novel.setSlug(generateSlug(requestDTO.getTitle()));
-        novel.setDescription(requestDTO.getDescription());
-        novel.setCoverImageUrl(requestDTO.getCoverImageUrl());
-        novel.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : "ongoing");
+        novel.setTitle(requestDTO.title()); // Thay đổi: .getTitle() -> .title()
+        novel.setSlug(generateSlug(requestDTO.title())); // Thay đổi: .getTitle() -> .title()
+        novel.setDescription(requestDTO.description()); // Thay đổi: .getDescription() -> .description()
+        novel.setCoverImageUrl(requestDTO.coverImageUrl()); // Thay đổi: .getCoverImageUrl() -> .coverImageUrl()
+
+        // Thay đổi: status bây giờ là Enum NovelStatus, cần lưu dạng string lowercase xuống DB
+        novel.setStatus(requestDTO.status() );
+
         novel.setViewCount(0);
         novel.setCreatedAt(Instant.now());
         novel.setUpdatedAt(Instant.now());
@@ -46,9 +50,10 @@ public class NovelServiceImpl implements NovelService {
         Novel savedNovel = novelRepository.save(novel);
 
         // Assign Categories
-        if (requestDTO.getCategoryIds() != null && !requestDTO.getCategoryIds().isEmpty()) {
-            assignCategoriesToNovel(savedNovel, requestDTO.getCategoryIds());
+        if (requestDTO.categoryIds() != null && !requestDTO.categoryIds().isEmpty()) {
+            assignCategoriesToNovel(savedNovel, requestDTO.categoryIds()); // Thay đổi: .getCategoryIds() -> .categoryIds()
         }
+
 
         return mapToResponseDTO(savedNovel);
     }
@@ -63,19 +68,19 @@ public class NovelServiceImpl implements NovelService {
             throw new RuntimeException("You do not have permission to update this novel");
         }
 
-        novel.setTitle(requestDTO.getTitle());
-        novel.setSlug(generateSlug(requestDTO.getTitle())); 
-        novel.setDescription(requestDTO.getDescription());
-        novel.setCoverImageUrl(requestDTO.getCoverImageUrl());
-        novel.setStatus(requestDTO.getStatus());
+        novel.setTitle(requestDTO.title());
+        novel.setSlug(generateSlug(requestDTO.title()));
+        novel.setDescription(requestDTO.description());
+        novel.setCoverImageUrl(requestDTO.coverImageUrl());
+        novel.setStatus(requestDTO.status() );
         novel.setUpdatedAt(Instant.now());
 
         Novel updatedNovel = novelRepository.save(novel);
 
         // Re-assign Categories
-        if (requestDTO.getCategoryIds() != null) {
+        if (requestDTO.categoryIds() != null) {
             novelCategoryRepository.deleteByNovelId(updatedNovel.getId());
-            assignCategoriesToNovel(updatedNovel, requestDTO.getCategoryIds());
+            assignCategoriesToNovel(updatedNovel, requestDTO.categoryIds());
         }
 
         return mapToResponseDTO(updatedNovel);
@@ -130,29 +135,32 @@ public class NovelServiceImpl implements NovelService {
     }
 
     private NovelResponseDTO mapToResponseDTO(Novel novel) {
-        NovelResponseDTO dto = new NovelResponseDTO();
-        dto.setId(novel.getId());
-        dto.setTitle(novel.getTitle());
-        dto.setSlug(novel.getSlug());
-        dto.setDescription(novel.getDescription());
-        dto.setCoverImageUrl(novel.getCoverImageUrl());
-        dto.setStatus(novel.getStatus());
-        dto.setViewCount(novel.getViewCount());
-        dto.setCreatedAt(novel.getCreatedAt());
-        dto.setUpdatedAt(novel.getUpdatedAt());
-        if (novel.getAuthor() != null) {
-            dto.setAuthorId(novel.getAuthor().getId());
-            dto.setAuthorName(novel.getAuthor().getUsername());
-        }
-        
+        // 1. Lấy danh sách tên thể loại
         List<NovelCategory> novelCategories = novelCategoryRepository.findByNovelId(novel.getId());
+        List<String> categoryNames = List.of();
         if (novelCategories != null && !novelCategories.isEmpty()) {
-            dto.setCategories(novelCategories.stream()
+            categoryNames = novelCategories.stream()
                     .map(nc -> nc.getCategory().getName())
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toList());
         }
-        return dto;
+
+        // 3. Khởi tạo đối tượng Record thông qua Builder cực kỳ sạch sẽ
+        return NovelResponseDTO.builder()
+                .id(novel.getId())
+                .title(novel.getTitle())
+                .slug(novel.getSlug())
+                .description(novel.getDescription())
+                .coverImageUrl(novel.getCoverImageUrl())
+                .status(novel.getStatus())
+                .viewCount(novel.getViewCount())
+                .createdAt(novel.getCreatedAt())
+                .updatedAt(novel.getUpdatedAt())
+                .authorId(novel.getAuthor() != null ? novel.getAuthor().getId() : null)
+                .authorName(novel.getAuthor() != null ? novel.getAuthor().getUsername() : null)
+                .categories(categoryNames)
+                .build();
     }
+
 
     private String generateSlug(String title) {
         if (title == null) return "";
