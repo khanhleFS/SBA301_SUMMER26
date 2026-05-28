@@ -1,5 +1,6 @@
 package com.fpt.sba301_su26_groupproject.entity;
 
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.ChapterStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -49,9 +50,9 @@ public class Chapter {
     private String content;
 
     @NotNull
-    @ColumnDefault("1")
-    @Column(name = "is_free", nullable = false)
-    private Boolean isFree = false;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private ChapterStatus status = ChapterStatus.FREE;
 
     @Column(name = "coin_price")
     private Integer coinPrice;

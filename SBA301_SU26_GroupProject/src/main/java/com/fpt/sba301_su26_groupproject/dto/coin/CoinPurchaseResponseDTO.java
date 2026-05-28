@@ -5,18 +5,15 @@ import lombok.Data;
 
 import java.util.UUID;
 
-@Data
+
 @Builder
-public class CoinPurchaseResponseDTO {
-
-    private UUID    paymentId;
-    private String  paymentUrl;       // Link redirect sang VNPay/MoMo
-
-    private String  packageName;
-    private Integer priceVnd;
-    private Integer baseCoins;
-    private Integer firstTimeBonus;   // 0 nếu không phải lần đầu
-    private Integer totalCoins;       // Tổng thực nhận = baseCoins + firstTimeBonus
-
-    private boolean isFirstTimeTopUp; // Frontend dùng để hiển thị thông báo chúc mừng
-}
+public record CoinPurchaseResponseDTO(
+        UUID paymentId,
+        String paymentUrl,         // Link redirect sang cổng thanh toán VNPay/MoMo
+        String packageName,
+        Integer priceVnd,
+        Integer baseCoins,
+        Integer firstTimeBonus,
+        Integer totalCoins,        // Tổng coin thực nhận
+        boolean isFirstTimeTopUp   // Sử dụng dạng boolean nguyên thủy (primitive) cho record
+) {}
