@@ -5,6 +5,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Link } from 'react-router-dom'
 
 export function NavMain({
   items,
@@ -17,7 +18,7 @@ export function NavMain({
   }[]
 }) {
   return (
-    <SidebarGroup className="px-8 py-6 group-data-[collapsible=icon]:px-4 group-data-[collapsible=icon]:py-4">
+    <SidebarGroup className="px-4 py-6 group-data-[collapsible=icon]:px-1.5 group-data-[collapsible=icon]:py-3">
       <SidebarGroupLabel>Admin</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
@@ -28,10 +29,10 @@ export function NavMain({
               tooltip={item.title}
               className="hover:bg-primary-container hover:text-[var(--on-primary)] focus-visible:bg-primary-container focus-visible:text-[var(--on-primary)] data-[active=true]:bg-primary-container data-[active=true]:text-[var(--on-primary-container)]"
             >
-              <a href={item.url}>
+              <Link to={item.url}>
                 {item.icon}
                 <span>{item.title}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
