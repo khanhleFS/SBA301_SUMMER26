@@ -28,7 +28,7 @@ export function TeamSwitcher({
         <SidebarMenuButton
           asChild
           size="lg"
-          className="rounded-lg bg-primary-container text-[var(--on-primary-container)]"
+          className="h-auto rounded-md bg-primary-container py-4 text-[var(--on-primary-container)]"
         >
           <Link to="/admin/dashboard">
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[var(--on-primary)] text-[var(--primary)]">

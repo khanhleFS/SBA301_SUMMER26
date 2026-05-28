@@ -1,25 +1,21 @@
-import React from 'react';
 import { Eye, Users, BookOpen, TrendingUp, TrendingDown, Zap, Heart, Search, Rocket, Trophy, Crown, BarChart3 } from 'lucide-react';
 
 const kpiCards = [
 	{
 		label: 'Total Views',
 		value: '1,284,042',
-		delta: '12.5% from last month',
 		trend: 'up',
 		icon: Eye,
 	},
 	{
 		label: 'Active Readers',
 		value: '84,921',
-		delta: '4.2% from last week',
 		trend: 'up',
 		icon: Users,
 	},
 	{
 		label: 'New Chapters',
 		value: '3,402',
-		delta: '248 published today',
 		trend: 'up',
 		icon: BookOpen,
 	},
@@ -107,220 +103,167 @@ const authorList = [
 	{ rank: 6, name: 'Marcus Pen', sub: '15 published novels', stat: '695k views', avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA2Rfh0cQ5tZ1-fErnNfmeQZ5vlC3tiOnpdqzxUXB4GuO4BEvVqQQfF-bNxc87_RMRRrNjwVO7tntddCCErHAeXHSotZEvxMEYUfA81KTjLGDnqdz7KRE9JG0weiAMI4K54-uvuahd0rDNJ3lmnBHjxClqbvfgtQzXumul8xMUMMJzH0OMoAmmBh2p4MltG-Gfa_QQ1BDs3DXjA_2s-wblGPo4g6LaSJZdiAPox9qAWi1QQrBgTvcHXtIYGIfG4arrY5kHCw73I5g' },
 ]
 
-function TrendIcon({ trend }) {
-	if (trend === 'up') return <TrendingUp className="w-4 h-4 text-green-600" />
-	if (trend === 'down') return <TrendingDown className="w-4 h-4 text-red-600" />
-	return <div className="w-4 h-4 text-gray-400" />
-}
+// Trend icon removed — using simple symbols inline where needed.
+
 
 export default function AdminDashboard() {
-	const onlineUsers = [
-		{ name: 'Maren Maureen', id: '1094882001', avatar: 'https://i.pravatar.cc/40?img=10' },
-		{ name: 'Jenniffer Jane', id: '1094672000', avatar: 'https://i.pravatar.cc/40?img=20' },
-		{ name: 'Ryan Herwinds', id: '1094342003', avatar: 'https://i.pravatar.cc/40?img=30' },
-		{ name: 'Kierra Culhane', id: '1094662002', avatar: 'https://i.pravatar.cc/40?img=40' },
-	]
 
 	return (
 		<div className="w-full">
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-				<div className="lg:col-span-2 space-y-8">
-					<section className="grid grid-cols-1 md:grid-cols-3 gap-5">
-				{kpiCards.map(({ label, value, delta, trend, icon: Icon }) => (
-					<div key={label} className="rounded-lg overflow-hidden border border-gray-200 hover:border-gray-300 transition-colors">
-						<div className="bg-white p-6">
-							<div className="flex justify-between items-start mb-3">
-								<span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">{label}</span>
-								<Icon className="w-5 h-5 text-primary" />
-							</div>
-							<div className="text-3xl font-bold text-gray-900 mb-3">{value}</div>
-							<div className="flex items-center gap-2 text-sm">
-								<TrendIcon trend={trend} />
-								<span className="text-gray-600">{delta}</span>
-							</div>
-						</div>
-						{/* Footer strip in primary color */}
-						<div className="px-4 py-3 bg-primary text-[var(--on-primary)]">
-							<div className="flex items-center justify-between text-sm">
-								<span className="font-medium">Summary</span>
-								<span className="opacity-90">{delta}</span>
-							</div>
-						</div>
-					</div>
-				))}
-				    </section>
-
-				    <section className="space-y-5 pb-8 border-b border-gray-200">
-				<div className="flex justify-between items-center">
-					<h2 className="text-2xl font-bold text-gray-900">Top Stories</h2>
-					<button className="text-blue-600 text-sm font-medium hover:text-blue-700">View All Content</button>
-				</div>
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-					<div className="flex items-end justify-start gap-3 min-h-96">
-						{podiumStories.map(({ rank, title, reads, cover }) => (
-							<div key={rank} className={`flex flex-col items-center flex-1 ${rank === 1 ? '-translate-y-4' : ''}`}>
-								<div className={`rounded-lg overflow-hidden mb-3 ${
-									rank === 1 ? 'w-28 h-40 shadow-lg border-2 border-blue-300' :
-									rank === 2 ? 'w-20 h-32 shadow border-2 border-gray-300' :
-									'w-20 h-28 shadow-sm border border-gray-300'
-								}`}>
-									<img className="w-full h-full object-cover" src={cover} alt={title} />
+			<div className="lg:col-span-2 space-y-8">
+				<section className="grid grid-cols-1 md:grid-cols-3 gap-5">
+					{kpiCards.map(({ label, value, icon: Icon }) => (
+						<div key={label} className="rounded-lg overflow-hidden border border-gray-200 hover:border-gray-300 transition-colors">
+							<div className="bg-white p-6">
+								<div className="flex justify-between items-start mb-3">
+									<span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">{label}</span>
+									<Icon className="w-5 h-5 text-primary" />
 								</div>
-								<div className={`w-full text-center rounded-t-lg p-3 ${
-									rank === 1 ? 'bg-blue-50 border-t-2 border-blue-300' :
-									rank === 2 ? 'bg-gray-50 border-t border-gray-300' :
-									'bg-gray-50 border-t border-gray-200'
-								}`}>
-									<div className={`font-bold text-blue-600 ${rank === 1 ? 'text-2xl mb-1' : 'text-lg'}`}>
-										#{rank}
-									</div>
-									<p className={`truncate text-gray-900 ${rank === 1 ? 'text-sm font-semibold' : 'text-xs font-medium'}`}>
-										{title}
-									</p>
-									<p className={`text-gray-600 ${rank === 1 ? 'text-xs font-semibold text-blue-600' : 'text-xs'}`}>
-										{reads}
-									</p>
-								</div>
+								<div className="text-3xl font-bold text-gray-900 mb-3">{value}</div>
 							</div>
-						))}
-					</div>
-					<div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-						{runnerStories.map(({ rank, title, reads, trend, cover }) => (
-							<div key={rank} className="p-4 flex items-center gap-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
-								<span className="text-xs font-semibold text-gray-600 w-6">{rank}</span>
-								<div className="w-10 h-14 rounded-md overflow-hidden flex-shrink-0">
-									<img className="w-full h-full object-cover" src={cover} alt={title} />
-								</div>
-								<div className="flex-grow min-w-0">
-									<p className="text-sm font-medium text-gray-900 truncate">{title}</p>
-									<p className="text-xs text-gray-600">{reads}</p>
-								</div>
-								<TrendIcon trend={trend} />
-							</div>
-						))}
-					</div>
-				</div>
-				    </section>
-
-				    <section className="space-y-5 pb-8 border-b border-gray-200">
-				<div className="flex justify-between items-center">
-					<h2 className="text-2xl font-bold text-gray-900">Genre Trends</h2>
-					<div className="flex gap-2">
-						<button className="px-3 py-1.5 text-sm font-medium text-gray-900 bg-gray-100 rounded-full hover:bg-gray-200">
-							Monthly
-						</button>
-						<button className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900">
-							Weekly
-						</button>
-					</div>
-				</div>
-				<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-					{genreTrends.map(({ label, pct, icon: Icon, color, bg }) => (
-						<div key={label} className="bg-white rounded-lg p-4 text-center border border-gray-200 hover:border-gray-300 transition-colors">
-							<div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center mb-2 mx-auto`}>
-								<Icon className={`w-5 h-5 ${color}`} />
-							</div>
-							<p className="text-sm font-medium text-gray-900">{label}</p>
-							<p className="text-xs font-semibold text-blue-600">{pct}</p>
+							{/* Footer strip in primary color */}
 						</div>
 					))}
-				</div>
-				    </section>
+				</section>
 
-				    <section className="space-y-5 pb-8">
-				<div className="flex justify-between items-center">
-					<h2 className="text-2xl font-bold text-gray-900">Top Authors</h2>
-					<button className="text-blue-600 text-sm font-medium hover:text-blue-700">View All Authors</button>
-				</div>
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-					<div className="flex items-end justify-start gap-4 min-h-96">
-						{authorPodium.map(({ rank, name, stat, avatar, badge }) => (
-							<div key={rank} className={`flex flex-col items-center flex-1 ${rank === 1 ? '-translate-y-4' : ''}`}>
-								{badge && (
-									<div className="mb-2">
-										<Crown className="w-6 h-6 text-amber-500" />
+				<section className="space-y-5 pb-8 border-b border-gray-200">
+					<div className="flex justify-between items-center">
+						<h2 className="text-2xl font-bold text-gray-900">Top Stories</h2>
+						<button className="text-blue-600 text-sm font-medium hover:text-blue-700">View All Content</button>
+					</div>
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+						<div className="flex items-end justify-start gap-3 min-h-96">
+							{podiumStories.map(({ rank, title, reads, cover }) => (
+								<div key={rank} className="flex flex-col items-center flex-1">
+									{/* Phần Ảnh */}
+									<div className={`rounded-lg overflow-hidden mb-3 ${rank === 1 ? 'w-28 h-44 shadow-lg border-2 border-blue-300' :
+											rank === 2 ? 'w-20 h-32 shadow border-2 border-gray-300' :
+												'w-20 h-28 shadow-sm border border-gray-300'
+										}`}>
+										<img className="w-full h-full object-cover" src={cover} alt={title} />
 									</div>
-								)}
-								<div className={`rounded-full overflow-hidden mb-3 ${
-									rank === 1 ? 'w-24 h-24 shadow-lg border-2 border-blue-300' :
-									rank === 2 ? 'w-20 h-20 shadow border-2 border-gray-300' :
-									'w-16 h-16 shadow-sm border border-gray-300'
-								}`}>
-									<img className="w-full h-full object-cover" src={avatar} alt={name} />
+
+									{/* Phần bục chữ - Thay đổi độ cao ở đây */}
+									<div className={`w-full rounded-t-lg border-t border-gray-200 bg-gray-50 p-3 text-center flex flex-col justify-center ${rank === 1
+											? 'h-48' // Top 1 bục chữ siêu cao
+											: rank === 2
+												? 'h-36' // Top 2 bục chữ cao vừa
+												: 'h-28' // Top 3 bục chữ thấp nhất
+										}`}>
+										<div className="mb-1 text-lg font-bold text-gray-900">
+											#{rank}
+										</div>
+										<p className="truncate text-xs font-medium text-gray-900">
+											{title}
+										</p>
+										<p className="text-xs text-gray-600">
+											{reads}
+										</p>
+									</div>
 								</div>
-								<div className={`w-full text-center rounded-t-lg p-3 ${
-									rank === 1 ? 'bg-blue-50 border-t-2 border-blue-300' :
-									rank === 2 ? 'bg-gray-50 border-t border-gray-300' :
-									'bg-gray-50 border-t border-gray-200'
-								}`}>
-									<div className={`font-bold text-blue-600 ${rank === 1 ? 'text-2xl mb-1' : 'text-lg'}`}>
-										#{rank}
+							))}
+						</div>
+						<div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+							{runnerStories.map(({ rank, title, reads, cover }) => (
+								<div key={rank} className="p-4 flex items-center gap-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
+									<span className="text-xs font-semibold text-gray-600 w-6">{rank}</span>
+									<div className="w-10 h-14 rounded-md overflow-hidden flex-shrink-0">
+										<img className="w-full h-full object-cover" src={cover} alt={title} />
 									</div>
-									<p className={`truncate text-gray-900 ${rank === 1 ? 'text-sm font-semibold' : 'text-xs font-medium'}`}>
-										{name}
-									</p>
-									<p className={`text-gray-600 ${rank === 1 ? 'text-xs font-semibold text-blue-600' : 'text-xs'}`}>
-										{stat}
-									</p>
-									{rank === 1 && (
-										<div className="mt-2 text-xs font-bold text-blue-600">DIAMOND STATUS</div>
+									<div className="flex-grow min-w-0">
+										<p className="text-sm font-medium text-gray-900 truncate">{title}</p>
+										<p className="text-xs text-gray-600">{reads}</p>
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
+				</section>
+
+				<section className="space-y-5 pb-8 border-b border-gray-200">
+					<div className="flex justify-between items-center">
+						<h2 className="text-2xl font-bold text-gray-900">Genre Trends</h2>
+						<div className="flex gap-2">
+							<button className="px-3 py-1.5 text-sm font-medium text-gray-900 bg-gray-100 rounded-full hover:bg-gray-200">
+								Monthly
+							</button>
+							<button className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900">
+								Weekly
+							</button>
+						</div>
+					</div>
+					<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+						{genreTrends.map(({ label, pct, icon: Icon, color, bg }) => (
+							<div key={label} className="bg-white rounded-lg p-4 text-center border border-gray-200 hover:border-gray-300 transition-colors">
+								<div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center mb-2 mx-auto`}>
+									<Icon className={`w-5 h-5 ${color}`} />
+								</div>
+								<p className="text-sm font-medium text-gray-900">{label}</p>
+								<p className="text-xs font-semibold text-blue-600">{pct}</p>
+							</div>
+						))}
+					</div>
+				</section>
+
+				<section className="space-y-5 pb-8">
+					<div className="flex justify-between items-center">
+						<h2 className="text-2xl font-bold text-gray-900">Top Authors</h2>
+						<button className="text-blue-600 text-sm font-medium hover:text-blue-700">View All Authors</button>
+					</div>
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+						<div className="flex items-end justify-start gap-4 min-h-96">
+							{authorPodium.map(({ rank, name, stat, avatar, badge }) => (
+								<div key={rank} className={`flex flex-col items-center flex-1 ${rank === 1 ? '-translate-y-4' : ''}`}>
+									{badge && (
+										<div className="mb-2">
+											<Crown className="w-6 h-6 text-amber-500" />
+										</div>
 									)}
-								</div>
-							</div>
-						))}
-					</div>
-					<div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-						{authorList.map(({ rank, name, sub, stat, avatar }) => (
-							<div key={rank} className="p-4 flex items-center gap-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
-								<span className="text-xs font-semibold text-gray-600 w-6">{rank}</span>
-								<div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-									<img className="w-full h-full object-cover" src={avatar} alt={name} />
-								</div>
-								<div className="flex-grow min-w-0">
-									<p className="text-sm font-medium text-gray-900">{name}</p>
-									<p className="text-xs text-gray-600">{sub}</p>
-								</div>
-								<p className="text-xs font-medium text-gray-600">{stat}</p>
-							</div>
-						))}
-					</div>
-				</div>
-					</section>
-				</div>
-
-				{/* Right sidebar */}
-				<aside className="hidden lg:block">
-					<div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-6">
-						<h3 className="text-lg font-semibold text-gray-900 mb-3">Nov 2020</h3>
-						<div className="grid grid-cols-7 gap-1 text-xs text-gray-600">
-							{Array.from({ length: 30 }).map((_, i) => (
-								<div key={i} className={`py-2 rounded ${[8,9,13].includes(i+1) ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-gray-50'}`}>
-									<div className="text-center">{i+1}</div>
-								</div>
-							))}
-						</div>
-					</div>
-
-					<div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-						<div className="flex items-center justify-between mb-3">
-							<h3 className="text-lg font-semibold text-gray-900">Online Users</h3>
-							<button className="text-sm text-blue-600">See all</button>
-						</div>
-						<ul className="space-y-3">
-							{onlineUsers.map(u => (
-								<li key={u.id} className="flex items-center gap-3">
-									<img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover" />
-									<div className="flex-1 min-w-0">
-										<div className="text-sm font-medium text-gray-900 truncate">{u.name}</div>
-										<div className="text-xs text-gray-500">{u.id}</div>
+									<div className={`rounded-full overflow-hidden mb-3 ${rank === 1 ? 'w-24 h-24 shadow-lg border-2 border-blue-300' :
+										rank === 2 ? 'w-20 h-20 shadow border-2 border-gray-300' :
+											'w-16 h-16 shadow-sm border border-gray-300'
+										}`}>
+										<img className="w-full h-full object-cover" src={avatar} alt={name} />
 									</div>
-									<div className="w-2 h-2 rounded-full bg-blue-500" />
-								</li>
+									<div className={`w-full text-center rounded-t-lg p-3 ${rank === 1 ? 'bg-blue-50 border-t-2 border-blue-300' :
+										rank === 2 ? 'bg-gray-50 border-t border-gray-300' :
+											'bg-gray-50 border-t border-gray-200'
+										}`}>
+										<div className={`font-bold text-blue-600 ${rank === 1 ? 'text-2xl mb-1' : 'text-lg'}`}>
+											#{rank}
+										</div>
+										<p className={`truncate text-gray-900 ${rank === 1 ? 'text-sm font-semibold' : 'text-xs font-medium'}`}>
+											{name}
+										</p>
+										<p className={`text-gray-600 ${rank === 1 ? 'text-xs font-semibold text-blue-600' : 'text-xs'}`}>
+											{stat}
+										</p>
+										{rank === 1 && (
+											<div className="mt-2 text-xs font-bold text-blue-600">DIAMOND STATUS</div>
+										)}
+									</div>
+								</div>
 							))}
-						</ul>
+						</div>
+						<div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+							{authorList.map(({ rank, name, sub, stat, avatar }) => (
+								<div key={rank} className="p-4 flex items-center gap-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
+									<span className="text-xs font-semibold text-gray-600 w-6">{rank}</span>
+									<div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+										<img className="w-full h-full object-cover" src={avatar} alt={name} />
+									</div>
+									<div className="flex-grow min-w-0">
+										<p className="text-sm font-medium text-gray-900">{name}</p>
+										<p className="text-xs text-gray-600">{sub}</p>
+									</div>
+									<p className="text-xs font-medium text-gray-600">{stat}</p>
+								</div>
+							))}
+						</div>
 					</div>
-				</aside>
+				</section>
 			</div>
+
 		</div>
 	)
 }
