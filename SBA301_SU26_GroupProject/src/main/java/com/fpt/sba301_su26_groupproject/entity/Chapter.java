@@ -67,4 +67,8 @@ public class Chapter {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @NotNull
+    @ColumnDefault("getdate()")
+    @Column(name = "updated_at", nullable = false)
+    private Instant updateAt;
 }
