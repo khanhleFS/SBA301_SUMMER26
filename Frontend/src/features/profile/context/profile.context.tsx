@@ -1,10 +1,9 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
   type ReactNode
 } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import type { ProfileData } from '../types/profile.types'
 import { fetchProfileData } from '../services/profile.service'
 
@@ -18,38 +17,16 @@ interface ProfileContextValue {
 const ProfileContext = createContext<ProfileContextValue | null>(null)
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<ProfileData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [refreshKey, setRefreshKey] = useState(0)
+  const query = useQuery({
+    queryKey: ['profile'],
+    queryFn: fetchProfileData,
+  })
 
-  useEffect(() => {
-    let cancelled = false
-
-    setIsLoading(true)
-    setError(null)
-
-    fetchProfileData()
-      .then((result) => {
-        if (!cancelled) {
-          setData(result)
-          setIsLoading(false)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError('Không thể tải dữ liệu hồ sơ. Vui lòng thử lại.')
-          setIsLoading(false)
-        }
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [refreshKey])
-
-  function refresh() {
-    setRefreshKey((k) => k + 1)
+  const data = query.data ?? null
+  const isLoading = query.isPending
+  const error = query.error instanceof Error ? query.error.message : null
+  const refresh = () => {
+    void query.refetch()
   }
 
   return (

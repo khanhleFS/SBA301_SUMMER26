@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import RootLayout from '@/layouts/RootLayout'
 import { RouteErrorPage } from '@/lib/error-handler'
 import { adminRoutes } from './adminRoutes'
+import { authorRoutes } from './authorRoutes'
 import { guestRoutes } from './guestRoutes'
 import { protectedRoutes } from './protectedRoutes'
 
@@ -13,7 +14,8 @@ const router = createBrowserRouter([
 		children: [
 			...guestRoutes,
 			...protectedRoutes,
-			...adminRoutes
+			...adminRoutes,
+			...authorRoutes
 		],
 	},
 ])

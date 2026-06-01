@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom'
 
 // Import Context & Skeletons
 import { StoryDetailProvider, useStoryDetailContext } from './context/story-detail-context'
-import { StoryDetailBannerSkeleton, StoryChaptersSkeleton } from './components/story-detail-skeleton'
+import { StoryDetailPageSkeleton } from './components/story-detail-skeleton'
 
 function StoryDetailContent() {
   const {
@@ -37,35 +37,7 @@ function StoryDetailContent() {
   }
 
   if (isLoading || !storyInfo) {
-    return (
-      <div className="relative select-none pb-12 w-full text-foreground bg-transparent">
-        <Container className="pt-6 md:pt-12 space-y-8 md:space-y-12 animate-pulse">
-          <StoryDetailBannerSkeleton />
-          
-          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              {/* Synopsis Skeleton */}
-              <div className="space-y-4">
-                <div className="h-6 w-32 bg-surface-container-highest rounded" />
-                <div className="h-4 w-full bg-surface-container-highest rounded" />
-                <div className="h-4 w-full bg-surface-container-highest rounded" />
-                <div className="h-4 w-3/4 bg-surface-container-highest rounded" />
-              </div>
-              <StoryChaptersSkeleton />
-            </div>
-            
-            <aside className="space-y-8">
-              {/* Recommendations Skeleton */}
-              <div className="space-y-4">
-                <div className="h-6 w-32 bg-surface-container-highest rounded" />
-                <div className="h-24 w-full bg-surface-container-highest rounded-xl" />
-                <div className="h-24 w-full bg-surface-container-highest rounded-xl" />
-              </div>
-            </aside>
-          </div>
-        </Container>
-      </div>
-    )
+    return <StoryDetailPageSkeleton />
   }
 
   return (

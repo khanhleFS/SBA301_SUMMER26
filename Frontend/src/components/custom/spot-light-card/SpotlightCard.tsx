@@ -14,10 +14,20 @@ const SpotlightCard = ({
   ...props
 }: SpotlightCardProps) => {
   const divRef = useRef<HTMLDivElement>(null);
+  const rectRef = useRef<DOMRect | null>(null);
+
+  const handleMouseEnter = () => {
+    if (divRef.current) {
+      rectRef.current = divRef.current.getBoundingClientRect();
+    }
+  };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!divRef.current) return;
-    const rect = divRef.current.getBoundingClientRect();
+    if (!rectRef.current) {
+      rectRef.current = divRef.current.getBoundingClientRect();
+    }
+    const rect = rectRef.current;
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
@@ -26,10 +36,16 @@ const SpotlightCard = ({
     divRef.current.style.setProperty('--spotlight-color', spotlightColor);
   };
 
+  const handleMouseLeave = () => {
+    rectRef.current = null;
+  };
+
   return (
     <div 
       ref={divRef} 
+      onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove} 
+      onMouseLeave={handleMouseLeave}
       className={`card-spotlight ${className}`}
       {...props}
     >

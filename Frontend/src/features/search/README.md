@@ -7,12 +7,16 @@ Cung cấp cho người dùng khả năng duyệt kho truyện đồ sộ với 
 ## 🧩 Các Components cấu thành
 Tính năng Search có kiến trúc Modular rất sạch sẽ và hiện đại:
 
-1. **`search-feature.tsx`**: Component Controller, nơi dựng Layout bao quát toàn trang.
-2. **`components/particle-backdrop.tsx`**: Khối giao diện tạo hiệu ứng nền hạt lấp lánh (Particles) đem lại vẻ đẹp Premium cho trang tìm kiếm.
-3. **`components/search-sidebar.tsx`**: Thanh công cụ (Sidebar) chứa các Input Lọc (Bộ lọc thể loại, trạng thái truyện, tag...).
-4. **`components/search-card.tsx`**: Component hiển thị thông tin chi tiết một bộ truyện trong khung Grid/List (Thumbnail, Tên, Lượt view, Nút Bookmark).
-5. **`components/search-pagination.tsx`**: Thanh phân trang (Pagination) ở dưới cùng.
-6. **`components/search-skeleton.tsx`**: Khung Skeleton loading mượt mà hiển thị trong lúc chờ dữ liệu API để tránh Layout Shift.
+1. **`search-feature.tsx`**: Component Controller, bọc `SearchProvider` và dựng Layout bao quát toàn trang một cách cực kỳ khai báo (declarative) và gọn gàng.
+2. **`components/search-header-section.tsx`**: Khối giao diện trên cùng hiển thị tiêu đề, số lượng truyện tìm thấy, thanh input di động và dải quick-filter categories capsule trượt ngang.
+3. **`components/search-results-section.tsx`**: Quản lý logic phân tách truyện thành "Đang đọc & Đã mua" vs "Khám phá thêm", render danh sách card hoặc giao diện trống khi không có kết quả.
+4. **`components/search-mobile-filters.tsx`**: Bảng điều khiển bộ lọc dạng ngăn kéo trượt lên (Bottom Sheet Drawer) dành riêng cho thiết bị di động.
+5. **`components/particle-backdrop.tsx`**: Khối giao diện tạo hiệu ứng nền hạt lấp lánh (Particles) đem lại vẻ đẹp Premium cho trang tìm kiếm.
+6. **`components/search-sidebar.tsx`**: Thanh công cụ (Sidebar) chứa các Input Lọc nâng cao hiển thị trên Desktop.
+7. **`components/search-card.tsx`**: Component hiển thị thông tin chi tiết một bộ truyện trong khung Grid/List (Thumbnail, Tên, Lượt view, Nút Bookmark).
+8. **`components/search-pagination.tsx`**: Thanh phân trang (Pagination) ở dưới cùng.
+9. **`components/search-skeleton.tsx`**: Khung Skeleton loading mượt mà hiển thị trong lúc chờ dữ liệu API để tránh Layout Shift.
+
 
 ## ⚙️ Service, Context, Skeleton, Loader
 Feature này được xây dựng chuẩn mực theo mô hình Layer:
@@ -23,3 +27,23 @@ Feature này được xây dựng chuẩn mực theo mô hình Layer:
 
 ## 🪝 Custom Hooks
 - Nhờ việc sử dụng Context, trang này cung cấp hook **`useSearchContext()`** (nằm bên trong file context) giúp các component con như Pagination, Sidebar, hay Input lấy và cập nhật dữ liệu bộ lọc một cách đồng bộ.
+
+## 🔗 Mapping component -> service
+- `search-feature.tsx` -> dựng layout, đọc `useSearchContext()`.
+- `components/search-sidebar.tsx` -> dùng `filterGroups`, `categories`, `clearFilters`, `isFiltersLoading` từ context.
+- `components/search-card.tsx` -> nhận `Story` + `userReadState` từ context/feature.
+- `components/search-pagination.tsx` -> dùng `currentPage` / `setCurrentPage` từ context.
+- `context/search-context.tsx` -> gọi `storyService.getStories()` và `storyService.getSearchFilters()`.
+- `services/story-service.ts` -> lấy mock stories từ [src/services/mock-data.ts](../../services/mock-data.ts) và filters từ [src/services/mock-data.ts](../../services/mock-data.ts).
+
+## ✅ Trạng thái hiện tại
+- State bộ lọc là local UI state, còn stories/filter metadata là mock server-state.
+- Ảnh cover truyện mock đang dùng placeholder thống nhất.
+
+## 🧪 Mock data & placeholder images
+- Dữ liệu mock cho stories và filter scope được gom ở [src/services/mock-data.ts](../../services/mock-data.ts).
+- Ảnh truyện mock dùng placeholder dùng chung thay vì URL rải rác, để giao diện đồng nhất khi backend chưa sẵn sàng.
+
+## TODO
+- Thay `storyService.getStories()` và `storyService.getSearchFilters()` bằng API thật.
+- Khi backend hỗ trợ phân trang thật, chuyển `currentPage` sang query params hoặc server pagination.

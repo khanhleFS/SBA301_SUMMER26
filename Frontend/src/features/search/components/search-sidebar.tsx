@@ -13,6 +13,8 @@ export function SearchSidebar() {
     setSelectedChapters,
     selectedStatus,
     setSelectedStatus,
+    showUnlockedOnly,
+    setShowUnlockedOnly,
     clearFilters
   } = useSearchContext()
 
@@ -98,6 +100,22 @@ export function SearchSidebar() {
             )
           })
         )}
+
+        {/* Ownership Toggle */}
+        <div className="space-y-3 pt-4 border-t border-outline/10">
+          <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">
+            Sở hữu
+          </h3>
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={showUnlockedOnly}
+              onChange={(e) => setShowUnlockedOnly(e.target.checked)}
+              className="rounded border-outline/25 text-primary focus:ring-primary size-4"
+            />
+            <span className="text-xs font-semibold text-on-surface-variant">Chỉ hiện truyện đã mua VIP</span>
+          </label>
+        </div>
 
       </SpotlightCard>
     </aside>

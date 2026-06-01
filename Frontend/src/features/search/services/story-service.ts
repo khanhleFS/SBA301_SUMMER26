@@ -1,5 +1,5 @@
 import type { Story } from '../components/search-card'
-import { MOCK_STORIES } from '@/services/mock-db'
+import { MOCK_STORIES } from '@/services/mock-data'
 import { filterService, type FilterGroup, type FilterOption } from '@/services/filter-service'
 
 export type { FilterGroup, FilterOption }
@@ -87,4 +87,6 @@ export const storyService = {
     return filterService.getFiltersByScope('search')
   }
 }
+
+// TODO: replace mock search service with real API query when backend endpoint is available.
 
