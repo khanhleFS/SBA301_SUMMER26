@@ -1,5 +1,6 @@
 package com.fpt.sba301_su26_groupproject.entity;
 
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.PaymentStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -39,7 +40,7 @@ public class Payment {
     @Nationalized
     @ColumnDefault("'pending'")
     @Column(name = "status", nullable = false, length = 10)
-    private String status;
+    private PaymentStatus status;
 
     @Size(max = 20)
     @NotNull

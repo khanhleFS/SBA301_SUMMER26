@@ -1,26 +1,24 @@
 package com.fpt.sba301_su26_groupproject.dto.novel;
 
-import lombok.Data;
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.NovelStatus;
+import lombok.Builder;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@Data
-public class NovelResponseDTO {
-    private UUID id;
-    private String title;
-    private String slug;
-    private String description;
-    private String coverImageUrl;
-    private String status;
-    private Integer viewCount;
-    private Instant createdAt;
-    private Instant updatedAt;
-
-    private UUID authorId;
-    private String authorName;
-
-    // We can also include Category names if needed
-    private List<String> categories;
-}
+@Builder
+public record NovelResponseDTO(
+        UUID id,
+        String title,
+        String slug,
+        String description,
+        String coverImageUrl,
+        NovelStatus status,
+        Integer viewCount,
+        Instant createdAt,
+        Instant updatedAt,
+        UUID authorId,
+        String authorName,
+        List<String> categories
+) {}
