@@ -1,4 +1,4 @@
-import { MOCK_STORIES } from '@/services/mock-db'
+import { MOCK_STORIES } from '@/services/mock-data'
 
 export interface ChapterSummary {
   id: number

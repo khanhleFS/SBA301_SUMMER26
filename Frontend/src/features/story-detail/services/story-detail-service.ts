@@ -20,6 +20,8 @@ export interface ChapterItem {
   title: string
   time: string
   views: string
+  isLocked?: boolean
+  price?: number
 }
 
 export const storyDetailService = {
@@ -55,7 +57,9 @@ export const storyDetailService = {
           slug: c.slug,
           title: `${c.chapterNum}: ${c.title}`,
           time: c.time,
-          views: c.views
+          views: c.views,
+          isLocked: c.id > 2,
+          price: c.id > 2 ? 50 : undefined
         }))
         
         resolve(mappedChapters)
@@ -63,4 +67,6 @@ export const storyDetailService = {
     })
   }
 }
+
+// TODO: replace mock service with real API query when backend endpoint is available.
 

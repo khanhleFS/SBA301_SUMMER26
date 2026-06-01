@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Eye } from 'lucide-react'
-import { MOCK_STORIES } from '@/services/mock-db'
+import { MOCK_STORIES } from '@/services/mock-data'
 import { useStoryDetailContext } from '../context/story-detail-context'
 
 const COVER_PLACEHOLDER = 'https://placehold.co/400x600/1a1a1a/ededed?text=Cover'

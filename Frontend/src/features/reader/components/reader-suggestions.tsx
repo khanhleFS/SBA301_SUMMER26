@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import Container from '@/components/shared/site/container'
-import { MOCK_STORIES } from '@/services/mock-db'
+import { MOCK_STORIES } from '@/services/mock-data'
 
 interface ReaderSuggestionsProps {
   currentTheme: {

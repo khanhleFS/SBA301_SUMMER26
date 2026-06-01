@@ -24,26 +24,30 @@ export default function DashboardLayout() {
   const isAdmin = true
   const location = useLocation()
 
+  const isAdminRoute = location.pathname.startsWith('/admin')
+
   const pageTitle = (() => {
-    switch (location.pathname) {
-      case '/admin/dashboard':
-        return 'Tổng quan'
-      case '/admin/finance':
-        return 'Quản lý tài chính'
-      case '/admin/leaderboard':
-        return 'Leader board'
-      case '/admin/dashboard-old':
-        return 'Dashboard cũ'
-      default:
-        return 'Content'
+    const path = location.pathname
+    if (path === '/admin/dashboard' || path === '/author/dashboard') {
+      return 'Tổng quan'
     }
+    if (path === '/admin/finance' || path === '/author/finance') {
+      return 'Quản lý tài chính'
+    }
+    if (path === '/admin/leaderboard' || path === '/author/leaderboard') {
+      return 'Leader board'
+    }
+    if (path === '/admin/dashboard-old') {
+      return 'Dashboard cũ'
+    }
+    return 'Content'
   })()
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
-  if (!isAdmin) {
+  if (isAdminRoute && !isAdmin) {
     return <Navigate to="/" replace />
   }
 
