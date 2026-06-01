@@ -5,26 +5,27 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 
-@Data
-public class CoinCreateRequestDTO {
-
-    @NotBlank(message = "Tên gói không được để trống")
-    @Size(max = 100, message = "Tên gói tối đa 100 ký tự")
-    private String name;
-
-    @NotNull(message = "Giá tiền không được để trống")
-    @Min(value = 1000, message = "Giá tiền tối thiểu 1,000 VNĐ")
-    private Integer priceVnd;
-
-    @NotNull(message = "Số coin không được để trống")
-    @Min(value = 1, message = "Số coin tối thiểu là 1")
-    private Integer baseCoins;
-
-    @NotNull(message = "Coin tặng lần đầu không được để trống")
-    @Min(value = 0, message = "Coin tặng lần đầu không được âm")
-    private Integer firstTimeBonus;
-
-    private Boolean isActive = true;
+public record CoinCreateRequestDTO(
+        @NotBlank(message = "Tên gói coin không được để trống.")
+        @Size(max = 100, message = "Tên gói tối đa 100 ký tự.")
+        String name,
+        @NotNull(message = "Giá tiền không được để trống.")
+        @Min(value = 1000, message = "Giá tiền tối thiểu là 1,000 VNĐ.")
+        Integer priceVnd,
+        @NotNull(message = "Số lượng coin gốc không được để trống.")
+        @Min(value = 1, message = "Số lượng coin tối thiểu là 1.")
+        Integer baseCoins,
+        @NotNull(message = "Coin tặng lần đầu không được để trống.")
+        @Min(value = 0, message = "Coin khuyến mãi lần đầu không được nhỏ hơn 0.")
+        Integer firstTimeBonus,
+        @NotNull(message = "Vui lòng chỉ định trạng thái kích hoạt của gói.")
+        Boolean isActive
+) {
+    // Constructor phụ giúp tự động gán isActive = true nếu client không gửi lên
+    public CoinCreateRequestDTO {
+        if (isActive == null) {
+            isActive = true;
+        }
+    }
 }

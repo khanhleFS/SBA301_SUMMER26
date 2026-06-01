@@ -1,7 +1,7 @@
 package com.fpt.sba301_su26_groupproject.controller;
 
 import com.fpt.sba301_su26_groupproject.dto.authen.LoginRequestDTO;
-import com.fpt.sba301_su26_groupproject.dto.authen.ResgisterRequestDTO;
+import com.fpt.sba301_su26_groupproject.dto.authen.RegisterRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.authen.ForgotPasswordRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.authen.ResetPasswordRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.authen.ProfileDTO;
@@ -59,7 +59,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody ResgisterRequestDTO registerRequestDTO) {
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
         try {
             boolean success = authenService.register(registerRequestDTO);
             if (success) {

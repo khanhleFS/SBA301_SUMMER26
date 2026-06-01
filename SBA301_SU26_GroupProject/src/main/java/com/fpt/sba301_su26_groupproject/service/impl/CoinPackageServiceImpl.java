@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CoinPackageServiceImpl implements CoinPackageService {
 
-    private CoinPackageRepository coinPackageRepository;
+    private final CoinPackageRepository coinPackageRepository;
 
     // -----------------------------------------------------------------------
     // HELPER: map Entity → Response
@@ -70,17 +70,17 @@ public class CoinPackageServiceImpl implements CoinPackageService {
     @Override
     @Transactional
     public CoinCreateResponseDTO createPackage(CoinCreateRequestDTO request) {
-        if (coinPackageRepository.existsByNameIgnoreCase(request.getName())) {
+        if (coinPackageRepository.existsByNameIgnoreCase(request.name())) {
             throw new IllegalArgumentException(
-                    "Tên gói '" + request.getName() + "' đã tồn tại");
+                    "Tên gói '" + request.name() + "' đã tồn tại");
         }
 
         CoinPackage pkg = CoinPackage.builder()
-                .name(request.getName())
-                .priceVnd(request.getPriceVnd())
-                .baseCoins(request.getBaseCoins())
-                .firstTimeBonus(request.getFirstTimeBonus())
-                .isActive(request.getIsActive() != null ? request.getIsActive() : true)
+                .name(request.name())
+                .priceVnd(request.priceVnd())
+                .baseCoins(request.baseCoins())
+                .firstTimeBonus(request.firstTimeBonus())
+                .isActive(request.isActive() != null ? request.isActive() : true)
                 .build();
 
         return toResponse(coinPackageRepository.save(pkg));
@@ -95,17 +95,17 @@ public class CoinPackageServiceImpl implements CoinPackageService {
         CoinPackage pkg = coinPackageRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Gói coin không tồn tại"));
 
-        if (request.getName() != null) {
-            if (coinPackageRepository.existsByNameIgnoreCaseAndIdNot(request.getName(), id)) {
+        if (request.name() != null) {
+            if (coinPackageRepository.existsByNameIgnoreCaseAndIdNot(request.name(), id)) {
                 throw new IllegalArgumentException(
-                        "Tên gói '" + request.getName() + "' đã tồn tại");
+                        "Tên gói '" + request.name() + "' đã tồn tại");
             }
-            pkg.setName(request.getName());
+            pkg.setName(request.name());
         }
-        if (request.getPriceVnd()        != null) pkg.setPriceVnd(request.getPriceVnd());
-        if (request.getBaseCoins()       != null) pkg.setBaseCoins(request.getBaseCoins());
-        if (request.getFirstTimeBonus()  != null) pkg.setFirstTimeBonus(request.getFirstTimeBonus());
-        if (request.getIsActive()        != null) pkg.setIsActive(request.getIsActive());
+        if (request.priceVnd()        != null) pkg.setPriceVnd(request.priceVnd());
+        if (request.baseCoins()       != null) pkg.setBaseCoins(request.baseCoins());
+        if (request.firstTimeBonus()  != null) pkg.setFirstTimeBonus(request.firstTimeBonus());
+        if (request.isActive()        != null) pkg.setIsActive(request.isActive());
 
         return toResponse(coinPackageRepository.save(pkg));
     }

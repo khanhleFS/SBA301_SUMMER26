@@ -22,7 +22,7 @@ public class NovelController {
 
     private final NovelService novelService;
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<NovelResponseDTO> createNovel(
             @Valid @RequestBody NovelRequestDTO requestDTO,
             Authentication authentication) {
@@ -44,7 +44,7 @@ public class NovelController {
         return ResponseEntity.ok(novel);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<NovelResponseDTO> updateNovel(
             @PathVariable UUID id,
             @Valid @RequestBody NovelRequestDTO requestDTO,
@@ -54,7 +54,7 @@ public class NovelController {
         return ResponseEntity.ok(updatedNovel);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteNovel(
             @PathVariable UUID id,
             Authentication authentication) {

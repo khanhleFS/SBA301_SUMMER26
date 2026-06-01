@@ -1,5 +1,6 @@
 package com.fpt.sba301_su26_groupproject.entity;
 
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.NovelStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -48,12 +49,10 @@ public class Novel {
     @Column(name = "cover_image_url", length = 500)
     private String coverImageUrl;
 
-    @Size(max = 20)
     @NotNull
-    @Nationalized
-    @ColumnDefault("'ongoing'")
-    @Column(name = "status", nullable = false, length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private NovelStatus status = NovelStatus.ONGOING;
 
     @NotNull
     @ColumnDefault("0")

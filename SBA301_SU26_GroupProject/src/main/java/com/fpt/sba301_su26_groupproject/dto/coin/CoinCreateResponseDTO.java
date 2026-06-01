@@ -6,18 +6,16 @@ import lombok.Data;
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
 @Builder
-public class CoinCreateResponseDTO {
-
-    private UUID    id;
-    private String  name;
-    private Integer priceVnd;
-    private Integer baseCoins;
-    private Integer firstTimeBonus;
-    private Integer totalCoinsIfFirst;  // baseCoins + firstTimeBonus (cho user chưa nạp lần nào)
-    private Integer totalCoinsNormal;   // baseCoins (cho user đã nạp rồi)// > 0 thì frontend hiển thị badge "Tặng thêm lần đầu"
-    private Boolean isActive;
-    private Instant createdAt;
-    private Instant updatedAt;
-}
+public record CoinCreateResponseDTO(
+        UUID id,
+        String name,
+        Integer priceVnd,
+        Integer baseCoins,
+        Integer firstTimeBonus,
+        Integer totalCoinsIfFirst, // Tổng coin thực nhận = baseCoins + firstTimeBonus
+        Integer totalCoinsNormal,  // Chỉ nhận baseCoins
+        Boolean isActive,
+        Instant createdAt,
+        Instant updatedAt
+) {}

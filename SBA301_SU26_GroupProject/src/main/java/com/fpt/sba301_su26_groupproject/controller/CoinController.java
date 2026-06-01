@@ -26,7 +26,7 @@ public class CoinController {
     // =========================================================================
     // USER  →  GET /api/coins/packages
     // =========================================================================
-    @GetMapping("/api/coins/packages")
+    @GetMapping("/packages")
     public ResponseEntity<List<CoinCreateResponseDTO>> getActivePackages() {
         return ResponseEntity.ok(coinPackageService.getActivePackages());
     }
@@ -35,13 +35,13 @@ public class CoinController {
     // ADMIN  →  /api/admin/coins/packages
     // =========================================================================
 
-    @GetMapping("/api/admin/coins/packages")
+    @GetMapping("/allPackages")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<CoinCreateResponseDTO>> getAllPackages() {
         return ResponseEntity.ok(coinPackageService.getAllPackages());
     }
 
-    @PostMapping("/api/admin/coins/packages")
+    @PostMapping("/createPackages")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CoinCreateResponseDTO> createPackage(
             @Valid @RequestBody CoinCreateRequestDTO request) {
@@ -49,7 +49,7 @@ public class CoinController {
                 .body(coinPackageService.createPackage(request));
     }
 
-    @PutMapping("/api/admin/coins/packages/{id}")
+    @PutMapping("/updatePackages/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CoinCreateResponseDTO> updatePackage(
             @PathVariable UUID id,
@@ -57,13 +57,13 @@ public class CoinController {
         return ResponseEntity.ok(coinPackageService.updatePackage(id, request));
     }
 
-    @PatchMapping("/api/admin/coins/packages/{id}/toggle")
+    @PatchMapping("/packages/{id}/toggle")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CoinCreateResponseDTO> togglePackage(@PathVariable UUID id) {
         return ResponseEntity.ok(coinPackageService.togglePackageStatus(id));
     }
 
-    @DeleteMapping("/api/admin/coins/packages/{id}")
+    @DeleteMapping("/deletePackages/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePackage(@PathVariable UUID id) {
         coinPackageService.deletePackage(id);
