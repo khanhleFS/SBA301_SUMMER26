@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CoinPackageServiceImpl implements CoinPackageService {
 
-    private CoinPackageRepository coinPackageRepository;
+    private final CoinPackageRepository coinPackageRepository;
 
     // -----------------------------------------------------------------------
     // HELPER: map Entity → Response
