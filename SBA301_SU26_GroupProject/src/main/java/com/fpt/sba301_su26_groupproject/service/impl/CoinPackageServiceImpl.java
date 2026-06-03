@@ -1,16 +1,18 @@
 package com.fpt.sba301_su26_groupproject.service.impl;
 
+import com.fpt.sba301_su26_groupproject.common.exception.ApiException;
+import com.fpt.sba301_su26_groupproject.common.exception.CoinPackageErrorCode;
 import com.fpt.sba301_su26_groupproject.dto.coin.*;
 import com.fpt.sba301_su26_groupproject.entity.CoinPackage;
 import com.fpt.sba301_su26_groupproject.repository.CoinPackageRepository;
 import com.fpt.sba301_su26_groupproject.service.CoinPackageService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -70,10 +72,11 @@ public class CoinPackageServiceImpl implements CoinPackageService {
     @Override
     @Transactional
     public CoinCreateResponseDTO createPackage(CoinCreateRequestDTO request) {
-        if (coinPackageRepository.existsByNameIgnoreCase(request.name())) {
-            throw new IllegalArgumentException(
+        if (coinPackageRepository.existsByNameIgnoreCase(request.name()) && request.name() != null) {
+            throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_ALREADY_EXISTS,
                     "Tên gói '" + request.name() + "' đã tồn tại");
         }
+        validatePackageData(request);
 
         CoinPackage pkg = CoinPackage.builder()
                 .name(request.name())
@@ -81,6 +84,8 @@ public class CoinPackageServiceImpl implements CoinPackageService {
                 .baseCoins(request.baseCoins())
                 .firstTimeBonus(request.firstTimeBonus())
                 .isActive(request.isActive() != null ? request.isActive() : true)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
 
         return toResponse(coinPackageRepository.save(pkg));
@@ -91,23 +96,29 @@ public class CoinPackageServiceImpl implements CoinPackageService {
     // -----------------------------------------------------------------------
     @Override
     @Transactional
-    public CoinCreateResponseDTO updatePackage(UUID id, CoinUpdateRequestDTO request) {
+    public CoinCreateResponseDTO updatePackage(UUID id, CoinCreateRequestDTO request) {
         CoinPackage pkg = coinPackageRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Gói coin không tồn tại"));
-
+                .orElseThrow(() -> new ApiException(CoinPackageErrorCode.COIN_PACKAGE_NOT_FOUND, "Gói coin không tồn tại"));
+        validatePackageData(request);
         if (request.name() != null) {
             if (coinPackageRepository.existsByNameIgnoreCaseAndIdNot(request.name(), id)) {
-                throw new IllegalArgumentException(
+                throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_ALREADY_EXISTS,
                         "Tên gói '" + request.name() + "' đã tồn tại");
             }
             pkg.setName(request.name());
         }
-        if (request.priceVnd()        != null) pkg.setPriceVnd(request.priceVnd());
-        if (request.baseCoins()       != null) pkg.setBaseCoins(request.baseCoins());
-        if (request.firstTimeBonus()  != null) pkg.setFirstTimeBonus(request.firstTimeBonus());
-        if (request.isActive()        != null) pkg.setIsActive(request.isActive());
+        pkg.setPriceVnd(request.priceVnd());
+        pkg.setBaseCoins(request.baseCoins());
+        pkg.setFirstTimeBonus(request.firstTimeBonus());
+        pkg.setIsActive(request.isActive());
 
-        return toResponse(coinPackageRepository.save(pkg));
+        CoinPackage updatedPkg;
+        try{
+            updatedPkg = coinPackageRepository.save(pkg);
+        } catch (Exception e) {
+            throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_UPDATE_FAILED, "Cập nhật gói coin thất bại");
+        }
+        return toResponse(updatedPkg);
     }
 
     // -----------------------------------------------------------------------
@@ -117,7 +128,7 @@ public class CoinPackageServiceImpl implements CoinPackageService {
     @Transactional
     public CoinCreateResponseDTO togglePackageStatus(UUID id) {
         CoinPackage pkg = coinPackageRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Gói coin không tồn tại"));
+                .orElseThrow(() -> new ApiException(CoinPackageErrorCode.COIN_PACKAGE_NOT_FOUND, "Gói coin không tồn tại"));
 
         pkg.setIsActive(!pkg.getIsActive());
         return toResponse(coinPackageRepository.save(pkg));
@@ -130,8 +141,28 @@ public class CoinPackageServiceImpl implements CoinPackageService {
     @Transactional
     public void deletePackage(UUID id) {
         if (!coinPackageRepository.existsById(id)) {
-            throw new EntityNotFoundException("Gói coin không tồn tại");
+            throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_NOT_FOUND, "Gói coin không tồn tại");
         }
-        coinPackageRepository.deleteById(id);
+
+        try {
+            coinPackageRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_DELETE_FAILED, "Xóa gói coin thất bại");
+        }
+    }
+
+    private void validatePackageData(CoinCreateRequestDTO request) {
+        if (request.priceVnd() <= 0) {
+            throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_INVALID, "Giá gói phải lớn hơn 0");
+        }
+        if (request.baseCoins() <= 0) {
+            throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_INVALID, "Số lượng coin gốc phải lớn hơn 0");
+        }
+        if (request.firstTimeBonus() < 0) {
+            throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_INVALID, "Số lượng coin khuyến mãi lần đầu phải lớn hơn hoặc bằng 0");
+        }
+        if(request.isActive() == false) {
+            throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_INVALID, "Gói mới phải được kích hoạt");
+        }
     }
 }

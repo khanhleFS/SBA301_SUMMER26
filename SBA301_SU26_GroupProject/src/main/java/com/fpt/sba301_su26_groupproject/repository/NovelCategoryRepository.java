@@ -12,4 +12,6 @@ import java.util.UUID;
 public interface NovelCategoryRepository extends JpaRepository<NovelCategory, NovelCategoryId> {
     void deleteByNovelId(UUID novelId);
     List<NovelCategory> findByNovelId(UUID novelId);
+    void  deleteByCategoryId(UUID categoryId);
+    boolean existsByNovelIdAndCategoryId(UUID novelId, UUID categoryId);
 }

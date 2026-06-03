@@ -37,7 +37,7 @@ public interface CoinPackageService {
     CoinCreateResponseDTO createPackage(CoinCreateRequestDTO request);
 
     // Cập nhật gói
-    CoinCreateResponseDTO updatePackage(UUID id, CoinUpdateRequestDTO request);
+    CoinCreateResponseDTO updatePackage(UUID id, CoinCreateRequestDTO request);
 
     // Bật/tắt gói
     CoinCreateResponseDTO togglePackageStatus(UUID id);

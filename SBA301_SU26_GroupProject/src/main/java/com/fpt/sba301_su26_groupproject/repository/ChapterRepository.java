@@ -17,4 +17,6 @@ public interface ChapterRepository extends JpaRepository<Chapter, UUID> {
     Integer findMaxChapterNumberByNovelId(@Param("novelId") UUID novelId);
     // Lấy chi tiết chương cụ thể của truyện
     Optional<Chapter> findByNovelIdAndChapterNumber(UUID novelId, Integer chapterNumber);
+
+    boolean existsByNovelIdAndChapterNumber(UUID novelId, Integer chapterNumber);
 }

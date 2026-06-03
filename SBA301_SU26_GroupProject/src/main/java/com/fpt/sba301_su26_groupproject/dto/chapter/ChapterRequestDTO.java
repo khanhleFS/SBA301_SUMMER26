@@ -18,6 +18,9 @@ public record ChapterRequestDTO(
         @NotBlank(message = "Trạng thái chương không được để trống.")
         ChapterStatus status,
 
+        @NotNull(message = "số thứ tự chương không được để trống.")
+        Integer chapterNumber, // Optional: Nếu client muốn tự chỉ định số chương, nhưng sẽ có logic kiểm tra trùng lặp trong service
+
         @NotNull(message = "Vui lòng chọn chương miễn phí hay trả phí.")
         @Min(value = 0, message = "Giá coin không được là số âm.")
          Integer coinPrice
