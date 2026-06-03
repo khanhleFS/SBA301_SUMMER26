@@ -4,6 +4,7 @@ import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
 import com.fpt.sba301_su26_groupproject.dto.authen.*;
 import com.fpt.sba301_su26_groupproject.service.AuthenService;
 import com.fpt.sba301_su26_groupproject.common.security.CustomUserDetail;
+import com.fpt.sba301_su26_groupproject.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -49,10 +50,21 @@ public class AuthController {
             );
             securityContextHolderStrategy.getContext().setAuthentication(authentication);
             securityContextRepository.saveContext(securityContextHolderStrategy.getContext(), httpRequest, httpResponse);
+            CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
+            User user = userDetail.getUser();
+            LoginResponseDTO loginResponse = new LoginResponseDTO(
+                    httpRequest.getSession().getId(),
+                    "Session",
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getRole()
+            );
+
             return ResponseEntity.ok().body(ApiResponse.<LoginResponseDTO>builder()
                     .code(200)
                     .message("Đăng nhập thành công")
-                    .result((LoginResponseDTO) authentication.getPrincipal())
+                    .result(loginResponse)
                     .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.<LoginResponseDTO>builder()
