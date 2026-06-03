@@ -1,10 +1,7 @@
 package com.fpt.sba301_su26_groupproject.controller;
 
-import com.fpt.sba301_su26_groupproject.dto.authen.LoginRequestDTO;
-import com.fpt.sba301_su26_groupproject.dto.authen.RegisterRequestDTO;
-import com.fpt.sba301_su26_groupproject.dto.authen.ForgotPasswordRequestDTO;
-import com.fpt.sba301_su26_groupproject.dto.authen.ResetPasswordRequestDTO;
-import com.fpt.sba301_su26_groupproject.dto.authen.ProfileDTO;
+import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
+import com.fpt.sba301_su26_groupproject.dto.authen.*;
 import com.fpt.sba301_su26_groupproject.service.AuthenService;
 import com.fpt.sba301_su26_groupproject.common.security.CustomUserDetail;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,95 +41,167 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginForm(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
-                                            HttpServletRequest httpRequest, HttpServletResponse httpResponse){
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> loginForm(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
+                                                                   HttpServletRequest httpRequest, HttpServletResponse httpResponse){
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequestDTO.email(), loginRequestDTO.password())
             );
             securityContextHolderStrategy.getContext().setAuthentication(authentication);
             securityContextRepository.saveContext(securityContextHolderStrategy.getContext(), httpRequest, httpResponse);
-            return ResponseEntity.ok("Đăng nhập thành công");
+            return ResponseEntity.ok().body(ApiResponse.<LoginResponseDTO>builder()
+                    .code(200)
+                    .message("Đăng nhập thành công")
+                    .result((LoginResponseDTO) authentication.getPrincipal())
+                    .build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Thông tin đăng nhập không hợp lệ: " + e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<LoginResponseDTO>builder()
+                    .code(400)
+                    .message("Đăng nhập thất bại: " + e.getMessage())
+                    .build());
         }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
+    public ResponseEntity<ApiResponse<RegisterResponseDTO>> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
         try {
             boolean success = authenService.register(registerRequestDTO);
             if (success) {
-                return ResponseEntity.ok("Đăng ký thành công");
+                return ResponseEntity.ok().body(ApiResponse.<RegisterResponseDTO>builder()
+                        .code(200)
+                        .message("Đăng ký thành công. Vui lòng kiểm tra email để kích hoạt tài khoản.")
+                        .result(null) // Có thể trả về thông tin tài khoản đã đăng ký nếu cần
+                        .build());
             } else {
-                return ResponseEntity.badRequest().body("Đăng ký thất bại");
+                return ResponseEntity.badRequest().body(ApiResponse.<RegisterResponseDTO>builder()
+                        .code(400)
+                        .message("Đăng ký thất bại: " + "Email đã tồn tại hoặc có lỗi trong quá trình đăng ký")
+                        .build());
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Đăng ký thất bại: " + e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<RegisterResponseDTO>builder()
+                    .code(400)
+                    .message("Đăng nhập thất bại: " + e.getMessage())
+                    .build());
         }
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<ForgotPasswordResponseDTO>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO requestDTO) {
         try {
             authenService.forgotPassword(requestDTO.email());
-            return ResponseEntity.ok("Link đặt lại mật khẩu đã được gửi đến email của bạn");
+            ForgotPasswordResponseDTO result = new ForgotPasswordResponseDTO(
+                    requestDTO.email(),
+                    "Mật khẩu mới đã được gửi đến email của bạn thành công.", true, null
+            );
+            return ResponseEntity.ok().body(ApiResponse.<ForgotPasswordResponseDTO>builder()
+                    .code(200)
+                    .message("Yêu cầu quên mật khẩu thành công")
+                    .result(result)
+                    .build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Có lỗi xảy ra: " + e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<ForgotPasswordResponseDTO>builder()
+                    .code(400)
+                    .message("Có lỗi xảy ra: " + e.getMessage())
+                    .build());
         }
     }
 
+
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<ResetPasswordResponseDTO>> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO requestDTO) {
         try {
             if (!requestDTO.newPassword().equals(requestDTO.confirmPassword())) {
-                return ResponseEntity.badRequest().body("Mật khẩu mới và xác nhận mật khẩu không khớp");
+                return ResponseEntity.badRequest().body(ApiResponse.<ResetPasswordResponseDTO>builder()
+                        .code(400)
+                        .message("Mật khẩu mới và xác nhận mật khẩu không khớp")
+                        .build());
             }
             authenService.resetPassword(requestDTO.email(), requestDTO.oldPassword(), requestDTO.newPassword());
-            return ResponseEntity.ok("Mật khẩu đã được đặt lại thành công");
+            ResetPasswordResponseDTO result = new ResetPasswordResponseDTO(
+                    requestDTO.email(),
+                    "Mật khẩu đã được cập nhật thành công.", null, null
+            );
+            return ResponseEntity.ok(ApiResponse.<ResetPasswordResponseDTO>builder()
+                    .code(200)
+                    .message("Đặt lại mật khẩu thành công")
+                    .result(result)
+                    .build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Có lỗi xảy ra: " + e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<ResetPasswordResponseDTO>builder()
+                    .code(400)
+                    .message("Có lỗi xảy ra: " + e.getMessage())
+                    .build());
         }
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<ProfileDTO> getProfile(@AuthenticationPrincipal CustomUserDetail userDetail) {
+    public ResponseEntity<ApiResponse<ProfileDTO>> getProfile(@AuthenticationPrincipal CustomUserDetail userDetail) {
         try {
             if (userDetail == null) {
-                return ResponseEntity.badRequest().build();
+                return ResponseEntity.badRequest().body(ApiResponse.<ProfileDTO>builder()
+                        .code(400)
+                        .message("Người dùng chưa đăng nhập hoặc token không hợp lệ")
+                        .build());
             }
             ProfileDTO profile = authenService.getProfile(userDetail.getUser().getId());
-            return ResponseEntity.ok(profile);
+            return ResponseEntity.ok(ApiResponse.<ProfileDTO>builder()
+                    .code(200)
+                    .message("Lấy thông tin cá nhân thành công")
+                    .result(profile)
+                    .build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(ApiResponse.<ProfileDTO>builder()
+                    .code(400)
+                    .message("Có lỗi xảy ra: " + e.getMessage())
+                    .build());
         }
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<String> updateProfile(@AuthenticationPrincipal CustomUserDetail userDetail,
-                                                @Valid @RequestBody ProfileDTO profileDTO) {
+    public ResponseEntity<ApiResponse<Void>> updateProfile(@AuthenticationPrincipal CustomUserDetail userDetail,
+                                                           @Valid @RequestBody ProfileDTO profileDTO) {
         try {
             if (userDetail == null) {
-                return ResponseEntity.badRequest().body("Ngươi dùng chưa đăng nhập");
+                return ResponseEntity.badRequest().body(ApiResponse.<Void>builder()
+                        .code(401)
+                        .message("Người dùng chưa đăng nhập")
+                        .build());
             }
             authenService.updateProfile(userDetail.getUser().getId(), profileDTO);
-            return ResponseEntity.ok("Cập nhật thông tin cá nhân thành công");
+            return ResponseEntity.ok(ApiResponse.<Void>builder()
+                    .code(200)
+                    .message("Cập nhật thông tin cá nhân thành công")
+                    .build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Có lỗi xảy ra: " + e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<Void>builder()
+                    .code(400)
+                    .message("Cập nhật thông tin cá nhân thất bại: " + e.getMessage())
+                    .build());
         }
     }
 
     @PostMapping("/verify-register-otp")
-    public ResponseEntity<String> verifyRegisterOtp(@Valid @RequestBody com.fpt.sba301_su26_groupproject.dto.authen.VerifyOTPRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<Void>> verifyRegisterOtp(
+            @Valid @RequestBody com.fpt.sba301_su26_groupproject.dto.authen.VerifyOTPRequestDTO requestDTO) {
         try {
             boolean success = authenService.verifyRegisterOtp(requestDTO.email(), requestDTO.otpCode());
             if (success) {
-                return ResponseEntity.ok("Xác thực thành công. Tài khoản đã được kích hoạt.");
+                return ResponseEntity.ok(ApiResponse.<Void>builder()
+                        .code(200)
+                        .message("Xác thực thành công. Tài khoản đã được kích hoạt.")
+                        .build());
             } else {
-                return ResponseEntity.badRequest().body("Xác thực thất bại");
+                return ResponseEntity.badRequest().body(ApiResponse.<Void>builder()
+                        .code(400)
+                        .message("Xác thực thất bại. OTP không chính xác.")
+                        .build());
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Lỗi xác thực: " + e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<Void>builder()
+                    .code(400)
+                    .message("Lỗi xác thực: " + e.getMessage())
+                    .build());
         }
     }
 }

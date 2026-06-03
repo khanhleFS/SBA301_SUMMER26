@@ -1,5 +1,6 @@
 package com.fpt.sba301_su26_groupproject.controller;
 
+import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
 import com.fpt.sba301_su26_groupproject.dto.category.CategoryRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.category.CategoryResponseDTO;
 import com.fpt.sba301_su26_groupproject.service.CategoryService;
@@ -21,34 +22,61 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping("/categories")
-    public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.getAllCategories());
+    public ResponseEntity<ApiResponse<List<CategoryResponseDTO>>> getAllCategories() {
+        List<CategoryResponseDTO> categories = categoryService.getAllCategories();
+        ApiResponse<List<CategoryResponseDTO>> response = ApiResponse.<List<CategoryResponseDTO>>builder()
+                .code(200)
+                .message("Lấy danh sách danh mục thành công")
+                .result(categories)
+                .build();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/categories/{id}")
-    public ResponseEntity<CategoryResponseDTO> getCategoryById(@PathVariable UUID id) {
-        return ResponseEntity.ok(categoryService.getCategoryById(id));
+    public ResponseEntity<ApiResponse<CategoryResponseDTO>> getCategoryById(@PathVariable UUID id) {
+        CategoryResponseDTO category = categoryService.getCategoryById(id);
+        ApiResponse<CategoryResponseDTO> response = ApiResponse.<CategoryResponseDTO>builder()
+                .code(200)
+                .message("Lấy thông tin danh mục thành công")
+                .result(category)
+                .build();
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/admin/categories")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CategoryResponseDTO> createCategory(@Valid @RequestBody CategoryRequestDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(categoryService.createCategory(request));
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
+    public ResponseEntity<ApiResponse<CategoryResponseDTO>> createCategory(@Valid @RequestBody CategoryRequestDTO request) {
+        CategoryResponseDTO createdCategory = categoryService.createCategory(request);
+        ApiResponse<CategoryResponseDTO> response = ApiResponse.<CategoryResponseDTO>builder()
+                .code(201)
+                .message("Tạo danh mục thành công")
+                .result(createdCategory)
+                .build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/admin/categories/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CategoryResponseDTO> updateCategory(
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
+    public ResponseEntity<ApiResponse<CategoryResponseDTO>> updateCategory(
             @PathVariable UUID id,
             @Valid @RequestBody CategoryRequestDTO request) {
-        return ResponseEntity.ok(categoryService.updateCategory(id, request));
+        CategoryResponseDTO updatedCategory = categoryService.updateCategory(id, request);
+        ApiResponse<CategoryResponseDTO> response = ApiResponse.<CategoryResponseDTO>builder()
+                .code(200)
+                .message("Cập nhật danh mục thành công")
+                .result(updatedCategory)
+                .build();
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/admin/categories/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable UUID id) {
         categoryService.deleteCategory(id);
-        return ResponseEntity.noContent().build();
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .code(200)
+                .message("Xóa danh mục thành công")
+                .build();
+        return ResponseEntity.ok(response);
     }
 }
