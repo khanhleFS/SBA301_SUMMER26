@@ -7,7 +7,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Nationalized;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -62,13 +64,11 @@ public class Chapter {
     @Column(name = "view_count", nullable = false)
     private Integer viewCount;
 
-    @NotNull
-    @ColumnDefault("getdate()")
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    @NotNull
-    @ColumnDefault("getdate()")
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updateAt;
 }

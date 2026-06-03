@@ -15,7 +15,6 @@ public record ChapterRequestDTO(
         String content,
 
         @NotNull(message = "Vui lòng chọn trạng thái chương.")
-        @NotBlank(message = "Trạng thái chương không được để trống.")
         ChapterStatus status,
 
         @NotNull(message = "số thứ tự chương không được để trống.")
