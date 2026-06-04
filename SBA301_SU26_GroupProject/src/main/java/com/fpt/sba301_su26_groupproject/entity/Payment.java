@@ -35,17 +35,16 @@ public class Payment {
     @Column(name = "coins_received", nullable = false)
     private Integer coinsReceived;
 
-    @Size(max = 10)
+    @Size(max = 20)
+    @Enumerated(EnumType.STRING)
     @NotNull
     @Nationalized
-    @ColumnDefault("'pending'")
     @Column(name = "status", nullable = false, length = 10)
     private PaymentStatus status;
 
     @Size(max = 20)
     @NotNull
     @Nationalized
-    @ColumnDefault("'vnpay'")
     @Column(name = "provider", nullable = false, length = 20)
     private String provider;
 

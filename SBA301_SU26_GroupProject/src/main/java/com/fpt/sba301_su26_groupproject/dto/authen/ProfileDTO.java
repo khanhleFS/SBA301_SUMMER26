@@ -10,7 +10,7 @@ import lombok.Builder;
 public record ProfileDTO(
 
         @NotBlank(message = "Họ tên không được để trống.")
-        @Size(min = 2, max = 50, message = "Họ tên phải từ 2 đến 50 ký tự.")
+        @Size(min = 9, max = 50, message = "Họ tên phải từ 2 đến 50 ký tự.")
         @Pattern(regexp = "^\\S.*\\S$|^\\S$", message = "Họ tên không được có khoảng trắng ở đầu hoặc cuối.")
         @Pattern(regexp = "^[\\p{L} ]+$", message = "Họ tên chỉ được chứa chữ cái và khoảng trắng.")
         @Pattern(regexp = "^(?!.*\\s{2,}).*$", message = "Họ tên không được có 2 khoảng trắng liên tiếp.")

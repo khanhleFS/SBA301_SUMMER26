@@ -62,6 +62,7 @@ public class ChapterServiceImpl implements ChapterService {
         Chapter savedChapter = chapterRepository.save(chapter);
         return mapToResponseDTO(savedChapter);
     }
+
     @Override
     @Transactional(readOnly = true)
     public List<ChapterResponseDTO> getChaptersByNovel(UUID novelId) {
@@ -73,6 +74,7 @@ public class ChapterServiceImpl implements ChapterService {
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
     }
+
     @Override
     @Transactional
     public ChapterResponseDTO getChapterDetails(UUID novelId, Integer chapterNumber, String userEmail) {
@@ -118,6 +120,7 @@ public class ChapterServiceImpl implements ChapterService {
         Chapter updatedChapter = chapterRepository.save(chapter);
         return mapToResponseDTO(updatedChapter);
     }
+
     @Override
     @Transactional
     public void deleteChapter(UUID chapterId, String authorEmail) {
@@ -131,6 +134,7 @@ public class ChapterServiceImpl implements ChapterService {
     private ChapterResponseDTO mapToResponseDTO(Chapter chapter) {
         return ChapterResponseDTO.builder()
                 .id(chapter.getId())
+                .novelId(chapter.getNovel().getId())
                 .chapterNumber(chapter.getChapterNumber())
                 .title(chapter.getTitle())
                 .slug(chapter.getSlug())
