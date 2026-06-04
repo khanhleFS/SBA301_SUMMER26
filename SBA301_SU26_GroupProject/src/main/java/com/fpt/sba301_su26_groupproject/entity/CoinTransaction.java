@@ -1,5 +1,6 @@
 package com.fpt.sba301_su26_groupproject.entity;
 
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.CoinTransactionType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -26,11 +27,12 @@ public class CoinTransaction {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Size(max = 10)
+    @Size(max = 30)
     @NotNull
     @Nationalized
-    @Column(name = "type", nullable = false, length = 10)
-    private String type;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 30)
+    private CoinTransactionType type;
 
     @NotNull
     @Column(name = "amount", nullable = false)

@@ -8,9 +8,11 @@ import jakarta.validation.constraints.Size;
 public record ResetPasswordRequestDTO(
         @NotBlank(message = "Email không được để trống.")
         @Email(message = "Email không đúng định dạng.")
+        @Size(message = "Email phải có độ dài từ 10 đến 50 ký tự.", min = 10, max = 50)
         String email,
 
         @NotBlank(message = "Mật khẩu cũ không được để trống.")
+        @Size(message = "Mật khẩu phải có độ dài từ 10 đến 50 ký tự.", min = 10, max = 50)
         String oldPassword,
 
         @NotBlank(message = "Mật khẩu mới không được để trống.")
