@@ -12,6 +12,7 @@ import com.fpt.sba301_su26_groupproject.repository.OTPRepository;
 import com.fpt.sba301_su26_groupproject.repository.UserRepository;
 import com.fpt.sba301_su26_groupproject.service.AuthenService;
 import com.fpt.sba301_su26_groupproject.service.MailService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,19 +20,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class AuthenServiceImpl implements AuthenService {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private MailService mailService;
-    @Autowired
-    private OTPRepository otpRepository;
+    private final UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final MailService mailService;
+
+    private final OTPRepository otpRepository;
 
     @Override
     public void login(LoginRequestDTO request) {
@@ -76,8 +79,16 @@ public class AuthenServiceImpl implements AuthenService {
         otpRepository.save(otp);
         // Gửi mail
         try {
-            mailService.sendHtml(request.email(), "Xác nhận đăng ký tài khoản",
-                    "<h1>Mã OTP xác nhận của bạn là: " + otpCode + "</h1><p>Mã này sẽ hết hạn sau 5 phút.</p>");
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("fullName", request.fullName());
+            variables.put("otpCode", otpCode);
+
+            mailService.sendWithTemplate(
+                    request.email(),
+                    "Xác nhận đăng ký tài khoản",
+                    "email/otp-email",
+                    variables
+            );
         } catch (Exception e) {
             throw new ApiException(CommonErrorCode.INTERNAL_ERROR, "Lỗi gửi email: " + e.getMessage());
         }
@@ -93,13 +104,21 @@ public class AuthenServiceImpl implements AuthenService {
             String newPassword = generateRandomPassword();
             user.setPassword(passwordEncoder.encode(newPassword));
             userRepository.save(user);
-            try{
-                mailService.sendHtml(email, "Quên Mật Khẩu",
-                        "<h1>Mật khẩu mới của bạn là: " + newPassword + "</h1>");
-            } catch (Exception e) {
-                throw new ApiException(CommonErrorCode.INTERNAL_ERROR, "Có Lỗi khi gửi email vui lòng thử lại sau" + e.getMessage());
-            }
+        try {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("fullName", user.getUsername());
+            variables.put("newPassword", newPassword);
+
+            mailService.sendWithTemplate(
+                    email,
+                    "Quên mật khẩu",
+                    "email/forgot-password-email",
+                    variables
+            );
+        } catch (Exception e) {
+            throw new ApiException(CommonErrorCode.INTERNAL_ERROR, "Lỗi gửi email: " + e.getMessage());
         }
+    }
 
     @Override
     public void resetPassword(String email, String oldPassword, String newPassword) {

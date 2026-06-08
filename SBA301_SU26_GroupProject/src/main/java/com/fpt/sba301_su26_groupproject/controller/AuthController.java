@@ -1,13 +1,18 @@
 package com.fpt.sba301_su26_groupproject.controller;
 
 import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
+import com.fpt.sba301_su26_groupproject.common.security.JwtService;
+import com.fpt.sba301_su26_groupproject.common.security.TokenBlacklistService;
 import com.fpt.sba301_su26_groupproject.dto.authen.*;
+import com.fpt.sba301_su26_groupproject.entity.RefreshTokenRedis;
+import com.fpt.sba301_su26_groupproject.repository.RefreshTokenRedisRepository;
 import com.fpt.sba301_su26_groupproject.service.AuthenService;
 import com.fpt.sba301_su26_groupproject.common.security.CustomUserDetail;
 import com.fpt.sba301_su26_groupproject.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final AuthenService authenService;
@@ -34,33 +40,42 @@ public class AuthController {
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
             .getContextHolderStrategy();
 
-    public AuthController(AuthenticationManager authenticationManager, AuthenService authenService,
-                          SecurityContextRepository securityContextRepository) {
-        this.authenticationManager = authenticationManager;
-        this.authenService = authenService;
-        this.securityContextRepository = securityContextRepository;
-    }
+    private final JwtService jwtService;
+    private final RefreshTokenRedisRepository refreshTokenRepository;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponseDTO>> loginForm(@Valid @RequestBody LoginRequestDTO loginRequestDTO,
-                                                                   HttpServletRequest httpRequest, HttpServletResponse httpResponse){
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> loginForm(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequestDTO.email(), loginRequestDTO.password())
             );
-            securityContextHolderStrategy.getContext().setAuthentication(authentication);
-            securityContextRepository.saveContext(securityContextHolderStrategy.getContext(), httpRequest, httpResponse);
+
             CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
             User user = userDetail.getUser();
+
+            // Sinh JWT
+            String accessToken = jwtService.generateAccessToken(userDetail);
+            String refreshToken = jwtService.generateRefreshToken(userDetail);
+
+            // Lưu Refresh Token vào Redis (ví dụ: thời hạn lưu là 7 ngày)
+            long expirationInSeconds = 7 * 24 * 60 * 60; // 604800 giây
+            RefreshTokenRedis tokenRedis = RefreshTokenRedis.builder()
+                    .token(refreshToken)
+                    .userId(user.getId())
+                    .email(user.getEmail())
+                    .ttlInSeconds(expirationInSeconds)
+                    .build();
+            refreshTokenRepository.save(tokenRedis);
+            // Map thông tin trả về Client
             LoginResponseDTO loginResponse = new LoginResponseDTO(
-                    httpRequest.getSession().getId(),
-                    "Session",
+                    accessToken,  // Thay cho Session ID
+                    refreshToken, // Token làm mới
                     user.getId(),
                     user.getUsername(),
                     user.getEmail(),
                     user.getRole()
             );
-
             return ResponseEntity.ok().body(ApiResponse.<LoginResponseDTO>builder()
                     .code(200)
                     .message("Đăng nhập thành công")
@@ -72,6 +87,28 @@ public class AuthController {
                     .message("Đăng nhập thất bại: " + e.getMessage())
                     .build());
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String jwt = authHeader.substring(7);
+            try {
+                // Lấy thời gian hết hạn còn lại của access token để cài TTL cho Redis Blacklist
+                java.util.Date expiration = jwtService.extractExpiration(jwt);
+                long remainingTimeMs = expiration.getTime() - System.currentTimeMillis();
+
+                // Blacklist access token này
+                tokenBlacklistService.blacklistToken(jwt, remainingTimeMs);
+            } catch (Exception e) {
+                // Token hết hạn rồi thì không cần đưa vào blacklist nữa
+            }
+        }
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .code(200)
+                .message("Đăng xuất thành công")
+                .build());
     }
 
     @PostMapping("/register")
