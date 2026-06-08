@@ -14,6 +14,7 @@ public record ChapterResponseDTO(
          String title,
          String slug,
          String content,
+         String audioUrl,
          ChapterStatus status,
          Integer coinPrice,
          Integer viewCount,

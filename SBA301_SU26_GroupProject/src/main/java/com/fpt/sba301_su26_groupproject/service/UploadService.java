@@ -10,4 +10,13 @@ public interface UploadService {
      * @return the secure URL of the uploaded image
      */
     String uploadImage(MultipartFile file);
+
+    /**
+     * Uploads raw MP3 audio bytes to Cloudinary and returns its secure URL.
+     *
+     * @param audioBytes the MP3 audio data
+     * @param publicId   the desired Cloudinary public ID (e.g. "audio/chapter-uuid")
+     * @return the secure URL of the uploaded audio
+     */
+    String uploadAudio(byte[] audioBytes, String publicId);
 }
