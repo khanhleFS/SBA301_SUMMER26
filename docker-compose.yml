@@ -8,7 +8,7 @@ services:
       - "1434:1433"
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=YourStrong@Password123
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
     volumes:
       - mssql_data:/var/opt/mssql
     restart: unless-stopped
@@ -39,11 +39,11 @@ services:
     environment:
       - DB_HOST=sba-db
       - DB_PORT=1433
-      - DB_NAME=SBA301
-      - DB_USERNAME=sa
-      - DB_PASSWORD=YourStrong@Password123
-      - SPRING_DATA_REDIS_HOST=sba-redis
-      - SPRING_DATA_REDIS_PORT=6379
+      - DB_NAME=${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=${REDIS_HOST}
+      - SPRING_DATA_REDIS_PORT=${REDIS_PORT}
       - SPRING_PROFILES_ACTIVE=mssql
     env_file:
       - .env
