@@ -85,4 +85,18 @@ public class ChapterController {
                 .message("Xóa chương truyện thành công")
                 .build());
     }
+
+    // PUBLIC / TÁC GIẢ: Tạo audio từ nội dung chương bằng Google TTS
+    // POST /api/chapter/novels/{novelId}/chapters/{chapterNumber}/audio
+    @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/audio")
+    public ResponseEntity<ApiResponse<ChapterResponseDTO>> generateChapterAudio(
+            @PathVariable UUID novelId,
+            @PathVariable Integer chapterNumber) {
+        ChapterResponseDTO result = chapterService.generateChapterAudio(novelId, chapterNumber);
+        return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
+                .code(200)
+                .message("Tạo audio cho chương truyện thành công")
+                .result(result)
+                .build());
+    }
 }

@@ -11,6 +11,9 @@ import com.fpt.sba301_su26_groupproject.entity.Novel;
 import com.fpt.sba301_su26_groupproject.repository.ChapterRepository;
 import com.fpt.sba301_su26_groupproject.repository.NovelRepository;
 import com.fpt.sba301_su26_groupproject.service.ChapterService;
+import com.fpt.sba301_su26_groupproject.service.GoogleTtsService;
+import com.fpt.sba301_su26_groupproject.service.UploadService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ChapterServiceImpl implements ChapterService {
     @Autowired
@@ -27,6 +31,12 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Autowired
     private NovelRepository novelRepository;
+
+    @Autowired
+    private GoogleTtsService googleTtsService;
+
+    @Autowired
+    private UploadService uploadService;
 
     @Override
     @Transactional
@@ -131,6 +141,32 @@ public class ChapterServiceImpl implements ChapterService {
         }
         chapterRepository.delete(chapter);
     }
+    @Override
+    @Transactional
+    public ChapterResponseDTO generateChapterAudio(UUID novelId, Integer chapterNumber) {
+        // 1. Tìm chapter
+        Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
+                .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND,
+                        "Không tìm thấy chương truyện tương ứng."));
+
+        log.info("[TTS] Bắt đầu tạo audio cho chapter {} của novel {}", chapterNumber, novelId);
+
+        // 2. Gọi Google TTS → nhận MP3 bytes
+        byte[] audioBytes = googleTtsService.synthesizeSpeech(chapter.getContent());
+        log.info("[TTS] Đã nhận {} bytes audio từ Google TTS", audioBytes.length);
+
+        // 3. Upload MP3 lên Cloudinary
+        String publicId = "chapter-" + chapter.getId().toString();
+        String audioUrl = uploadService.uploadAudio(audioBytes, publicId);
+        log.info("[TTS] Audio đã được upload lên Cloudinary: {}", audioUrl);
+
+        // 4. Lưu URL vào database
+        chapter.setAudioUrl(audioUrl);
+        Chapter saved = chapterRepository.save(chapter);
+
+        return mapToResponseDTO(saved);
+    }
+
     private ChapterResponseDTO mapToResponseDTO(Chapter chapter) {
         return ChapterResponseDTO.builder()
                 .id(chapter.getId())
@@ -139,6 +175,7 @@ public class ChapterServiceImpl implements ChapterService {
                 .title(chapter.getTitle())
                 .slug(chapter.getSlug())
                 .content(chapter.getContent())
+                .audioUrl(chapter.getAudioUrl())
                 .status(chapter.getStatus())
                 .coinPrice(chapter.getCoinPrice())
                 .viewCount(chapter.getViewCount())
