@@ -14,7 +14,7 @@ import com.fpt.sba301_su26_groupproject.service.ChapterService;
 import com.fpt.sba301_su26_groupproject.service.GoogleTtsService;
 import com.fpt.sba301_su26_groupproject.service.UploadService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,18 +25,16 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ChapterServiceImpl implements ChapterService {
-    @Autowired
-    private ChapterRepository chapterRepository;
 
-    @Autowired
-    private NovelRepository novelRepository;
+    private final ChapterRepository chapterRepository;
 
-    @Autowired
-    private GoogleTtsService googleTtsService;
+    private final NovelRepository novelRepository;
 
-    @Autowired
-    private UploadService uploadService;
+    private final GoogleTtsService googleTtsService;
+
+    private final UploadService uploadService;
 
     @Override
     @Transactional
