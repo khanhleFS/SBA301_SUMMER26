@@ -1,6 +1,7 @@
 package com.fpt.sba301_su26_groupproject.controller;
 
 import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
+import com.fpt.sba301_su26_groupproject.controller.api.ChapterAPI;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterResponseDTO;
 import com.fpt.sba301_su26_groupproject.service.ChapterService;
@@ -16,87 +17,74 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/chapter")
 @RequiredArgsConstructor
-public class ChapterController {
+public class ChapterController implements ChapterAPI {
+
     private final ChapterService chapterService;
-    // TÁC GIẢ: Đăng chương truyện mới
-    @PostMapping("/author/novels/{novelId}/chapters")
+
+    @Override
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> createChapter(
-            @PathVariable UUID novelId,
-            @Valid @RequestBody ChapterRequestDTO requestDTO,
+            UUID novelId,
+            ChapterRequestDTO request,
             Authentication authentication) {
-        String authorEmail = authentication.getName();
-        ChapterResponseDTO createdChapter = chapterService.createChapter(novelId, requestDTO, authorEmail);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.<ChapterResponseDTO>builder()
-                        .code(201)
-                        .message("Chương truyện được tạo thành công")
-                        .result(createdChapter)
-                        .build());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.<ChapterResponseDTO>builder()
+                .code(201)
+                .message("Chương truyện được tạo thành công")
+                .result(chapterService.createChapter(novelId, request, authentication.getName()))
+                .build());
     }
-    // ĐỘC GIẢ / PUBLIC: Lấy mục lục chương của bộ truyện
-    @GetMapping("/novels/{novelId}/chapters")
-    public ResponseEntity<ApiResponse<List<ChapterResponseDTO>>> getChaptersByNovel(@PathVariable UUID novelId) {
-        List<ChapterResponseDTO> chapters = chapterService.getChaptersByNovel(novelId);
+
+    @Override
+    public ResponseEntity<ApiResponse<List<ChapterResponseDTO>>> getChaptersByNovel(UUID novelId) {
         return ResponseEntity.ok(ApiResponse.<List<ChapterResponseDTO>>builder()
                 .code(200)
                 .message("Lấy danh sách chương truyện thành công")
-                .result(chapters)
+                .result(chapterService.getChaptersByNovel(novelId))
                 .build());
     }
-    // ĐỘC GIẢ: Đọc nội dung chi tiết chương truyện
-    @GetMapping("/novels/{novelId}/chapters/{chapterNumber}")
+
+    @Override
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> getChapterDetails(
-            @PathVariable UUID novelId,
-            @PathVariable Integer chapterNumber,
+            UUID novelId,
+            Integer chapterNumber,
             Authentication authentication) {
-        String userEmail = (authentication != null) ? authentication.getName() : null;
-        ChapterResponseDTO chapter = chapterService.getChapterDetails(novelId, chapterNumber, userEmail);
+        String userEmail = authentication == null ? null : authentication.getName();
+
         return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
                 .code(200)
                 .message("Lấy thông tin chương truyện thành công")
-                .result(chapter)
+                .result(chapterService.getChapterDetails(novelId, chapterNumber, userEmail))
                 .build());
     }
-    // TÁC GIẢ: Sửa chương truyện
-    @PutMapping("/author/chapters/{chapterId}")
+
+    @Override
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> updateChapter(
-            @PathVariable UUID chapterId,
-            @Valid @RequestBody ChapterRequestDTO requestDTO,
+            UUID chapterId,
+            ChapterRequestDTO request,
             Authentication authentication) {
-        String authorEmail = authentication.getName();
-        ChapterResponseDTO updatedChapter = chapterService.updateChapter(chapterId, requestDTO, authorEmail);
         return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
                 .code(200)
                 .message("Cập nhật chương truyện thành công")
-                .result(updatedChapter)
+                .result(chapterService.updateChapter(chapterId, request, authentication.getName()))
                 .build());
     }
-    // TÁC GIẢ: Xóa chương truyện
-    @DeleteMapping("/author/chapters/{chapterId}")
-    public ResponseEntity<ApiResponse<Void>> deleteChapter(
-            @PathVariable UUID chapterId,
-            Authentication authentication) {
-        String authorEmail = authentication.getName();
-        chapterService.deleteChapter(chapterId, authorEmail);
+
+    @Override
+    public ResponseEntity<ApiResponse<Void>> deleteChapter(UUID chapterId, Authentication authentication) {
+        chapterService.deleteChapter(chapterId, authentication.getName());
+
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .code(200)
                 .message("Xóa chương truyện thành công")
                 .build());
     }
 
-    // PUBLIC / TÁC GIẢ: Tạo audio từ nội dung chương bằng Google TTS
-    // POST /api/chapter/novels/{novelId}/chapters/{chapterNumber}/audio
-    @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/audio")
-    public ResponseEntity<ApiResponse<ChapterResponseDTO>> generateChapterAudio(
-            @PathVariable UUID novelId,
-            @PathVariable Integer chapterNumber) {
-        ChapterResponseDTO result = chapterService.generateChapterAudio(novelId, chapterNumber);
+    @Override
+    public ResponseEntity<ApiResponse<ChapterResponseDTO>> generateChapterAudio(UUID novelId, Integer chapterNumber) {
         return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
                 .code(200)
                 .message("Tạo audio cho chương truyện thành công")
-                .result(result)
+                .result(chapterService.generateChapterAudio(novelId, chapterNumber))
                 .build());
     }
 }

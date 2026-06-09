@@ -1,19 +1,20 @@
 package com.fpt.sba301_su26_groupproject.service;
 
-import com.fpt.sba301_su26_groupproject.dto.authen.LoginRequestDTO;
-import com.fpt.sba301_su26_groupproject.dto.authen.ProfileDTO;
-import com.fpt.sba301_su26_groupproject.dto.authen.RegisterRequestDTO;
+import com.fpt.sba301_su26_groupproject.dto.authen.*;
 
 import java.util.UUID;
 
 public interface AuthenService {
-    void login(LoginRequestDTO request);
+    LoginResponseDTO login(LoginRequestDTO request);
 
-    boolean register(RegisterRequestDTO request);
+    // Chuyển logic logout xuống Service
+    void logout(String authHeader);
+    // Sửa thành void, ném Exception trực tiếp nếu lỗi (Theo chuẩn Error Handling)
+    void register(RegisterRequestDTO request);
 
-    void forgotPassword(String email);
+    ForgotPasswordResponseDTO forgotPassword(String email);
 
-    void resetPassword(String email, String oldPassword, String newPassword);
+    ResetPasswordResponseDTO resetPassword(ResetPasswordRequestDTO request);
 
     ProfileDTO getProfile(UUID id);
 
