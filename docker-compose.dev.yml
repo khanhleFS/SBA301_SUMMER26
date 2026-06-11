@@ -7,13 +7,3 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
-
-  sba-mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: mssql-dev
-    ports:
-      - "1433:1433"
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "12345"   # khớp DB_PASSWORD trong .env.local
-    restart: unless-stopped
