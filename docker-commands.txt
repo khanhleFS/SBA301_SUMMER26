@@ -1,0 +1,80 @@
+========================================================
+  DOCKER CHEATSHEET — SBA301 Local Dev
+========================================================
+
+--------------------------------------------------------
+  DEV LOCAL (chạy song song với IntelliJ)
+--------------------------------------------------------
+
+# Khởi động Redis + MSSQL lần đầu (hoặc sau khi stop)
+docker compose -f docker-compose.dev.yml up -d
+
+# Các buổi sau — chỉ start lại (không tạo lại container)
+docker compose -f docker-compose.dev.yml start
+
+# Tắt cuối ngày (giữ data)
+docker compose -f docker-compose.dev.yml stop
+
+# Xem log Redis
+docker logs redis-dev -f
+
+# Xem log MSSQL
+docker logs mssql-dev -f
+
+--------------------------------------------------------
+  PRODUCTION / FULL STACK (docker-compose.yml)
+--------------------------------------------------------
+
+# Build image mới + chạy toàn bộ stack
+docker compose up -d --build
+
+# Chạy lại không build lại image
+docker compose up -d
+
+# Tắt toàn bộ stack
+docker compose down
+
+# Tắt và xóa luôn volume (reset DB)
+docker compose down -v
+
+# Xem log app
+docker compose logs app -f
+
+# Xem log tất cả service
+docker compose logs -f
+
+--------------------------------------------------------
+  TIỆN ÍCH
+--------------------------------------------------------
+
+# Xem các container đang chạy
+docker ps
+
+# Xem tất cả container (kể cả đã stop)
+docker ps -a
+
+# Vào trong container Redis kiểm tra
+docker exec -it redis-dev redis-cli ping
+  → trả về PONG là Redis đang chạy bình thường
+
+# Xóa container dev (khi muốn tạo lại từ đầu)
+docker compose -f docker-compose.dev.yml down
+
+--------------------------------------------------------
+  WORKFLOW HÀNG NGÀY
+--------------------------------------------------------
+
+Sáng bắt đầu:
+  docker compose -f docker-compose.dev.yml start
+
+Code + chạy IntelliJ bình thường
+  Profile: local,mssql
+  EnvFile: .env.local
+
+Khi muốn test build Docker:
+  docker compose up -d --build
+
+Tắt máy:
+  docker compose -f docker-compose.dev.yml stop
+
+========================================================
