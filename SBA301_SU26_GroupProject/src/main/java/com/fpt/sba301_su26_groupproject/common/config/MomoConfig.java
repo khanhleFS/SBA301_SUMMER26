@@ -18,6 +18,12 @@ public class MomoConfig {
     @Value("${momo.dev.secret-key:SetA5RDnLHvt51AULf51DyauxUo3kDU6}")
     private String secretKey;
 
+    @Value("${momo.dev.redirect-url:http://localhost:8080/swagger-ui.html}")
+    private String redirectUrl;
+
+    @Value("${momo.dev.ipn-url:http://localhost:8080/api/payments/momo/callback}")
+    private String ipnUrl;
+
     public String getEndpoint() {
         return endpoint;
     }
@@ -32,5 +38,13 @@ public class MomoConfig {
 
     public String getSecretKey() {
         return secretKey;
+    }
+
+    public String getRedirectUrl() {
+        return redirectUrl;
+    }
+
+    public String getIpnUrl() {
+        return ipnUrl;
     }
 }
