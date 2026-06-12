@@ -26,7 +26,7 @@ public class PaymentController implements PaymentAPI {
         PaymentMomoCreateResponseDTO result = paymentService.createMomoPayment(request);
         return ResponseEntity.ok(ApiResponse.<PaymentMomoCreateResponseDTO>builder()
                 .code(200)
-                .message("MoMo payment created (test)")
+                .message("MoMo payment created")
                 .result(result)
                 .build());
     }

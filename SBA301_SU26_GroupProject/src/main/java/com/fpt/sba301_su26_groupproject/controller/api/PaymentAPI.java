@@ -15,15 +15,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RequestMapping("/api/payments")
-@Tag(name = "Payments", description = "Payment APIs (test/dev)")
+@Tag(name = "Payments", description = "MoMo payment APIs")
 public interface PaymentAPI {
 
-    @Operation(summary = "Create MoMo payment (test)")
+    @Operation(summary = "Create MoMo payment")
     @PostMapping("/momo/create")
     ResponseEntity<ApiResponse<PaymentMomoCreateResponseDTO>> createMomoPayment(
             @Valid @RequestBody PaymentMomoCreateRequestDTO request);
 
-    @Operation(summary = "MoMo callback (webhook) - test only")
+    @Operation(summary = "MoMo callback (webhook)")
     @PostMapping("/momo/callback")
     ResponseEntity<ApiResponse<Void>> momoCallback(@RequestBody PaymentMomoCallbackDTO callback);
 }

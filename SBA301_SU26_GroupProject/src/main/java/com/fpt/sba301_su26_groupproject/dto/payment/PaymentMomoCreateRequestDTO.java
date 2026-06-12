@@ -16,5 +16,8 @@ public record PaymentMomoCreateRequestDTO(
         Integer amount,
 
         @Schema(example = "Test payment")
-        String orderInfo
+        String orderInfo,
+
+        @Schema(example = "captureWallet", defaultValue = "captureWallet")
+        String requestType
 ) {}
