@@ -4,8 +4,9 @@ public class SecurityConstants {
     public static final String[] PUBLIC_MATCHERS = {
             "/swagger-ui/**",
             "/swagger-ui.html",
-            "/api-docs/**",
-            "/api-docs.yaml",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
+            "/api/payments/**",
             "/api/auth/**",
             "/",
             "/home",
