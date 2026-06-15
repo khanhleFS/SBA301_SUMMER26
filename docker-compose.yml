@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  sba-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sba-db
+    ports:
+      - "1434:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - mssql_data:/var/opt/mssql
+    restart: unless-stopped
+    networks:
+      - sba-network
+
+  sba-redis:
+    image: redis:7.2-alpine
+    container_name: sba-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - sba-network
+
+  sba-backend:
+    build:
+      context: ./SBA301_SU26_GroupProject
+      dockerfile: Dockerfile
+    container_name: sba-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sba-db
+      - sba-redis
+    environment:
+      - DB_HOST=sba-db
+      - DB_PORT=1433
+      - DB_NAME=${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=${REDIS_HOST}
+      - SPRING_DATA_REDIS_PORT=${REDIS_PORT}
+      - SPRING_PROFILES_ACTIVE=mssql
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - sba-network
+
+  sba-frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: sba-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - sba-backend
+    restart: unless-stopped
+    networks:
+      - sba-network
+
+volumes:
+  mssql_data:
+  redis_data:
+
+networks:
+  sba-network:
+    driver: bridge

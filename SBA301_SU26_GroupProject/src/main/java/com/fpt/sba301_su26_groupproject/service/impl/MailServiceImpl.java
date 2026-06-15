@@ -3,19 +3,24 @@ package com.fpt.sba301_su26_groupproject.service.impl;
 import com.fpt.sba301_su26_groupproject.service.MailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import java.util.Map;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class MailServiceImpl implements MailService {
 
     private final JavaMailSender mailSender;
-
-    public MailServiceImpl(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
+    private final TemplateEngine templateEngine;
 
     @Override
     public void sendPlainText(String to, String subject, String body) {
@@ -34,5 +39,15 @@ public class MailServiceImpl implements MailService {
         helper.setSubject(subject);
         helper.setText(htmlBody, true); // true means this is HTML
         mailSender.send(message);
+    }
+
+    @Override
+    public void sendWithTemplate(String to, String subject, String templateName, Map<String, Object> variables) throws MessagingException{
+        Context context = new Context();
+        context.setVariables(variables);
+
+        String htmlContent = templateEngine.process(templateName, context);
+        sendHtml(to, subject, htmlContent);
+        log.info("Sent template email [{}] to: {}", templateName, to);
     }
 }

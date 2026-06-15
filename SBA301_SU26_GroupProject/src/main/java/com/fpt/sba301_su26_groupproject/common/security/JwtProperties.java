@@ -12,5 +12,5 @@ import org.springframework.context.annotation.Configuration;
 public class JwtProperties {
     private String secret;
     private long accessTokenExpiration; // Đơn vị: mili-giây (ví dụ: 900000 cho 15 phút)
-    private long refreshTokenExpiration; // Đơn vị: mili-giây (ví dụ: 604800000 cho 7 ngày)
+    private long refreshTokenExpiration;// Đơn vị: mili-giây (ví dụ: 604800000 cho 7 ngày)
 }

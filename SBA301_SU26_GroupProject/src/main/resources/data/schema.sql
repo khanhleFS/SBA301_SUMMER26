@@ -115,6 +115,8 @@ CREATE TABLE chapters (
     title NVARCHAR(255) NOT NULL,
     slug NVARCHAR(300) NOT NULL,
     content NVARCHAR(MAX),
+    audio_url NVARCHAR(1000),
+    status NVARCHAR(20) NOT NULL DEFAULT 'FREE' CHECK (status IN ('LOCKED','UNLOCKED','FREE')),
     is_free BIT NOT NULL DEFAULT 0,
     coin_price INT NOT NULL DEFAULT 0 CHECK (coin_price >= 0),
     view_count INT NOT NULL DEFAULT 0,

@@ -20,4 +20,7 @@ public interface ChapterService {
 
     // Xóa chương truyện
     void deleteChapter(UUID chapterId, String authorEmail);
+
+    // Tạo audio từ nội dung chương bằng Google TTS → upload Cloudinary → lưu URL
+    ChapterResponseDTO generateChapterAudio(UUID novelId, Integer chapterNumber);
 }

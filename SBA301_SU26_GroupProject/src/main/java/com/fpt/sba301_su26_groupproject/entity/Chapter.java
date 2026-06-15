@@ -51,6 +51,9 @@ public class Chapter {
     @Column(name = "content", nullable = false)
     private String content;
 
+    @Column(name = "audio_url", length = 1000)
+    private String audioUrl;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
