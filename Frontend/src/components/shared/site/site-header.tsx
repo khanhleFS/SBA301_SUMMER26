@@ -4,10 +4,12 @@ import { User, Moon, Sun, BookOpen } from 'lucide-react'
 import Container from './container'
 import StaggeredMenu from '@/components/custom/staggered-menu/StaggeredMenu'
 import { SearchInput } from './search-input'
+import { useAuth } from '@/lib/auth'
 
 export default function SiteHeader() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, isAuthenticated, logout } = useAuth()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isDark, setIsDark] = useState(() =>
     typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : false
@@ -59,7 +61,7 @@ export default function SiteHeader() {
   // Apply the 3-mode theme (light, dark, or system matching system media query)
   useEffect(() => {
     const root = window.document.documentElement;
-    
+
     const applyTheme = () => {
       if (themeMode === 'system') {
         const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -93,8 +95,8 @@ export default function SiteHeader() {
   const baseMenuItems = useMemo(() => [
     { label: 'Trang chủ', link: '/' },
     { label: 'Khám phá', link: '/search' },
-    { label: 'Thông tin cá nhân', link: '/profile' },
-  ], [])
+    ...(isAuthenticated ? [{ label: 'Thông tin cá nhân', link: '/profile' }] : []),
+  ], [isAuthenticated])
 
 
 
@@ -133,9 +135,24 @@ export default function SiteHeader() {
             {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
 
-          <Link to="/profile" className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted transition-colors text-foreground">
-            <User className="h-5 w-5" />
-          </Link>
+          {/* Profile / Login icon */}
+          {isAuthenticated ? (
+            <Link
+              to="/profile"
+              className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted transition-colors text-foreground"
+              title="Hồ sơ cá nhân"
+            >
+              <User className="h-5 w-5" />
+            </Link>
+          ) : (
+            <button
+              onClick={() => navigate('/login')}
+              className="hidden sm:flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted transition-colors text-foreground"
+              title="Đăng nhập"
+            >
+              <User className="h-5 w-5" />
+            </button>
+          )}
 
           <StaggeredMenu
             items={baseMenuItems}
@@ -147,6 +164,8 @@ export default function SiteHeader() {
             toggleTheme={toggleTheme}
             themeMode={themeMode}
             setThemeMode={setThemeMode}
+            user={user}
+            onLogout={logout}
           />
         </div>
       </Container>

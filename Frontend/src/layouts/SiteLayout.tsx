@@ -2,6 +2,7 @@ import { Outlet, Navigate } from 'react-router-dom'
 import SiteHeader from '../components/shared/site/site-header'
 import SiteFooter from '../components/shared/site/site-footer'
 import SmoothScroll from '../components/shared/SmoothScroll'
+import { useAuth } from '@/lib/auth'
 
 interface SiteLayoutProps {
 	/**
@@ -15,8 +16,15 @@ interface SiteLayoutProps {
  * Can be configured to require authentication.
  */
 export default function SiteLayout({ requireAuth = false }: SiteLayoutProps) {
-	// TODO: Replace with real auth logic
-	const isAuthenticated = true
+	const { isAuthenticated, isLoading } = useAuth()
+
+	if (requireAuth && isLoading) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+				<span className="loading loading-spinner loading-lg text-primary"></span>
+			</div>
+		)
+	}
 
 	if (requireAuth && !isAuthenticated) {
 		return <Navigate to="/login" replace />
@@ -33,7 +41,7 @@ export default function SiteLayout({ requireAuth = false }: SiteLayoutProps) {
 			>
 				<SiteHeader />
 
-				<main className="pt-20 pb-8 md:pt-8 md:pb-12 lg:pb-16">
+				<main className="pt-20 pb-8 md:pb-12 lg:pb-16">
 					<Outlet />
 				</main>
 

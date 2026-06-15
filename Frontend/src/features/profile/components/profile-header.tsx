@@ -1,5 +1,5 @@
 import type React from 'react'
-import { LogOut, User } from 'lucide-react'
+import { User } from 'lucide-react'
 import { useProfile } from '../context/profile.context'
 
 function IconButton({
@@ -46,7 +46,7 @@ export function ProfileHeader() {
         </div>
       </div>
 
-      <IconButton icon={LogOut} />
+      <IconButton icon={User} />
     </section>
   )
 }

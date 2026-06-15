@@ -1,13 +1,26 @@
 import { useState, useRef, useEffect } from 'react'
 import type { ClipboardEvent, KeyboardEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { api } from '../../lib/api'
 
 export default function VerifyOtpPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const email = location.state?.email || ''
+
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''))
   const [timeLeft, setTimeLeft] = useState(300) // 5 minutes in seconds
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+
+  useEffect(() => {
+    if (!email) {
+      navigate('/register')
+    }
+  }, [email, navigate])
 
   useEffect(() => {
     if (timeLeft <= 0) return
@@ -30,16 +43,12 @@ export default function VerifyOtpPage() {
   }
 
   const handleChange = (index: number, value: string) => {
-    // Only allow numbers
     if (!/^\d*$/.test(value)) return
 
     const newOtp = [...otp]
-
-    // Take the last character if they typed multiple characters
     newOtp[index] = value.substring(value.length - 1)
     setOtp(newOtp)
 
-    // Move to next input if value is entered, or blur if it's the last one
     if (value) {
       if (index < 5) {
         focusInput(index + 1)
@@ -50,7 +59,6 @@ export default function VerifyOtpPage() {
   }
 
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    // Prevent typing if all 6 are filled, unless it's a delete or arrow key, or they are replacing the current digit
     if (
       otp.join('').length === 6 &&
       e.key !== 'Backspace' &&
@@ -61,7 +69,6 @@ export default function VerifyOtpPage() {
       !e.ctrlKey &&
       !e.metaKey
     ) {
-      // If the input doesn't have selected text, prevent the new keystroke
       const target = e.target as HTMLInputElement
       if (target.selectionStart === target.selectionEnd) {
         e.preventDefault()
@@ -69,7 +76,6 @@ export default function VerifyOtpPage() {
     }
 
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      // Move to previous input on backspace if current is empty
       focusInput(index - 1)
     } else if (e.key === 'ArrowLeft' && index > 0) {
       focusInput(index - 1)
@@ -90,7 +96,6 @@ export default function VerifyOtpPage() {
     }
     setOtp(newOtp)
 
-    // Focus the next empty input or blur if full
     const nextIndex = Math.min(pastedData.length, 5)
     if (pastedData.length === 6) {
       inputRefs.current[5]?.blur()
@@ -99,28 +104,67 @@ export default function VerifyOtpPage() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const otpValue = otp.join('')
     if (otpValue.length === 6) {
-      console.log('Verifying OTP:', otpValue)
-      // Navigate to success or home
-      // navigate('/')
+      setError(null)
+      setSuccess(null)
+      setIsSubmitting(true)
+      try {
+        const response = await api.post('/auth/verify-register-otp', {
+          email,
+          otpCode: otpValue
+        })
+        if (response.data && response.data.code === 200) {
+          setSuccess('Kích hoạt tài khoản thành công! Đang chuyển hướng sang đăng nhập...')
+          setTimeout(() => {
+            navigate('/login')
+          }, 2000)
+        } else {
+          setError(response.data?.message || 'Xác thực OTP thất bại')
+        }
+      } catch (err: any) {
+        setError(err?.message || 'Mã OTP không chính xác hoặc đã hết hạn.')
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 
-  const handleResend = () => {
-    console.log('Resend OTP logic here')
-    setTimeLeft(300)
+  const handleResend = async () => {
+    setError(null)
+    setSuccess(null)
+    try {
+      await api.post('/auth/forgot-password', { email })
+      setSuccess('Mã OTP mới đã được gửi lại vào email của bạn.')
+      setTimeLeft(300)
+    } catch (err: any) {
+      setError(err?.message || 'Không thể gửi lại OTP.')
+    }
   }
 
   return (
     <div className="w-full space-y-6">
       {/* Header Section */}
       <div className="text-center">
-    <h2 className="mb-1 font-sans text-xl font-bold text-white sm:text-2xl">Verify Email</h2>
-    <p className="text-xs text-white/70 sm:text-sm">We've sent a 6-digit code to your email.</p>
+        <h2 className="mb-1 font-sans text-xl font-bold text-foreground sm:text-2xl">Verify Email</h2>
+        <p className="text-xs text-muted-foreground sm:text-sm">
+          We've sent a 6-digit code to <span className="font-semibold text-primary">{email}</span>
+        </p>
       </div>
+
+      {error && (
+        <div className="alert alert-error rounded-sm text-xs py-2 px-3 text-error-content">
+          <span>{error}</span>
+        </div>
+      )}
+
+      {success && (
+        <div className="alert alert-success rounded-sm text-xs py-2 px-3 text-success-content">
+          <span>{success}</span>
+        </div>
+      )}
 
       {/* OTP Form */}
       <form className="w-full space-y-4" onSubmit={handleSubmit}>
@@ -140,7 +184,7 @@ export default function VerifyOtpPage() {
               onKeyDown={(e) => handleKeyDown(index, e)}
               onFocus={(e) => e.target.select()}
               onPaste={handlePaste}
-              className="h-9 w-9 rounded-sm border border-white/10 bg-[#201f24] text-center text-base font-bold text-white transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10 sm:w-10 sm:text-lg"
+              className="h-9 w-9 rounded-sm border border-border bg-muted/40 text-center text-base font-bold text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10 sm:w-10 sm:text-lg"
             />
           ))}
         </div>
@@ -149,10 +193,10 @@ export default function VerifyOtpPage() {
         <div className="pt-2">
           <button
             type="submit"
-            disabled={otp.join('').length !== 6}
+            disabled={otp.join('').length !== 6 || isSubmitting}
             className="flex h-10 w-full items-center justify-center gap-2 rounded-md border-none bg-primary text-sm font-bold text-on-primary shadow-lg transition-all hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Verify Account
+            {isSubmitting ? 'Verifying...' : 'Verify Account'}
           </button>
         </div>
       </form>
@@ -160,13 +204,13 @@ export default function VerifyOtpPage() {
       {/* Secondary Action */}
       <div className="flex flex-col items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-white/70">Didn't receive the code?</span>
+          <span className="text-sm text-muted-foreground">Didn't receive the code?</span>
           <button
             type="button"
             disabled={timeLeft > 0}
             className={`text-sm font-bold transition-all ${timeLeft > 0
-              ? 'cursor-not-allowed text-white/45'
-              : 'text-[#d8c3ff] hover:underline'
+              ? 'cursor-not-allowed text-muted-foreground/50'
+              : 'text-primary hover:underline'
               }`}
             onClick={handleResend}
           >
@@ -178,7 +222,7 @@ export default function VerifyOtpPage() {
       <div className="flex justify-center">
         <button
           onClick={() => navigate('/register')}
-          className="flex items-center gap-2 text-sm font-medium text-[#d8c3ff] transition-opacity hover:opacity-80"
+          className="flex items-center gap-2 text-sm font-medium text-primary transition-opacity hover:opacity-80"
         >
           <ArrowLeft size={16} />
           Back to Register
