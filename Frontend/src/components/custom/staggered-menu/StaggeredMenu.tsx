@@ -3,7 +3,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { User, Sun, Moon, LogOut, SunMoon, Check } from 'lucide-react';
+import { User, Sun, Moon, LogOut, SunMoon, Check, LogIn, UserPlus } from 'lucide-react';
 import { gsap } from 'gsap';
 import './StaggeredMenu.css';
 
@@ -16,6 +16,13 @@ export interface MenuItem {
 export interface SocialItem {
   label: string;
   link: string;
+}
+
+export interface AuthUser {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
 }
 
 export interface StaggeredMenuProps {
@@ -39,6 +46,10 @@ export interface StaggeredMenuProps {
   toggleTheme?: () => void;
   themeMode?: 'light' | 'dark' | 'system';
   setThemeMode?: (mode: 'light' | 'dark' | 'system') => void;
+  /** Pass the authenticated user object, or null/undefined if not logged in */
+  user?: AuthUser | null;
+  /** Callback triggered when user clicks Logout */
+  onLogout?: () => void;
 }
 
 const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
@@ -55,7 +66,9 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   onMenuOpen,
   onMenuClose,
   themeMode = 'system',
-  setThemeMode
+  setThemeMode,
+  user = null,
+  onLogout,
 }) => {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -574,44 +587,90 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
                 </div>
 
-                {/* User Row: (avt) user name (logout icon) */}
-                <div className="sm-socials-link flex items-center justify-between gap-3 w-full pt-1">
-                  <div className="flex items-center gap-3">
-                    {/* (avt) Avatar */}
-                    <a
-                      href="/profile"
-                      className="h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/20 flex items-center justify-center text-primary transition-all hover:scale-105"
-                      onClick={(e) => {
-                        e.preventDefault()
+                {/* User Row: dynamic based on auth state */}
+                {user ? (
+                  /* ── LOGGED IN ── */
+                  <div className="sm-socials-link flex items-center justify-between gap-3 w-full pt-1">
+                    <div className="flex items-center gap-3">
+                      {/* Avatar Button → Profile */}
+                      <a
+                        href="/profile"
+                        className="h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/20 flex items-center justify-center text-primary transition-all hover:scale-105"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          closeMenu()
+                          if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
+                          navTimeoutRef.current = window.setTimeout(() => {
+                            navigate('/profile')
+                            navTimeoutRef.current = null
+                          }, 340)
+                        }}
+                        title="Hồ sơ cá nhân"
+                      >
+                        <User className="h-4.5 w-4.5" />
+                      </a>
+                      {/* User display name + role badge */}
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-semibold text-foreground truncate max-w-[140px]">
+                          {user.username}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground capitalize">
+                          {user.role.toLowerCase()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Logout Button */}
+                    <button
+                      onClick={() => {
                         closeMenu()
                         if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
                         navTimeoutRef.current = window.setTimeout(() => {
-                          navigate('/profile')
+                          onLogout?.()
                           navTimeoutRef.current = null
                         }, 340)
                       }}
-                      title="Hồ sơ cá nhân"
+                      className="h-8 w-8 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive flex items-center justify-center transition-colors bg-transparent border-0 outline-none cursor-pointer"
+                      title="Đăng xuất"
                     >
-                      <User className="h-4.5 w-4.5" />
-                    </a>
-                    {/* User Name */}
-                    <span className="text-xs font-semibold text-foreground truncate max-w-[150px]">
-                      Khánh Lê
-                    </span>
+                      <LogOut className="h-4 w-4" />
+                    </button>
                   </div>
-
-                  {/* (logout icon) Logout Icon Button */}
-                  <button 
-                    onClick={() => {
-                      alert('Đăng xuất thành công!');
-                      closeMenu();
-                    }}
-                    className="h-8 w-8 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive flex items-center justify-center transition-colors bg-transparent border-0 outline-none cursor-pointer"
-                    title="Đăng xuất"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </button>
-                </div>
+                ) : (
+                  /* ── NOT LOGGED IN ── */
+                  <div className="sm-socials-link flex flex-col items-center gap-2 w-full pt-1">
+                    {/* Primary Login Button */}
+                    <button
+                      onClick={() => {
+                        closeMenu()
+                        if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
+                        navTimeoutRef.current = window.setTimeout(() => {
+                          navigate('/login')
+                          navTimeoutRef.current = null
+                        }, 340)
+                      }}
+                      className="w-full flex items-center justify-center gap-2 h-10 rounded-lg bg-primary text-on-primary hover:opacity-90 text-sm font-semibold transition-all cursor-pointer border-0 shadow-sm"
+                    >
+                      <LogIn className="h-4 w-4" />
+                      Đăng nhập
+                    </button>
+                    {/* Link-style Register */}
+                    <button
+                      onClick={() => {
+                        closeMenu()
+                        if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
+                        navTimeoutRef.current = window.setTimeout(() => {
+                          navigate('/register')
+                          navTimeoutRef.current = null
+                        }, 340)
+                      }}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors cursor-pointer bg-transparent border-0 outline-none"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                      Chưa có tài khoản? <span className="font-semibold text-primary underline underline-offset-2">Đăng ký</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </aside>
