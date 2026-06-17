@@ -30,42 +30,40 @@ public class GeminiSummaryService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         try {
-            // Sử dụng các key SNAKE_CASE chuẩn xác theo yêu cầu API v1
-            Map<String, Object> systemInstruction = new HashMap<>();
-            Map<String, Object> partsSys = new HashMap<>();
-            partsSys.put("text", "Bạn là một AI Summarization Agent chuyên nghiệp cho một ứng dụng đọc truyện chữ. Nhiệm vụ của bạn là tóm tắt nội dung của các chương truyện.\n" +
-                    "Trả về duy nhất 1 object JSON với cấu trúc: {\"chapter_title\": \"...\", \"summary_text\": \"...\", \"key_characters\": [\"...\"], \"main_events\": [\"...\"]}");
-            systemInstruction.put("parts", List.of(partsSys));
+            // Tạo một ObjectMapper độc lập hoàn toàn, không dính cấu hình global của dự án
+            ObjectMapper localMapper = new ObjectMapper();
+            
+            // Escape nội dung văn bản truyện để tránh lỗi xuống dòng hoặc dấu nháy kép làm vỡ JSON
+            String escapedText = localMapper.writeValueAsString(text);
 
-            Map<String, Object> contents = new HashMap<>();
-            Map<String, Object> partsContent = new HashMap<>();
-            partsContent.put("text", text);
-            contents.put("parts", List.of(partsContent));
+            // Viết chuỗi JSON thô với các key chuẩn snake_case theo tài liệu Gemini API v1
+            String jsonBody = "{"
+                + "\"contents\": [{"
+                + "    \"parts\": [{\"text\": " + escapedText + "}]"
+                + "}],"
+                + "\"system_instruction\": {"
+                + "    \"parts\": [{\"text\": \"Bạn là một AI Summarization Agent chuyên nghiệp cho một ứng dụng đọc truyện chữ. Nhiệm vụ của bạn là tóm tắt nội dung của các chương truyện.\\nTrả về duy nhất 1 object JSON với cấu trúc: {\\\"chapter_title\\\": \\\"...\\\", \\\"summary_text\\\": \\\"...\\\", \\\"key_characters\\\": [\\\"...\\\"], \\\"main_events\\\": [\\\"...\\\"]}\"}]"
+                + "},"
+                + "\"generation_config\": {"
+                + "    \"response_mime_type\": \"application/json\""
+                + "}"
+                + "}";
 
-            Map<String, Object> generationConfig = new HashMap<>();
-            generationConfig.put("response_mime_type", "application/json");
+            // Đưa trực tiếp chuỗi String cứng này vào HttpEntity<String>
+            HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
 
-            Map<String, Object> body = new HashMap<>();
-            body.put("system_instruction", systemInstruction);
-            body.put("contents", List.of(contents));
-            body.put("generation_config", generationConfig);
-
-            // Serialize thủ công thành Raw JSON String để tránh bị RestTemplate/Jackson tự động ép kiểu sai
-            String rawJsonPayload = objectMapper.writeValueAsString(body);
-
-            HttpEntity<String> entity = new HttpEntity<>(rawJsonPayload, headers);
-
+            // Gửi POST request đi bằng RestTemplate
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
             
             if (response.getStatusCode() == HttpStatus.OK) {
-                JsonNode rootNode = objectMapper.readTree(response.getBody());
+                JsonNode rootNode = localMapper.readTree(response.getBody());
                 JsonNode candidatesNode = rootNode.path("candidates");
                 if (candidatesNode.isArray() && !candidatesNode.isEmpty()) {
                     JsonNode contentNode = candidatesNode.get(0).path("content");
                     JsonNode partsNode = contentNode.path("parts");
                     if (partsNode.isArray() && !partsNode.isEmpty()) {
                         String jsonString = partsNode.get(0).path("text").asText();
-                        return objectMapper.readValue(jsonString, ChapterSummaryResponse.class);
+                        return localMapper.readValue(jsonString, ChapterSummaryResponse.class);
                     }
                 }
             }
