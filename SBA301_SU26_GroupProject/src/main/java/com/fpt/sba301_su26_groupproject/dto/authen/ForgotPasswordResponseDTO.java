@@ -3,7 +3,7 @@ package com.fpt.sba301_su26_groupproject.dto.authen;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record ForgotPasswordResponseDTO(
-        @Schema(example = "user@example.com")
+        @Schema(example = "user@sba.com")
         String email,
         @Schema(example = "Mật khẩu mới đã được gửi đến email của bạn thành công.")
         String message,

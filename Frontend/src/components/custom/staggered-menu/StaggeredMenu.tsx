@@ -3,7 +3,8 @@
 import React, { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { User, Sun, Moon, LogOut, SunMoon, Check, LogIn, UserPlus } from 'lucide-react';
+import { Sun, Moon, LogOut, SunMoon, Check, LogIn, UserPlus } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { gsap } from 'gsap';
 import './StaggeredMenu.css';
 
@@ -19,10 +20,12 @@ export interface SocialItem {
 }
 
 export interface AuthUser {
-  id: number;
+  id: string | number;
   username: string;
   email: string;
   role: string;
+  avatarUrl?: string;
+  fullName?: string;
 }
 
 export interface StaggeredMenuProps {
@@ -595,7 +598,7 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                       {/* Avatar Button → Profile */}
                       <a
                         href="/profile"
-                        className="h-9 w-9 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/20 flex items-center justify-center text-primary transition-all hover:scale-105"
+                        className="h-9 w-9 rounded-full transition-all hover:scale-105"
                         onClick={(e) => {
                           e.preventDefault()
                           closeMenu()
@@ -607,7 +610,12 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         }}
                         title="Hồ sơ cá nhân"
                       >
-                        <User className="h-4.5 w-4.5" />
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={user.avatarUrl} alt={user.username} />
+                          <AvatarFallback className="bg-primary text-on-primary font-bold text-xs">
+                            {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                          </AvatarFallback>
+                        </Avatar>
                       </a>
                       {/* User display name + role badge */}
                       <div className="flex flex-col min-w-0">
@@ -645,7 +653,7 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         closeMenu()
                         if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
                         navTimeoutRef.current = window.setTimeout(() => {
-                          navigate('/login')
+                          navigate('/login', { replace: true })
                           navTimeoutRef.current = null
                         }, 340)
                       }}

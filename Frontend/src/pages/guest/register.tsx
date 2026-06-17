@@ -2,23 +2,29 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useSubmit from '../../hooks/useSubmit'
 import { api } from '../../lib/api'
+import { useErrorHandler } from '../../lib/error-handler'
+import { cn } from '../../lib/utils'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+  const { handleError } = useErrorHandler()
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
+  const [address, setAddress] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [address, setAddress] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const { isSubmitting, wrap } = useSubmit()
 
   const handleSubmit = wrap(async () => {
     setError(null)
+    setFieldErrors({})
     if (password !== confirmPassword) {
-      setError('Mật khẩu và xác nhận mật khẩu không trùng khớp.')
+      setFieldErrors({ confirmPassword: 'Mật khẩu và xác nhận mật khẩu không trùng khớp.' })
+      setError('Đăng ký thất bại. Vui lòng kiểm tra lại các trường thông tin.')
       return
     }
 
@@ -29,7 +35,6 @@ export default function RegisterPage() {
         email,
         password,
         confirmPassword,
-        address,
         isActive: false
       })
 
@@ -40,6 +45,10 @@ export default function RegisterPage() {
         setError(response.data?.message || 'Đăng ký thất bại')
       }
     } catch (err: any) {
+      handleError(err, { showToast: true })
+      if (err && err.errors) {
+        setFieldErrors(err.errors)
+      }
       setError(err?.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.')
     }
   })
@@ -52,12 +61,6 @@ export default function RegisterPage() {
         <p className="text-xs text-muted-foreground sm:text-sm">Join the community of readers.</p>
       </div>
 
-      {error && (
-        <div className="alert alert-error rounded-sm text-xs py-2 px-3 text-error-content">
-          <span>{error}</span>
-        </div>
-      )}
-
       {/* Register Form */}
       <form className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4" onSubmit={handleSubmit}>
         {/* Name Field */}
@@ -65,9 +68,15 @@ export default function RegisterPage() {
           <label className="ml-1 block text-sm font-medium text-foreground/75" htmlFor="name">
             Full Name
           </label>
-          <div className="group relative rounded-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
+          <div className={cn(
+            "group relative rounded-sm transition-all focus-within:ring-2",
+            fieldErrors.fullName ? "focus-within:ring-error/20" : "focus-within:ring-primary/20"
+          )}>
             <input
-              className="h-10 w-full rounded-sm border border-border bg-muted/40 px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+              className={cn(
+                "h-10 w-full rounded-sm border bg-muted/40 px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:outline-none",
+                fieldErrors.fullName ? "border-error focus:border-error" : "border-border focus:border-primary"
+              )}
               id="name"
               placeholder="John Doe"
               type="text"
@@ -76,6 +85,9 @@ export default function RegisterPage() {
               required
             />
           </div>
+          {fieldErrors.fullName && (
+            <p className="ml-1 mt-1 text-[11px] text-error font-medium">{fieldErrors.fullName}</p>
+          )}
         </div>
 
         {/* Phone Field */}
@@ -83,9 +95,15 @@ export default function RegisterPage() {
           <label className="ml-1 block text-sm font-medium text-foreground/75" htmlFor="phone">
             Phone Number
           </label>
-          <div className="group relative rounded-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
+          <div className={cn(
+            "group relative rounded-sm transition-all focus-within:ring-2",
+            fieldErrors.phone ? "focus-within:ring-error/20" : "focus-within:ring-primary/20"
+          )}>
             <input
-              className="h-10 w-full rounded-sm border border-border bg-muted/40 px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+              className={cn(
+                "h-10 w-full rounded-sm border bg-muted/40 px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:outline-none",
+                fieldErrors.phone ? "border-error focus:border-error" : "border-border focus:border-primary"
+              )}
               id="phone"
               placeholder="0912345678"
               type="tel"
@@ -94,6 +112,9 @@ export default function RegisterPage() {
               required
             />
           </div>
+          {fieldErrors.phone && (
+            <p className="ml-1 mt-1 text-[11px] text-error font-medium">{fieldErrors.phone}</p>
+          )}
         </div>
 
         {/* Email Field */}
@@ -101,9 +122,15 @@ export default function RegisterPage() {
           <label className="ml-1 block text-sm font-medium text-foreground/75" htmlFor="email">
             Email Address
           </label>
-          <div className="group relative rounded-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
+          <div className={cn(
+            "group relative rounded-sm transition-all focus-within:ring-2",
+            fieldErrors.email ? "focus-within:ring-error/20" : "focus-within:ring-primary/20"
+          )}>
             <input
-              className="h-10 w-full rounded-sm border border-border bg-muted/40 px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+              className={cn(
+                "h-10 w-full rounded-sm border bg-muted/40 px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:outline-none",
+                fieldErrors.email ? "border-error focus:border-error" : "border-border focus:border-primary"
+              )}
               id="email"
               placeholder="name@domain.com"
               type="email"
@@ -112,6 +139,9 @@ export default function RegisterPage() {
               required
             />
           </div>
+          {fieldErrors.email && (
+            <p className="ml-1 mt-1 text-[11px] text-error font-medium">{fieldErrors.email}</p>
+          )}
         </div>
 
         {/* Password Field */}
@@ -121,9 +151,15 @@ export default function RegisterPage() {
               Password
             </label>
           </div>
-          <div className="group relative rounded-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
+          <div className={cn(
+            "group relative rounded-sm transition-all focus-within:ring-2",
+            fieldErrors.password ? "focus-within:ring-error/20" : "focus-within:ring-primary/20"
+          )}>
             <input
-              className="h-10 w-full rounded-sm border border-border bg-muted/40 px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+              className={cn(
+                "h-10 w-full rounded-sm border bg-muted/40 px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:outline-none",
+                fieldErrors.password ? "border-error focus:border-error" : "border-border focus:border-primary"
+              )}
               id="password"
               placeholder="••••••••"
               type="password"
@@ -132,6 +168,9 @@ export default function RegisterPage() {
               required
             />
           </div>
+          {fieldErrors.password && (
+            <p className="ml-1 mt-1 text-[11px] text-error font-medium">{fieldErrors.password}</p>
+          )}
         </div>
 
         {/* Confirm Password Field */}
@@ -141,9 +180,15 @@ export default function RegisterPage() {
               Confirm Password
             </label>
           </div>
-          <div className="group relative rounded-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
+          <div className={cn(
+            "group relative rounded-sm transition-all focus-within:ring-2",
+            fieldErrors.confirmPassword ? "focus-within:ring-error/20" : "focus-within:ring-primary/20"
+          )}>
             <input
-              className="h-10 w-full rounded-sm border border-border bg-muted/40 px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+              className={cn(
+                "h-10 w-full rounded-sm border bg-muted/40 px-3 text-sm text-foreground transition-colors placeholder:text-muted-foreground/50 focus:outline-none",
+                fieldErrors.confirmPassword ? "border-error focus:border-error" : "border-border focus:border-primary"
+              )}
               id="confirmPassword"
               placeholder="••••••••"
               type="password"
@@ -152,6 +197,9 @@ export default function RegisterPage() {
               required
             />
           </div>
+          {fieldErrors.confirmPassword && (
+            <p className="ml-1 mt-1 text-[11px] text-error font-medium">{fieldErrors.confirmPassword}</p>
+          )}
         </div>
 
         {/* Primary Action */}
@@ -171,7 +219,7 @@ export default function RegisterPage() {
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Already have an account?</span>
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/login', { replace: true })}
             className="text-sm font-bold text-primary transition-all hover:underline"
           >
             Login

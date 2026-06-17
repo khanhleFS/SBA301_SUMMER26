@@ -18,17 +18,19 @@ export default function LoginPage() {
     try {
       const response = await api.post('/auth/login', { email, password })
       if (response.data && response.data.code === 200) {
-        const { token, userId, username, email: userEmail, role } = response.data.result
+        const { accessToken, userId, username, email: userEmail, role } = response.data.result
         login(
           {
             id: userId,
             username,
             email: userEmail,
             role,
+            fullName: username,
+            avatarUrl: undefined,
           },
-          token
+          accessToken
         )
-        navigate('/')
+        navigate('/', { replace: true })
       } else {
         setError(response.data?.message || 'Đăng nhập thất bại')
       }
@@ -46,8 +48,17 @@ export default function LoginPage() {
       </div>
 
       {error && (
-        <div className="alert alert-error rounded-sm text-xs py-2 px-3 text-error-content">
+        <div className="alert alert-error rounded-sm text-xs py-2.5 px-3 text-error-content flex flex-col items-start gap-1">
           <span>{error}</span>
+          {error.includes('chưa được kích hoạt') && (
+            <button
+              type="button"
+              onClick={() => navigate('/verify-otp', { state: { email } })}
+              className="mt-1 text-xs font-bold underline cursor-pointer hover:opacity-90"
+            >
+              Nhấn vào đây để xác thực OTP ngay
+            </button>
+          )}
         </div>
       )}
 

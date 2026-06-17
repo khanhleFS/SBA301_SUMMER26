@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import { AuthProvider } from '@/lib/auth'
 
 /**
@@ -17,17 +17,11 @@ const PAGE_TRANSITION_STYLE = `
 `
 
 export default function RootLayout() {
-  const location = useLocation()
-
   return (
     <AuthProvider>
       {/* Inject global keyframe once */}
       <style dangerouslySetInnerHTML={{ __html: PAGE_TRANSITION_STYLE }} />
-      {/*
-        key={location.key} forces React to unmount → remount the wrapper
-        on every navigation, which restarts the CSS animation cleanly.
-      */}
-      <div key={location.key} className="_page-transition">
+      <div className="_page-transition">
         <Outlet />
       </div>
     </AuthProvider>

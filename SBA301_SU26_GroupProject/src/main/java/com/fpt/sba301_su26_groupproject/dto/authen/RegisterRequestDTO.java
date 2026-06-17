@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 public record RegisterRequestDTO(
         @NotBlank(message = "Họ tên không được để trống.")
-        @Size(min = 9, max = 50, message = "Họ tên phải từ 2 đến 50 ký tự.")
+        @Size(min = 9, max = 50, message = "Họ tên phải từ 9 đến 50 ký tự.")
         @Pattern(regexp = "^\\S.*\\S$|^\\S$", message = "Họ tên không được có khoảng trắng ở đầu hoặc cuối.")
         @Pattern(regexp = "^[\\p{L} ]+$", message = "Họ tên chỉ được chứa chữ cái và khoảng trắng.")
         @Pattern(regexp = "^(?!.*\\s{2,}).*$", message = "Họ tên không được có 2 khoảng trắng liên tiếp.")
@@ -41,10 +41,6 @@ public record RegisterRequestDTO(
         @Schema(example = "P@ssw0rd123")
         String confirmPassword,
 
-        @NotBlank(message = "Địa chỉ không được để trống.")
-        @Size(max = 200, message = "Địa chỉ không được vượt quá 200 ký tự.")
-        @Pattern(regexp = "^\\S.*\\S$|^\\S$", message = "Địa chỉ không được có khoảng trắng ở đầu hoặc cuối.")
-        @Pattern(regexp = "^(?!.*\\s{2,}).*$", message = "Địa chỉ không được có 2 khoảng trắng liên tiếp.")
         @Schema(example = "123 Nguyen Trai, District 1, Ho Chi Minh City")
         String address,
 

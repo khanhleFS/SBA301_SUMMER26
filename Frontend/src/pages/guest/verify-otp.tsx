@@ -3,11 +3,13 @@ import type { ClipboardEvent, KeyboardEvent } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { api } from '../../lib/api'
+import { useErrorHandler } from '../../lib/error-handler'
 
 export default function VerifyOtpPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const email = location.state?.email || ''
+  const { handleError, addToast } = useErrorHandler()
 
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''))
   const [timeLeft, setTimeLeft] = useState(300) // 5 minutes in seconds
@@ -44,6 +46,7 @@ export default function VerifyOtpPage() {
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return
+    setError(null)
 
     const newOtp = [...otp]
     newOtp[index] = value.substring(value.length - 1)
@@ -59,6 +62,7 @@ export default function VerifyOtpPage() {
   }
 
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
+    setError(null)
     if (
       otp.join('').length === 6 &&
       e.key !== 'Backspace' &&
@@ -86,6 +90,7 @@ export default function VerifyOtpPage() {
 
   const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault()
+    setError(null)
     const pastedData = e.clipboardData.getData('text/plain').slice(0, 6)
 
     if (!/^\d+$/.test(pastedData)) return
@@ -117,15 +122,27 @@ export default function VerifyOtpPage() {
           otpCode: otpValue
         })
         if (response.data && response.data.code === 200) {
-          setSuccess('Kích hoạt tài khoản thành công! Đang chuyển hướng sang đăng nhập...')
+          addToast({
+            title: 'Kích hoạt tài khoản thành công!',
+            message: 'Đang chuyển hướng sang đăng nhập...',
+            variant: 'success'
+          })
           setTimeout(() => {
-            navigate('/login')
+            navigate('/login', { replace: true })
           }, 2000)
         } else {
-          setError(response.data?.message || 'Xác thực OTP thất bại')
+          const errMsg = response.data?.message || 'Xác thực OTP thất bại'
+          setError(errMsg)
+          addToast({
+            title: 'Lỗi xác thực',
+            message: errMsg,
+            variant: 'error'
+          })
         }
       } catch (err: any) {
-        setError(err?.message || 'Mã OTP không chính xác hoặc đã hết hạn.')
+        const errMsg = err?.message || 'Mã OTP không chính xác hoặc đã hết hạn.'
+        setError(errMsg)
+        handleError(err, { showToast: true, toastTitle: 'Lỗi xác thực' })
       } finally {
         setIsSubmitting(false)
       }
@@ -137,10 +154,14 @@ export default function VerifyOtpPage() {
     setSuccess(null)
     try {
       await api.post('/auth/forgot-password', { email })
-      setSuccess('Mã OTP mới đã được gửi lại vào email của bạn.')
+      addToast({
+        title: 'Đã gửi lại OTP',
+        message: 'Mã OTP mới đã được gửi lại vào email của bạn.',
+        variant: 'success'
+      })
       setTimeLeft(300)
     } catch (err: any) {
-      setError(err?.message || 'Không thể gửi lại OTP.')
+      handleError(err, { showToast: true, toastTitle: 'Gửi lại OTP thất bại' })
     }
   }
 
@@ -153,18 +174,6 @@ export default function VerifyOtpPage() {
           We've sent a 6-digit code to <span className="font-semibold text-primary">{email}</span>
         </p>
       </div>
-
-      {error && (
-        <div className="alert alert-error rounded-sm text-xs py-2 px-3 text-error-content">
-          <span>{error}</span>
-        </div>
-      )}
-
-      {success && (
-        <div className="alert alert-success rounded-sm text-xs py-2 px-3 text-success-content">
-          <span>{success}</span>
-        </div>
-      )}
 
       {/* OTP Form */}
       <form className="w-full space-y-4" onSubmit={handleSubmit}>
@@ -184,7 +193,12 @@ export default function VerifyOtpPage() {
               onKeyDown={(e) => handleKeyDown(index, e)}
               onFocus={(e) => e.target.select()}
               onPaste={handlePaste}
-              className="h-9 w-9 rounded-sm border border-border bg-muted/40 text-center text-base font-bold text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:h-10 sm:w-10 sm:text-lg"
+              className={cn(
+                "h-9 w-9 rounded-sm border bg-muted/40 text-center text-base font-bold text-foreground transition-colors focus:outline-none focus:ring-2 sm:h-10 sm:w-10 sm:text-lg",
+                error
+                  ? "border-error focus:border-error focus:ring-error/20"
+                  : "border-border focus:border-primary focus:ring-primary/20"
+              )}
             />
           ))}
         </div>

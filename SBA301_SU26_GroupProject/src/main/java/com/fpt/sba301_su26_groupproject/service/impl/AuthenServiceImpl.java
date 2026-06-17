@@ -120,7 +120,7 @@ public class AuthenServiceImpl implements AuthenService {
                 .email(request.email())
                 .phone(request.phone())
                 .password(passwordEncoder.encode(request.password()))
-                .address(request.address())
+                .address(request.address() != null && !request.address().isBlank() ? request.address() : "Chưa cập nhật")
                 .role(UserRole.USER)
                 .isActive(false) // Mặc định là false
                 .build();

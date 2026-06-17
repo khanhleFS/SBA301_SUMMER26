@@ -11,6 +11,24 @@ services:
       - MSSQL_SA_PASSWORD=${DB_PASSWORD}
     volumes:
       - mssql_data:/var/opt/mssql
+      - ./init-db.sql:/init-db.sql
+      - ./SBA301_SU26_GroupProject/src/main/resources/data/schema.sql:/schema.sql
+      - ./SBA301_SU26_GroupProject/src/main/resources/data/insert_data.sql:/insert_data.sql
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${DB_PASSWORD}", "-Q", "SELECT 1", "-No"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - sba-network
+
+  db-web-gui:
+    image: dbgate/dbgate
+    container_name: db-web-gui
+    ports:
+      - "3000:3000"
     restart: unless-stopped
     networks:
       - sba-network
@@ -30,12 +48,15 @@ services:
     build:
       context: ./SBA301_SU26_GroupProject
       dockerfile: Dockerfile
+    image: hohuy1405/sba-backend:latest
     container_name: sba-backend
     ports:
       - "8080:8080"
     depends_on:
-      - sba-db
-      - sba-redis
+      sba-db:
+        condition: service_healthy
+      sba-redis:
+        condition: service_started
     environment:
       - DB_HOST=sba-db
       - DB_PORT=1433
@@ -55,6 +76,7 @@ services:
     build:
       context: ./Frontend
       dockerfile: Dockerfile
+    image: hohuy1405/sba-frontend:latest
     container_name: sba-frontend
     ports:
       - "80:80"

@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 
 public record LoginRequestDTO (@NotBlank(message = "Email không được để trống.")
                                @Email(message = "Email không đúng định dạng.")
-                               @Schema(example = "user@example.com")
+                               @Schema(example = "user@sba.com")
                                 String email,
 
                                @NotBlank(message = "Mật khẩu không được để trống.")
-                               @Schema(example = "P@ssw0rd123")
+                               @Schema(example = "Password123")
                                String password){}

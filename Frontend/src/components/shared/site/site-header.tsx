@@ -5,6 +5,7 @@ import Container from './container'
 import StaggeredMenu from '@/components/custom/staggered-menu/StaggeredMenu'
 import { SearchInput } from './search-input'
 import { useAuth } from '@/lib/auth'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 export default function SiteHeader() {
   const navigate = useNavigate()
@@ -50,10 +51,13 @@ export default function SiteHeader() {
       setIsDark(document.documentElement.classList.contains('dark'))
     })
 
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    })
+    const applyObs = () => {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+      })
+    }
+    applyObs();
 
     return () => observer.disconnect()
   }, [])
@@ -142,11 +146,16 @@ export default function SiteHeader() {
               className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted transition-colors text-foreground"
               title="Hồ sơ cá nhân"
             >
-              <User className="h-5 w-5" />
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.avatarUrl} alt={user?.username} />
+                <AvatarFallback className="bg-primary text-on-primary font-bold text-xs">
+                  {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                </AvatarFallback>
+              </Avatar>
             </Link>
           ) : (
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/login', { replace: true })}
               className="hidden sm:flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted transition-colors text-foreground"
               title="Đăng nhập"
             >

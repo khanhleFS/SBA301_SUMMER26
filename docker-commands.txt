@@ -31,6 +31,9 @@ docker compose up -d --build
 # Chạy lại không build lại image
 docker compose up -d
 
+# Chạy lại không build lại backend
+docker compose up -d --build sba-db sba-redis sba-backend 
+
 # Tắt toàn bộ stack
 docker compose down
 

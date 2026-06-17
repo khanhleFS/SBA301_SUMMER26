@@ -244,6 +244,19 @@
     --tw-ring-color: var(--primary) !important;
   }
 
+  /* Error classes overrides */
+  .border-error {
+    border-color: var(--error) !important;
+  }
+
+  .text-error {
+    color: var(--error) !important;
+  }
+
+  .ring-error {
+    --tw-ring-color: var(--error) !important;
+  }
+
   /* Force ring opacity to 100% when needed */
   .ring-primary-opaque {
     --tw-ring-opacity: 1 !important;

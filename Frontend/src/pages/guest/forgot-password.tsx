@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
             {/* Secondary Action */}
             <div className="flex justify-center">
                 <button
-                    onClick={() => navigate('/login')}
+                    onClick={() => navigate('/login', { replace: true })}
                     className="flex items-center gap-2 text-sm font-medium text-[#d8c3ff] transition-opacity hover:opacity-80"
                 >
                     <ArrowLeft size={16} />

@@ -15,8 +15,7 @@ export function PersonalInfoSection() {
   const user = data?.user
 
   const personalInfo: InfoRow[] = [
-    { label: 'Tên người dùng', value: user?.username ?? '—', icon: AtSign },
-    { label: 'Thành viên từ', value: user?.memberSince ?? '—', icon: Calendar },
+    { label: 'Tên người dùng', value: user?.displayName ?? '—', icon: AtSign },
     { label: 'Địa chỉ Email', value: user?.email ?? '—', icon: Mail }
   ]
 
@@ -36,7 +35,7 @@ export function PersonalInfoSection() {
                 <p className="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant/60">
                   {label}
                 </p>
-                <p className="mt-1 truncate text-sm font-medium text-on-surface">
+                <p className="mt-1 text-sm font-medium text-on-surface">
                   {value}
                 </p>
               </div>

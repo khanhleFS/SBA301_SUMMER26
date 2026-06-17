@@ -3,10 +3,12 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { api } from './api'
 
 export interface User {
-  id: number
+  id: string | number
   username: string
   email: string
   role: string
+  avatarUrl?: string
+  fullName?: string
 }
 
 interface AuthContextType {
@@ -68,13 +70,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           username: profile.username || user?.username || '',
           email: profile.email || user?.email || '',
           role: profile.role || user?.role || 'USER',
+          fullName: profile.fullName || user?.fullName || '',
+          avatarUrl: profile.avatarUrl || undefined,
         }
         setUser(updatedUser)
         localStorage.setItem('user', JSON.stringify(updatedUser))
       }
     } catch (error) {
-      console.error('Failed to verify profile session:', error)
-      // If unauthorized (401/400), clear credentials
+      console.warn('Failed to verify profile session:', error)
       setUser(null)
       setToken(null)
       localStorage.removeItem('user')
@@ -88,6 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token) {
       refreshProfile()
     } else {
+      setUser(null)
       setIsLoading(false)
     }
   }, [token])

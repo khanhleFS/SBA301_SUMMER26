@@ -40,6 +40,13 @@ export default function DashboardLayout() {
     if (path === '/admin/dashboard-old') {
       return 'Dashboard cũ'
     }
+    if (path.startsWith('/author/novels')) {
+      if (path.includes('/chapters/new')) return 'Thêm chương mới'
+      if (path.includes('/chapters/')) return 'Chỉnh sửa chương'
+      if (path.endsWith('/new')) return 'Tạo truyện mới'
+      if (path === '/author/novels') return 'Quản lý truyện'
+      return 'Chỉnh sửa truyện'
+    }
     return 'Content'
   })()
 

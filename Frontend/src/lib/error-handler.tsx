@@ -324,16 +324,16 @@ export function ToastContainer({
   }
 
   return (
-    <div className="pointer-events-none fixed right-4 top-4 z-[100] flex w-[min(92vw,24rem)] flex-col gap-3">
-      <div className="pointer-events-auto flex justify-end">
+    <div className="pointer-events-none fixed left-1/2 top-4 z-[100] flex w-[min(92vw,24rem)] -translate-x-1/2 flex-col items-center gap-3">
+      {/* <div className="pointer-events-auto flex justify-end">
         <button
           type="button"
           onClick={clearToasts}
-          className="rounded-full border border-[color-mix(in_srgb,var(--outline-variant),transparent_35%)] bg-[color-mix(in_srgb,var(--surface-container-highest),white_4%)] px-3 py-1 text-xs font-medium text-[var(--on-surface-variant)] shadow-lg shadow-black/5 backdrop-blur hover:bg-[color-mix(in_srgb,var(--surface-container-highest),white_10%)]"
+          className="rounded-full border border-[color-mix(in_srgb,var(--outline-variant),transparent_35%)] bg-[color-mix(in_srgb,var(--surface-container-highest),white_4%)] text-xs font-medium text-[var(--on-surface-variant)] shadow-lg shadow-black/5 backdrop-blur hover:bg-[color-mix(in_srgb,var(--surface-container-highest),white_10%)]"
         >
-          Clear all
+          <X className="h-8 w-8" />
         </button>
-      </div>
+      </div> */}
 
       {toasts.map((toast) => (
         <ToastCard key={toast.id} toast={toast} onDismiss={() => removeToast(toast.id)} />
@@ -352,10 +352,10 @@ function ToastCard({
   const variant = toast.variant ?? 'error'
 
   const variantStyles: Record<ToastVariant, string> = {
-    info: 'border-sky-400/40 bg-sky-500/10 text-sky-50',
-    success: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-50',
-    warning: 'border-amber-400/40 bg-amber-500/10 text-amber-50',
-    error: 'border-rose-400/40 bg-rose-500/10 text-rose-50',
+    info: 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-500/20 dark:bg-sky-950/30 dark:text-sky-200',
+    success: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-950/30 dark:text-emerald-200',
+    warning: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/20 dark:bg-amber-950/30 dark:text-amber-200',
+    error: 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-500/20 dark:bg-rose-950/30 dark:text-rose-200',
   }
 
   const Icon = AlertCircle
@@ -365,8 +365,7 @@ function ToastCard({
       role="status"
       aria-live="polite"
       className={cn(
-        'pointer-events-auto rounded-2xl border p-4 shadow-xl shadow-black/10 backdrop-blur transition-all duration-200',
-        'bg-[color-mix(in_srgb,var(--surface-container-highest),white_8%)] text-[var(--on-surface)]',
+        'pointer-events-auto rounded-md border p-4 shadow-xl shadow-black/5 backdrop-blur transition-all duration-200',
         variantStyles[variant]
       )}
     >

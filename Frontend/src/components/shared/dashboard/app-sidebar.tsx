@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useLocation } from 'react-router-dom'
-import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, TrophyIcon, WalletIcon } from "lucide-react"
+import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, TrophyIcon, WalletIcon, BookOpen } from "lucide-react"
 
 import { NavMain } from "@/components/shared/dashboard/nav-main"
 import { NavUser } from "@/components/shared/dashboard/nav-user"
@@ -92,14 +92,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   const isAuthorRoute = location.pathname.startsWith('/author')
-  const navItems = data.navMain.map((item) => {
-    const url = isAuthorRoute ? item.url.replace('/admin', '/author') : item.url
-    return {
-      ...item,
-      url,
-      isActive: location.pathname === url,
+  const navItems = React.useMemo(() => {
+    let items = [...data.navMain]
+    if (isAuthorRoute) {
+      items = [
+        { title: "Tổng quan",        url: "/admin/dashboard",  icon: <LayoutDashboardIcon /> },
+        { title: "Quản lý truyện",    url: "/admin/novels",     icon: <BookOpen />            },
+        { title: "Quản lý tài chính", url: "/admin/finance",    icon: <WalletIcon />          },
+        { title: "Leader board",      url: "/admin/leaderboard", icon: <TrophyIcon />          },
+      ]
     }
-  })
+    return items.map((item) => {
+      const url = isAuthorRoute ? item.url.replace('/admin', '/author') : item.url
+      return {
+        ...item,
+        url,
+        isActive: location.pathname === url || (url !== '/author/dashboard' && location.pathname.startsWith(url)),
+      }
+    })
+  }, [isAuthorRoute, location.pathname])
 
   const isDarkActive = themeMode === 'dark' || (themeMode === 'system' && resolvedTheme === 'dark')
 

@@ -45,17 +45,16 @@ CREATE INDEX idx_users_is_active ON users(is_active);
 -- =========================================================================
 CREATE TABLE otps (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    user_id UNIQUEIDENTIFIER NOT NULL,
+    email NVARCHAR(255) NOT NULL,
     otp_code NVARCHAR(10) NOT NULL,
     is_used BIT NOT NULL DEFAULT 0,
-    expires_at DATETIME NOT NULL,
+    expiry_time DATETIME NOT NULL,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT idx_otps_user_code UNIQUE (user_id, otp_code)
+    CONSTRAINT idx_otps_email_code UNIQUE (email, otp_code)
 );
 
-CREATE INDEX idx_otps_user_id ON otps(user_id);
-CREATE INDEX idx_otps_expires_at ON otps(expires_at);
+CREATE INDEX idx_otps_email ON otps(email);
+CREATE INDEX idx_otps_expiry_time ON otps(expiry_time);
 
 -- -------------------------------------------------------------------------
 -- 3. Categories Table
@@ -80,7 +79,7 @@ CREATE TABLE novels (
     slug NVARCHAR(300) NOT NULL UNIQUE,
     description NVARCHAR(MAX),
     cover_image_url NVARCHAR(500),
-    status NVARCHAR(20) NOT NULL CHECK (status IN ('ongoing', 'completed', 'hiatus')),
+    status NVARCHAR(20) NOT NULL CHECK (status IN ('ONGOING', 'COMPLETED', 'CANCELLED')),
     view_count INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NOT NULL DEFAULT GETDATE(),
@@ -180,7 +179,7 @@ CREATE TABLE payments (
     user_id UNIQUEIDENTIFIER NOT NULL,
     amount_vnd INT NOT NULL CHECK (amount_vnd > 0),
     coins_received INT NOT NULL CHECK (coins_received > 0),
-    status NVARCHAR(20) NOT NULL CHECK (status IN ('pending', 'completed', 'failed', 'cancelled')),
+    status NVARCHAR(20) NOT NULL CHECK (status IN ('PENDING', 'SUCCESS', 'FAILED')),
     provider NVARCHAR(100) NOT NULL,
     transaction_ref NVARCHAR(255),
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
@@ -199,7 +198,7 @@ CREATE INDEX idx_payments_created_at ON payments(created_at);
 CREATE TABLE coin_transactions (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     user_id UNIQUEIDENTIFIER NOT NULL,
-    type NVARCHAR(20) NOT NULL CHECK (type IN ('deposit', 'spend', 'refund', 'bonus', 'adjustment')),
+    type NVARCHAR(20) NOT NULL CHECK (type IN ('TOPUP', 'UNLOCKED_CHAPTER')),
     amount INT NOT NULL,
     balance_after INT NOT NULL CHECK (balance_after >= 0),
     ref_id UNIQUEIDENTIFIER,

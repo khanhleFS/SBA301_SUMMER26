@@ -2,11 +2,11 @@ import { Navigate, Outlet, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import AuthGalleryPlaceholder from '@/components/custom/auth-gallery-placeholder/AuthGalleryPlaceholder'
 
-interface GuestLayoutProps {
-  isAuthenticated?: boolean
-}
+import { useAuth } from '@/lib/auth'
 
-export default function GuestLayout({ isAuthenticated = false }: GuestLayoutProps) {
+export default function GuestLayout() {
+  const { isAuthenticated } = useAuth()
+
   // If user is already authenticated, redirect to home
   if (isAuthenticated) {
     return <Navigate to="/" replace />
