@@ -18,7 +18,7 @@ public class GeminiSummaryService {
     @Value("${gemini.api.key:YOUR_API_KEY_HERE}")
     private String geminiApiKey;
 
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=";
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -44,10 +44,10 @@ public class GeminiSummaryService {
 
         // Generation config for JSON mode
         Map<String, Object> generationConfig = new HashMap<>();
-        generationConfig.put("response_mime_type", "application/json");
+        generationConfig.put("responseMimeType", "application/json");
 
         Map<String, Object> body = new HashMap<>();
-        body.put("system_instruction", systemInstruction);
+        body.put("systemInstruction", systemInstruction);
         body.put("contents", List.of(contents));
         body.put("generationConfig", generationConfig);
 
