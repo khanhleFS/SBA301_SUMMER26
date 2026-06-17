@@ -29,34 +29,35 @@ public class GeminiSummaryService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // System instruction
-        Map<String, Object> systemInstruction = new HashMap<>();
-        Map<String, Object> partsSys = new HashMap<>();
-        partsSys.put("text", "Bạn là một AI Summarization Agent chuyên nghiệp cho một ứng dụng đọc truyện chữ. Nhiệm vụ của bạn là tóm tắt nội dung của các chương truyện.\n" +
-                "Trả về duy nhất 1 object JSON với cấu trúc: {\"chapter_title\": \"...\", \"summary_text\": \"...\", \"key_characters\": [\"...\"], \"main_events\": [\"...\"]}");
-        systemInstruction.put("parts", List.of(partsSys));
-
-        // Contents
-        Map<String, Object> contents = new HashMap<>();
-        Map<String, Object> partsContent = new HashMap<>();
-        partsContent.put("text", text);
-        contents.put("parts", List.of(partsContent));
-
-        // Generation config for JSON mode
-        Map<String, Object> generationConfig = new HashMap<>();
-        generationConfig.put("responseMimeType", "application/json");
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("systemInstruction", systemInstruction);
-        body.put("contents", List.of(contents));
-        body.put("generationConfig", generationConfig);
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-
         try {
+            // Sử dụng các key SNAKE_CASE chuẩn xác theo yêu cầu API v1
+            Map<String, Object> systemInstruction = new HashMap<>();
+            Map<String, Object> partsSys = new HashMap<>();
+            partsSys.put("text", "Bạn là một AI Summarization Agent chuyên nghiệp cho một ứng dụng đọc truyện chữ. Nhiệm vụ của bạn là tóm tắt nội dung của các chương truyện.\n" +
+                    "Trả về duy nhất 1 object JSON với cấu trúc: {\"chapter_title\": \"...\", \"summary_text\": \"...\", \"key_characters\": [\"...\"], \"main_events\": [\"...\"]}");
+            systemInstruction.put("parts", List.of(partsSys));
+
+            Map<String, Object> contents = new HashMap<>();
+            Map<String, Object> partsContent = new HashMap<>();
+            partsContent.put("text", text);
+            contents.put("parts", List.of(partsContent));
+
+            Map<String, Object> generationConfig = new HashMap<>();
+            generationConfig.put("response_mime_type", "application/json");
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("system_instruction", systemInstruction);
+            body.put("contents", List.of(contents));
+            body.put("generation_config", generationConfig);
+
+            // Serialize thủ công thành Raw JSON String để tránh bị RestTemplate/Jackson tự động ép kiểu sai
+            String rawJsonPayload = objectMapper.writeValueAsString(body);
+
+            HttpEntity<String> entity = new HttpEntity<>(rawJsonPayload, headers);
+
             ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            
             if (response.getStatusCode() == HttpStatus.OK) {
-                // Parse the response
                 JsonNode rootNode = objectMapper.readTree(response.getBody());
                 JsonNode candidatesNode = rootNode.path("candidates");
                 if (candidatesNode.isArray() && !candidatesNode.isEmpty()) {
