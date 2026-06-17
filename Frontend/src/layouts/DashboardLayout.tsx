@@ -3,6 +3,7 @@
 import type React from 'react'
 import { useLocation, Navigate, Outlet } from 'react-router-dom'
 import { AppSidebar } from '@/components/shared/dashboard/app-sidebar'
+import { useAuth } from '@/lib/auth'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,12 +20,11 @@ import {
 } from '@/components/ui/sidebar'
 
 export default function DashboardLayout() {
-  // TODO: Replace with real auth/admin logic
-  const isAuthenticated = true
-  const isAdmin = true
+  const { isAuthenticated, user, isLoading } = useAuth()
   const location = useLocation()
 
   const isAdminRoute = location.pathname.startsWith('/admin')
+  const isAuthorRoute = location.pathname.startsWith('/author')
 
   const pageTitle = (() => {
     const path = location.pathname
@@ -43,11 +43,23 @@ export default function DashboardLayout() {
     return 'Content'
   })()
 
+  if (isLoading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    )
+  }
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
-  if (isAdminRoute && !isAdmin) {
+  if (isAdminRoute && user?.role !== 'ADMIN') {
+    return <Navigate to="/" replace />
+  }
+
+  if (isAuthorRoute && user?.role !== 'AUTHOR' && user?.role !== 'ADMIN') {
     return <Navigate to="/" replace />
   }
 
