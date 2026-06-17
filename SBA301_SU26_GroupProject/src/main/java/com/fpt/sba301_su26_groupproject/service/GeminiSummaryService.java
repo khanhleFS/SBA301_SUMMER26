@@ -36,16 +36,16 @@ public class GeminiSummaryService {
             // Escape nội dung văn bản truyện để tránh lỗi xuống dòng hoặc dấu nháy kép làm vỡ JSON
             String escapedText = localMapper.writeValueAsString(text);
 
-            // Viết chuỗi JSON thô với các key chuẩn snake_case theo tài liệu Gemini API v1
+            // Viết chuỗi JSON thô với các key chuẩn camelCase theo đúng tài liệu Gemini API v1
             String jsonBody = "{"
                 + "\"contents\": [{"
                 + "    \"parts\": [{\"text\": " + escapedText + "}]"
                 + "}],"
-                + "\"system_instruction\": {"
+                + "\"systemInstruction\": {"
                 + "    \"parts\": [{\"text\": \"Bạn là một AI Summarization Agent chuyên nghiệp cho một ứng dụng đọc truyện chữ. Nhiệm vụ của bạn là tóm tắt nội dung của các chương truyện.\\nTrả về duy nhất 1 object JSON với cấu trúc: {\\\"chapter_title\\\": \\\"...\\\", \\\"summary_text\\\": \\\"...\\\", \\\"key_characters\\\": [\\\"...\\\"], \\\"main_events\\\": [\\\"...\\\"]}\"}]"
                 + "},"
-                + "\"generation_config\": {"
-                + "    \"response_mime_type\": \"application/json\""
+                + "\"generationConfig\": {"
+                + "    \"responseMimeType\": \"application/json\""
                 + "}"
                 + "}";
 
