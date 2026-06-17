@@ -1,6 +1,6 @@
 package com.fpt.sba301_su26_groupproject.controller;
 
-import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
+import com.fpt.sba301_su26_groupproject.common.response .ApiResponse;
 import com.fpt.sba301_su26_groupproject.controller.api.EnumAPI;
 import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.service.EnumService;
