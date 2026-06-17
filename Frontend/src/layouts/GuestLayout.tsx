@@ -15,7 +15,7 @@ export default function GuestLayout() {
   return (
     <div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground transition-colors duration-500">
       <section className="pointer-events-none absolute inset-0 hidden lg:block">
-          <AuthGalleryPlaceholder />
+        <AuthGalleryPlaceholder />
       </section>
 
       <div className="relative z-20 flex min-h-screen justify-end">

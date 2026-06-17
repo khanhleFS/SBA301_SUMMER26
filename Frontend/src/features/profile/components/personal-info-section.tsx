@@ -1,4 +1,4 @@
-import { AtSign, Calendar, Mail, UserRound } from 'lucide-react'
+import { AtSign, Mail, UserRound } from 'lucide-react'
 import { SectionTitle } from './section-title'
 import { surfaceCardClass } from './profile-styles'
 import { useProfile } from '../context/profile.context'

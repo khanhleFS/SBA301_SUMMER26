@@ -86,7 +86,7 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   const toggleBtnRef = useRef<HTMLButtonElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
   const busyRef = useRef(false);
-  
+
   const openTlRef = useRef<gsap.core.Timeline | null>(null);
   const closeTweenRef = useRef<gsap.core.Tween | null>(null);
   const colorTweenRef = useRef<gsap.core.Tween | null>(null);
@@ -117,13 +117,13 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       if (preContainer) {
         gsap.set(preContainer, { xPercent: 0, opacity: 1 });
       }
-      
+
       // Hamburger Initial State
       gsap.set(plusH, { y: -5, rotate: 0 });
       gsap.set(mid, { y: 0, opacity: 1 });
       gsap.set(plusV, { y: 5, rotate: 0 });
       gsap.set(icon, { rotate: 0 });
-      
+
       if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: menuButtonColor });
     });
     return () => ctx.revert();
@@ -132,7 +132,7 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   // Handle dynamic positioning of the toggle button when portaled
   useLayoutEffect(() => {
     if (!mounted || !toggleBtnRef.current || !placeholderRef.current) return;
-    
+
     let rafId: number;
     const updatePosition = () => {
       const rect = placeholderRef.current?.getBoundingClientRect();
@@ -190,11 +190,11 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     layers.forEach((el, i) => {
       tl.fromTo(el, { xPercent: offscreen }, { xPercent: 0, duration: 0.5, ease: 'power4.out' }, i * 0.07);
     });
-    
+
     const lastTime = layers.length ? (layers.length - 1) * 0.07 : 0;
     const panelInsertTime = lastTime + (layers.length ? 0.08 : 0);
     const panelDuration = 0.65;
-    
+
     tl.fromTo(
       panel,
       { xPercent: panelStart },
@@ -319,9 +319,9 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     const mid = lineMiddleRef.current;
     const bot = plusVRef.current;
     if (!icon || !top || !mid || !bot) return;
-    
+
     gsap.to(icon, { rotate: opening ? 180 : 0, duration: 0.6, ease: 'power4.out' });
-    
+
     if (opening) {
       gsap.to(top, { y: 0, rotate: 45, duration: 0.5, ease: 'power4.out' });
       gsap.to(mid, { opacity: 0, duration: 0.3 });
@@ -513,23 +513,22 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                   </li>
                 )}
               </ul>
-              
+
               <div className="sm-socials mt-auto pt-4 border-t border-border/10 flex flex-col w-full" aria-label="Tài khoản và cài đặt giao diện">
-                
+
                 {/* 3-Mode Visual Square Cards Grid */}
                 <div className="sm-socials-link grid grid-cols-3 gap-2.5 w-full mb-4 select-none">
-                  
+
                   {/* Light Mode Card */}
-                  <div 
-                    onClick={() => setThemeMode?.('light')} 
-                    className={`relative w-full py-3 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-all hover:scale-102 border ${
-                      themeMode === 'light' 
-                        ? 'border-primary bg-primary/20 text-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background' 
-                        : 'border-border/40 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
-                    }`}
+                  <div
+                    onClick={() => setThemeMode?.('light')}
+                    className={`relative w-full py-3 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-all hover:scale-102 border ${themeMode === 'light'
+                      ? 'border-primary bg-primary/20 text-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background'
+                      : 'border-border/40 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+                      }`}
                   >
                     {themeMode === 'light' && (
-                      <div 
+                      <div
                         style={{ backgroundColor: '#4F378A' }}
                         className="absolute -top-1 -right-1 h-4 w-4 text-white rounded-full flex items-center justify-center z-10 shadow-sm border border-background"
                       >
@@ -543,16 +542,15 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                   </div>
 
                   {/* Dark Mode Card */}
-                  <div 
-                    onClick={() => setThemeMode?.('dark')} 
-                    className={`relative w-full py-3 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-all hover:scale-102 border ${
-                      themeMode === 'dark' 
-                        ? 'border-primary bg-primary/20 text-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background' 
-                        : 'border-border/40 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
-                    }`}
+                  <div
+                    onClick={() => setThemeMode?.('dark')}
+                    className={`relative w-full py-3 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-all hover:scale-102 border ${themeMode === 'dark'
+                      ? 'border-primary bg-primary/20 text-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background'
+                      : 'border-border/40 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+                      }`}
                   >
                     {themeMode === 'dark' && (
-                      <div 
+                      <div
                         style={{ backgroundColor: '#4F378A' }}
                         className="absolute -top-1 -right-1 h-4 w-4 text-white rounded-full flex items-center justify-center z-10 shadow-sm border border-background"
                       >
@@ -566,16 +564,15 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                   </div>
 
                   {/* System Mode Card */}
-                  <div 
-                    onClick={() => setThemeMode?.('system')} 
-                    className={`relative w-full py-3 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-all hover:scale-102 border ${
-                      themeMode === 'system' 
-                        ? 'border-primary bg-primary/20 text-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background' 
-                        : 'border-border/40 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
-                    }`}
+                  <div
+                    onClick={() => setThemeMode?.('system')}
+                    className={`relative w-full py-3 flex flex-col items-center justify-center rounded-lg cursor-pointer transition-all hover:scale-102 border ${themeMode === 'system'
+                      ? 'border-primary bg-primary/20 text-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background'
+                      : 'border-border/40 bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+                      }`}
                   >
                     {themeMode === 'system' && (
-                      <div 
+                      <div
                         style={{ backgroundColor: '#4F378A' }}
                         className="absolute -top-1 -right-1 h-4 w-4 text-white rounded-full flex items-center justify-center z-10 shadow-sm border border-background"
                       >
@@ -616,20 +613,20 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                             {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
                           </AvatarFallback>
                         </Avatar>
-                      </a>
+                      </a >
                       {/* User display name + role badge */}
-                      <div className="flex flex-col min-w-0">
+                      < div className="flex flex-col min-w-0" >
                         <span className="text-xs font-semibold text-foreground truncate max-w-[140px]">
                           {user.username}
                         </span>
                         <span className="text-[10px] text-muted-foreground capitalize">
                           {user.role.toLowerCase()}
                         </span>
-                      </div>
-                    </div>
+                      </div >
+                    </div >
 
                     {/* Logout Button */}
-                    <button
+                    < button
                       onClick={() => {
                         closeMenu()
                         if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
@@ -642,8 +639,8 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                       title="Đăng xuất"
                     >
                       <LogOut className="h-4 w-4" />
-                    </button>
-                  </div>
+                    </button >
+                  </div >
                 ) : (
                   /* ── NOT LOGGED IN ── */
                   <div className="sm-socials-link flex flex-col items-center gap-2 w-full pt-1">
@@ -679,15 +676,15 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                     </button>
                   </div>
                 )}
-              </div>
-            </div>
-          </aside>
-          
+              </div >
+            </div >
+          </aside >
+
           <div className="sm-backdrop" onClick={closeMenu} aria-hidden="true" data-open={open || undefined} />
         </>,
         document.body
       )}
-    </div>
+    </div >
   );
 };
 

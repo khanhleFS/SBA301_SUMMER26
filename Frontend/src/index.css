@@ -206,8 +206,13 @@
 
 
   @keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+
+    100% {
+      background-position: 100% 50%;
+    }
   }
 
   @keyframes fade-slide-up {
@@ -215,6 +220,7 @@
       opacity: 0;
       transform: translateY(16px);
     }
+
     100% {
       opacity: 1;
       transform: translateY(0);
@@ -351,9 +357,20 @@ html.lenis {
    Uses nth-child pseudo-elements — zero JS, zero RAF
    ===================================================== */
 @keyframes particle-float {
-  0%   { transform: translateY(0px) scale(1);   opacity: 0.15; }
-  50%  { transform: translateY(-28px) scale(1.2); opacity: 0.35; }
-  100% { transform: translateY(0px) scale(1);   opacity: 0.15; }
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.15;
+  }
+
+  50% {
+    transform: translateY(-28px) scale(1.2);
+    opacity: 0.35;
+  }
+
+  100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.15;
+  }
 }
 
 .search-particles {
@@ -373,15 +390,19 @@ html.lenis {
 }
 
 .search-particles::before {
-  width: 6px; height: 6px;
-  top: 12%; left: 8%;
+  width: 6px;
+  height: 6px;
+  top: 12%;
+  left: 8%;
   animation-delay: 0s;
   animation-duration: 16s;
 }
 
 .search-particles::after {
-  width: 4px; height: 4px;
-  top: 55%; left: 78%;
+  width: 4px;
+  height: 4px;
+  top: 55%;
+  left: 78%;
   animation-delay: 5s;
   animation-duration: 20s;
 }

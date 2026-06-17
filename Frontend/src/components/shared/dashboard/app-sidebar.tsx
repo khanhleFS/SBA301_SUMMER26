@@ -19,8 +19,8 @@ type ThemeMode = 'light' | 'dark' | 'system'
 const THEME_CYCLE = ['light', 'dark', 'system'] as const
 
 const THEME_BUTTONS: { mode: ThemeMode; icon: React.ElementType; label: string }[] = [
-  { mode: 'light',  icon: Sun,     label: 'Sáng'     },
-  { mode: 'dark',   icon: Moon,    label: 'Tối'      },
+  { mode: 'light', icon: Sun, label: 'Sáng' },
+  { mode: 'dark', icon: Moon, label: 'Tối' },
   { mode: 'system', icon: SunMoon, label: 'Hệ thống' },
 ]
 
@@ -31,14 +31,14 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   teams: [
-    { name: "Acme Inc",   logo: <GalleryVerticalEndIcon />, plan: "Enterprise" },
-    { name: "Acme Corp.", logo: <AudioLinesIcon />,         plan: "Startup"    },
-    { name: "Evil Corp.", logo: <TerminalIcon />,           plan: "Free"       },
+    { name: "Acme Inc", logo: <GalleryVerticalEndIcon />, plan: "Enterprise" },
+    { name: "Acme Corp.", logo: <AudioLinesIcon />, plan: "Startup" },
+    { name: "Evil Corp.", logo: <TerminalIcon />, plan: "Free" },
   ],
   navMain: [
-    { title: "Tổng quan",        url: "/admin/dashboard",  icon: <LayoutDashboardIcon /> },
-    { title: "Quản lý tài chính", url: "/admin/finance",    icon: <WalletIcon />          },
-    { title: "Leader board",      url: "/admin/leaderboard", icon: <TrophyIcon />          },
+    { title: "Tổng quan", url: "/admin/dashboard", icon: <LayoutDashboardIcon /> },
+    { title: "Quản lý tài chính", url: "/admin/finance", icon: <WalletIcon /> },
+    { title: "Leader board", url: "/admin/leaderboard", icon: <TrophyIcon /> },
   ],
 }
 
@@ -96,10 +96,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     let items = [...data.navMain]
     if (isAuthorRoute) {
       items = [
-        { title: "Tổng quan",        url: "/admin/dashboard",  icon: <LayoutDashboardIcon /> },
-        { title: "Quản lý truyện",    url: "/admin/novels",     icon: <BookOpen />            },
-        { title: "Quản lý tài chính", url: "/admin/finance",    icon: <WalletIcon />          },
-        { title: "Leader board",      url: "/admin/leaderboard", icon: <TrophyIcon />          },
+        { title: "Tổng quan", url: "/admin/dashboard", icon: <LayoutDashboardIcon /> },
+        { title: "Quản lý truyện", url: "/admin/novels", icon: <BookOpen /> },
+        { title: "Quản lý tài chính", url: "/admin/finance", icon: <WalletIcon /> },
+        { title: "Leader board", url: "/admin/leaderboard", icon: <TrophyIcon /> },
       ]
     }
     return items.map((item) => {
