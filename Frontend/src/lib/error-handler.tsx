@@ -313,7 +313,7 @@ export function useErrorHandler() {
 export function ToastContainer({
   toasts,
   removeToast,
-  clearToasts,
+  clearToasts: _clearToasts,
 }: {
   toasts: ToastRecord[]
   removeToast: (id: string) => void

@@ -11,20 +11,16 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
-  const [address, setAddress] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const { isSubmitting, wrap } = useSubmit()
 
   const handleSubmit = wrap(async () => {
-    setError(null)
     setFieldErrors({})
     if (password !== confirmPassword) {
       setFieldErrors({ confirmPassword: 'Mật khẩu và xác nhận mật khẩu không trùng khớp.' })
-      setError('Đăng ký thất bại. Vui lòng kiểm tra lại các trường thông tin.')
       return
     }
 
@@ -42,14 +38,13 @@ export default function RegisterPage() {
         // Redirect to OTP verification, passing email via state
         navigate('/verify-otp', { state: { email } })
       } else {
-        setError(response.data?.message || 'Đăng ký thất bại')
+        handleError(new Error(response.data?.message || 'Đăng ký thất bại'), { showToast: true })
       }
     } catch (err: any) {
       handleError(err, { showToast: true })
       if (err && err.errors) {
         setFieldErrors(err.errors)
       }
-      setError(err?.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.')
     }
   })
 

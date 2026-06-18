@@ -20,9 +20,9 @@ export function ProfileHeader() {
     <section className="mb-8 flex items-center justify-between gap-4">
       <div className="flex min-w-0 items-center gap-4">
         <Avatar className="h-14 w-14">
-          <AvatarImage src={null} alt={user.username} />
+          <AvatarImage alt={user?.username} />
           <AvatarFallback className="bg-primary text-on-primary font-bold text-md">
-            {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
+            {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0">

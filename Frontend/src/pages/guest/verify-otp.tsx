@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { api } from '../../lib/api'
 import { useErrorHandler } from '../../lib/error-handler'
+import { cn } from '../../lib/utils'
 
 export default function VerifyOtpPage() {
   const navigate = useNavigate()
@@ -14,7 +15,6 @@ export default function VerifyOtpPage() {
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''))
   const [timeLeft, setTimeLeft] = useState(300) // 5 minutes in seconds
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -114,7 +114,6 @@ export default function VerifyOtpPage() {
     const otpValue = otp.join('')
     if (otpValue.length === 6) {
       setError(null)
-      setSuccess(null)
       setIsSubmitting(true)
       try {
         const response = await api.post('/auth/verify-register-otp', {
@@ -151,7 +150,6 @@ export default function VerifyOtpPage() {
 
   const handleResend = async () => {
     setError(null)
-    setSuccess(null)
     try {
       await api.post('/auth/forgot-password', { email })
       addToast({

@@ -8,6 +8,7 @@ public class SecurityConstants {
             "/v3/api-docs.yaml",
             "/api/payments/**",
             "/api/auth/**",
+            "/api/enums",
             "/",
             "/home",
             "/login",
