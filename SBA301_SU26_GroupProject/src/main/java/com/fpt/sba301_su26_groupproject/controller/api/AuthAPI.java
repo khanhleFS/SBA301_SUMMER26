@@ -67,4 +67,9 @@ public interface AuthAPI {
     @PostMapping("/verify-register-otp")
     ResponseEntity<ApiResponse<Void>> verifyRegisterOtp(
             @Valid @RequestBody VerifyOTPRequestDTO request);
+
+    @Operation(summary = "Refresh token", description = "Generate new access token and refresh token using existing refresh token")
+    @PostMapping("/refresh")
+    ResponseEntity<ApiResponse<LoginResponseDTO>> refresh(
+            @Valid @RequestBody TokenRefreshRequestDTO request);
 }

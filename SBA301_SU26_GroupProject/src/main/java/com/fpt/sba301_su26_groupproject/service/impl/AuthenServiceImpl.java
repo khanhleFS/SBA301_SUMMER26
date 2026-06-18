@@ -50,6 +50,60 @@ public class AuthenServiceImpl implements AuthenService {
     private final TokenBlacklistService tokenBlacklistService;
 
     @Override
+    @Transactional
+    public LoginResponseDTO refreshToken(TokenRefreshRequestDTO request) {
+        String refreshToken = request.refreshToken();
+
+        // 1. Giải mã/Xác thực chữ ký Refresh Token
+        try {
+            jwtService.extractUsername(refreshToken);
+        } catch (Exception e) {
+            throw new ApiException(CommonErrorCode.UNAUTHORIZED, "Refresh token không hợp lệ hoặc đã hết hạn");
+        }
+
+        // 2. Tìm kiếm trong Redis xem Token còn tồn tại không
+        RefreshTokenRedis tokenRedis = refreshTokenRepository.findById(refreshToken)
+                .orElseThrow(() -> new ApiException(CommonErrorCode.UNAUTHORIZED, "Refresh token không tồn tại hoặc đã hết hạn"));
+
+        // 3. Tìm User tương ứng từ Email đã lưu trong Redis
+        User user = userRepository.findByEmail(tokenRedis.getEmail())
+                .orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy người dùng"));
+
+        if (!user.getIsActive()) {
+            throw new ApiException(CommonErrorCode.FORBIDDEN, "Tài khoản chưa được kích hoạt");
+        }
+
+        // 4. Tạo UserDetails cho người dùng
+        CustomUserDetail userDetail = new CustomUserDetail(user);
+
+        // 5. Tạo cặp Access Token và Refresh Token mới
+        String newAccessToken = jwtService.generateAccessToken(userDetail);
+        String newRefreshToken = jwtService.generateRefreshToken(userDetail);
+
+        // 6. Xóa Refresh Token cũ trong Redis
+        refreshTokenRepository.delete(tokenRedis);
+
+        // 7. Lưu Refresh Token mới vào Redis
+        long expirationInSeconds = 7 * 24 * 60 * 60; // 7 ngày
+        RefreshTokenRedis newTokenRedis = RefreshTokenRedis.builder()
+                .token(newRefreshToken)
+                .userId(user.getId())
+                .email(user.getEmail())
+                .ttlInSeconds(expirationInSeconds)
+                .build();
+        refreshTokenRepository.save(newTokenRedis);
+
+        return new LoginResponseDTO(
+                newAccessToken,
+                newRefreshToken,
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole()
+        );
+    }
+
+    @Override
     @Transactional // Override Transaction cho ghi đè DB
     public LoginResponseDTO login(LoginRequestDTO request) {
         // Thực hiện authenticate thông qua authenticationManager

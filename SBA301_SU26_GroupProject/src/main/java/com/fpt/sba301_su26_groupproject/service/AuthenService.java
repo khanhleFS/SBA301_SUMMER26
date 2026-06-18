@@ -23,4 +23,6 @@ public interface AuthenService {
     boolean isEmailValid(String email);
 
     boolean verifyRegisterOtp(String email, String otpCode);
+
+    LoginResponseDTO refreshToken(TokenRefreshRequestDTO request);
 }

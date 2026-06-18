@@ -108,4 +108,14 @@ public class AuthController implements AuthAPI {
                 .message("Xác thực thành công. Tài khoản đã được kích hoạt.")
                 .build());
     }
+
+    @Override
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> refresh(TokenRefreshRequestDTO requestDTO) {
+        LoginResponseDTO refreshResponse = authenService.refreshToken(requestDTO);
+        return ResponseEntity.ok(ApiResponse.<LoginResponseDTO>builder()
+                .code(200)
+                .message("Lấy token mới thành công")
+                .result(refreshResponse)
+                .build());
+    }
 }
