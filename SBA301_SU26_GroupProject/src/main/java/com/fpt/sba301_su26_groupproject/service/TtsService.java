@@ -1,13 +1,13 @@
 package com.fpt.sba301_su26_groupproject.service;
 
 /**
- * Service interface for Google Cloud Text-to-Speech integration.
+ * Service interface for Text-to-Speech integration.
  * Converts chapter text content into MP3 audio bytes.
  */
-public interface GoogleTtsService {
+public interface TtsService {
 
     /**
-     * Converts text to speech audio using Google Cloud TTS REST API.
+     * Converts text to speech audio.
      *
      * @param text the plain text to synthesize (HTML will be stripped internally)
      * @return MP3 audio as a byte array

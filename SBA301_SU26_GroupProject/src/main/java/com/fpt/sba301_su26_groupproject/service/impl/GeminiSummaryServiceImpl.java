@@ -1,19 +1,22 @@
-package com.fpt.sba301_su26_groupproject.service;
+package com.fpt.sba301_su26_groupproject.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.sba301_su26_groupproject.dto.response.ChapterSummaryResponse;
+import com.fpt.sba301_su26_groupproject.service.SummaryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
-public class GeminiSummaryService {
+@Transactional(readOnly = true)
+public class GeminiSummaryServiceImpl implements SummaryService {
 
     @Value("${gemini.api.key:YOUR_API_KEY_HERE}")
     private String geminiApiKey;
@@ -21,17 +24,16 @@ public class GeminiSummaryService {
     private static final String GEMINI_API_URL =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=";
 
-    // RestTemplate hoàn toàn cô lập: chỉ dùng StringHttpMessageConverter,
-    // không để Spring/Jackson tự động can thiệp đổi tên key.
     private final RestTemplate isolatedRestTemplate;
 
-    public GeminiSummaryService() {
+    public GeminiSummaryServiceImpl() {
         this.isolatedRestTemplate = new RestTemplate();
         this.isolatedRestTemplate.setMessageConverters(
                 List.of(new StringHttpMessageConverter(StandardCharsets.UTF_8))
         );
     }
 
+    @Override
     public ChapterSummaryResponse summarize(String text) {
         String url = GEMINI_API_URL + geminiApiKey;
 
@@ -39,11 +41,9 @@ public class GeminiSummaryService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         try {
-            // ObjectMapper cục bộ, độc lập — chỉ dùng để escape chuỗi văn bản an toàn
             ObjectMapper localMapper = new ObjectMapper();
             String escapedText = localMapper.writeValueAsString(text);
 
-            // Raw JSON String với key snake_case chuẩn theo tài liệu Gemini API /v1
             String jsonBody = "{"
                     + "\"contents\": [{"
                     + "    \"parts\": [{\"text\": " + escapedText + "}]"
@@ -56,7 +56,6 @@ public class GeminiSummaryService {
                     + "}"
                     + "}";
 
-            // Đưa thẳng Raw String vào HttpEntity — Spring không có cơ hội can thiệp
             HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
 
             ResponseEntity<String> response = isolatedRestTemplate.postForEntity(url, entity, String.class);

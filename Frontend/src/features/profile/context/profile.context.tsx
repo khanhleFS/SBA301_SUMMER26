@@ -1,8 +1,3 @@
-import {
-  createContext,
-  useContext,
-  type ReactNode
-} from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { ProfileData } from '../types/profile.types'
 import { fetchProfileData } from '../services/profile.service'
@@ -14,9 +9,7 @@ interface ProfileContextValue {
   refresh: () => void
 }
 
-const ProfileContext = createContext<ProfileContextValue | null>(null)
-
-export function ProfileProvider({ children }: { children: ReactNode }) {
+export function useProfile(): ProfileContextValue {
   const query = useQuery({
     queryKey: ['profile'],
     queryFn: fetchProfileData,
@@ -29,17 +22,5 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     void query.refetch()
   }
 
-  return (
-    <ProfileContext.Provider value={{ data, isLoading, error, refresh }}>
-      {children}
-    </ProfileContext.Provider>
-  )
-}
-
-export function useProfile(): ProfileContextValue {
-  const ctx = useContext(ProfileContext)
-  if (!ctx) {
-    throw new Error('useProfile must be used inside <ProfileProvider>')
-  }
-  return ctx
+  return { data, isLoading, error, refresh }
 }

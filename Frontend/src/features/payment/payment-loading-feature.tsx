@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CreditCard, BookOpen } from 'lucide-react'
 import Container from '@/components/shared/site/container'
 
-export default function PaymentLoadingPage() {
+export default function PaymentLoadingFeature() {
   const navigate = useNavigate()
 
   useEffect(() => {

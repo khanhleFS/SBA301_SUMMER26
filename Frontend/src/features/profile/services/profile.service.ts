@@ -1,19 +1,6 @@
 import { api } from '@/lib/api'
-import type { ProfileData } from '../types/profile.types'
+import type { ProfileData, ProfileDTO, ResetPasswordRequestDTO } from '@/types'
 
-export interface ProfileDTO {
-  fullName: string
-  email: string
-  phone: string
-  address: string
-}
-
-export interface ResetPasswordRequestDTO {
-  email: string
-  oldPassword: string
-  newPassword: string
-  confirmPassword: string
-}
 
 /**
  * Fetches the current user's profile data from the Backend.

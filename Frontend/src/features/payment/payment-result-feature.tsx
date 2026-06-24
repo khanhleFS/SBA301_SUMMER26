@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CheckCircle2, Coins } from 'lucide-react'
 import Container from '@/components/shared/site/container'
 
-export default function PaymentResultPage() {
+export default function PaymentResultFeature() {
   const navigate = useNavigate()
 
   useEffect(() => {

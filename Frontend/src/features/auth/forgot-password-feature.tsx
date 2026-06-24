@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
-import useSubmit from '../../hooks/useSubmit'
+import useSubmit from '@/hooks/useSubmit'
 import { ArrowLeft } from 'lucide-react'
 
-export default function ForgotPasswordPage() {
+export default function ForgotPasswordFeature() {
     const navigate = useNavigate()
 
     const { isSubmitting, wrap } = useSubmit()

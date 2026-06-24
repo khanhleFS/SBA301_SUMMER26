@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { AxiosResponse, AxiosError } from 'axios'
+import { useAuthStore } from '@/store/auth.store'
 
 export interface ApiResponse<T = any> {
   code: number
@@ -18,7 +19,7 @@ export const api = axios.create({
 // Request interceptor to attach the Authorization token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
+    const token = useAuthStore.getState().token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }

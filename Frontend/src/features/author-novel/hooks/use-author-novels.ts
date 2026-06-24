@@ -6,7 +6,6 @@ import {
   updateNovel,
   deleteNovel
 } from '@/services/novel-service'
-import type { NovelRequestDTO, NovelResponseDTO } from '@/services/novel-service'
 import {
   getChaptersByNovel,
   getChapterDetails,
@@ -15,7 +14,7 @@ import {
   deleteChapter,
   generateChapterAudio
 } from '@/services/chapter-service'
-import type { ChapterRequestDTO, ChapterResponseDTO } from '@/services/chapter-service'
+import type { NovelRequestDTO, NovelResponseDTO, ChapterRequestDTO, ChapterResponseDTO } from '@/types'
 
 // Local mock database in memory to support CRUD preview when offline
 const inMemoryNovels: NovelResponseDTO[] = [

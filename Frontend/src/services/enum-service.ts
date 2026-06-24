@@ -1,9 +1,6 @@
 import { api } from '@/lib/api'
+import type { EnumResponseDTO } from '@/types'
 
-export interface EnumResponseDTO {
-  name: string
-  value: string[]
-}
 
 /**
  * Retrieves all available enums with their possible values from the backend.

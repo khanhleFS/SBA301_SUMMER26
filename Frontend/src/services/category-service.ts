@@ -1,10 +1,6 @@
 import { api } from '@/lib/api'
+import type { CategoryResponseDTO } from '@/types'
 
-export interface CategoryResponseDTO {
-  id: string
-  name: string
-  slug: string
-}
 
 /**
  * Fetches all categories from the public endpoint.

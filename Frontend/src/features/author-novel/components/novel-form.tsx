@@ -5,7 +5,7 @@ import { Upload, X, Loader2, Save, ArrowLeft } from 'lucide-react'
 import { useCreateNovel, useUpdateNovel } from '../hooks/use-author-novels'
 import { uploadImage } from '@/services/upload-service'
 import { getAllCategories } from '@/services/category-service'
-import type { NovelResponseDTO, NovelStatus } from '@/services/novel-service'
+import type { NovelResponseDTO, NovelStatus } from '@/types'
 import { ChapterList } from './chapter-list'
 
 interface NovelFormProps {

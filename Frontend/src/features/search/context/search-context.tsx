@@ -1,8 +1,9 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, useMemo, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { storyService, type FilterGroup } from '../services/story-service'
 import type { Story } from '../components/search-card'
 import { MOCK_USER_READ_STATE, type UserReadState } from '@/services/mock-data'
+import { useQuery } from '@tanstack/react-query'
 
 export type { UserReadState } from '@/services/mock-data'
 
@@ -38,16 +39,8 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const [selectedStatus, setSelectedStatus] = useState('All')
   const [showUnlockedOnly, setShowUnlockedOnly] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [allStories, setAllStories] = useState<Story[]>([])
-  const [filteredStories, setFilteredStories] = useState<Story[]>([])
-  const [filterGroups, setFilterGroups] = useState<FilterGroup[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isFiltersLoading, setIsFiltersLoading] = useState(true)
 
   const userReadState = MOCK_USER_READ_STATE
-
-  // Dynamically map categories from the loaded API filter groups (the category options)
-  const categories = filterGroups.find(g => g.id === 'category')?.options.map(opt => opt.value) || []
 
   const clearFilters = () => {
     setSelectedCategory('Tất cả thể loại')
@@ -57,43 +50,36 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   }
 
   // Load filter groups once on mount
-  useEffect(() => {
-    setIsFiltersLoading(true)
-    storyService.getSearchFilters().then(groups => {
-      setFilterGroups(groups)
-      setIsFiltersLoading(false)
-    }).catch(err => {
-      console.error(err)
-      setIsFiltersLoading(false)
-    })
-  }, [])
+  const { data: filterGroups = [], isLoading: isFiltersLoading } = useQuery<FilterGroup[]>({
+    queryKey: ['searchFilters'],
+    queryFn: storyService.getSearchFilters,
+  })
+
+  // Dynamically map categories from the loaded API filter groups (the category options)
+  const categories = useMemo(() => {
+    return filterGroups.find(g => g.id === 'category')?.options.map(opt => opt.value) || []
+  }, [filterGroups])
 
   // Reload stories whenever the search keyword or filter choices update
-  useEffect(() => {
-    setIsLoading(true)
-    storyService.getStories({
+  const { data: allStories = [], isLoading } = useQuery<Story[]>({
+    queryKey: ['stories', searchQuery, selectedCategory, selectedChapters, selectedStatus],
+    queryFn: () => storyService.getStories({
       searchQuery,
       category: selectedCategory,
       minChapters: selectedChapters,
       status: selectedStatus
-    }).then(stories => {
-      setAllStories(stories)
-      setIsLoading(false)
     })
-  }, [searchQuery, selectedCategory, selectedChapters, selectedStatus])
+  })
 
   // Apply "show unlocked only" client-side filter on top of server results
-  useEffect(() => {
+  const filteredStories = useMemo(() => {
     if (showUnlockedOnly) {
-      setFilteredStories(
-        allStories.filter(s => {
-          const unlocked = userReadState.unlockedChapters[s.id]
-          return unlocked && unlocked.length > 0
-        })
-      )
-    } else {
-      setFilteredStories(allStories)
+      return allStories.filter(s => {
+        const unlocked = userReadState.unlockedChapters[s.id]
+        return unlocked && unlocked.length > 0
+      })
     }
+    return allStories
   }, [allStories, showUnlockedOnly, userReadState.unlockedChapters])
 
   return (

@@ -1,5 +1,5 @@
 import Container from '@/components/shared/site/container'
-import { ProfileProvider, useProfile } from './context/profile.context'
+import { useProfile } from './context/profile.context'
 import { ProfileHeader } from './components/profile-header'
 import { WalletCard } from './components/wallet-card'
 import { TransactionSection } from './components/transaction-section'
@@ -34,9 +34,5 @@ function ProfileContent() {
 }
 
 export default function ProfileFeature() {
-  return (
-    <ProfileProvider>
-      <ProfileContent />
-    </ProfileProvider>
-  )
+  return <ProfileContent />
 }

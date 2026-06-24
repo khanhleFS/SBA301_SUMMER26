@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import useSubmit from '../../hooks/useSubmit'
-import { api } from '../../lib/api'
-import { useErrorHandler } from '../../lib/error-handler'
-import { cn } from '../../lib/utils'
+import useSubmit from '@/hooks/useSubmit'
+import { useErrorHandler } from '@/lib/error-handler'
+import { cn } from '@/lib/utils'
+import { registerUser } from '@/services/auth-service'
 
-export default function RegisterPage() {
+export default function RegisterFeature() {
   const navigate = useNavigate()
   const { handleError } = useErrorHandler()
   const [fullName, setFullName] = useState('')
@@ -25,21 +25,9 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await api.post('/auth/register', {
-        fullName,
-        phone,
-        email,
-        password,
-        confirmPassword,
-        isActive: false
-      })
-
-      if (response.data && response.data.code === 200) {
-        // Redirect to OTP verification, passing email via state
-        navigate('/verify-otp', { state: { email } })
-      } else {
-        handleError(new Error(response.data?.message || 'Đăng ký thất bại'), { showToast: true })
-      }
+      await registerUser({ fullName, phone, email, password, confirmPassword, isActive: false })
+      // Redirect to OTP verification, passing email via state
+      navigate('/verify-otp', { state: { email } })
     } catch (err: any) {
       handleError(err, { showToast: true })
       if (err && err.errors) {

@@ -1,9 +1,9 @@
 import type { RouteObject } from 'react-router-dom'
 import SiteLayout from '@/layouts/SiteLayout'
-import ProfilePage from '@/pages/protected/profile'
-import PaymentCreatePage from '@/pages/protected/payment/payment-create'
-import PaymentLoadingPage from '@/pages/protected/payment/payment-loading'
-import PaymentResultPage from '@/pages/protected/payment/payment-result'
+import ProfilePage from '@/features/profile/profile-feature'
+import PaymentCreatePage from '@/features/payment/payment-create-feature'
+import PaymentLoadingPage from '@/features/payment/payment-loading-feature'
+import PaymentResultPage from '@/features/payment/payment-result-feature'
 
 
 export const protectedRoutes: RouteObject[] = [

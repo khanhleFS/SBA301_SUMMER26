@@ -1,25 +1,6 @@
 import { api } from '@/lib/api'
+import type { CoinCreateRequestDTO, CoinCreateResponseDTO } from '@/types'
 
-export interface CoinCreateResponseDTO {
-  id: string
-  name: string
-  priceVnd: number
-  baseCoins: number
-  firstTimeBonus: number
-  totalCoinsIfFirst: number
-  totalCoinsNormal: number
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-export interface CoinCreateRequestDTO {
-  name: string
-  priceVnd: number
-  baseCoins: number
-  firstTimeBonus: number
-  isActive: boolean
-}
 
 /**
  * Fetches active coin packages from the public endpoint.

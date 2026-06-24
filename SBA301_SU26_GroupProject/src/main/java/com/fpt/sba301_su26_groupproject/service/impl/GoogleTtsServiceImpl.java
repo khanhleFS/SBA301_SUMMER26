@@ -2,11 +2,12 @@ package com.fpt.sba301_su26_groupproject.service.impl;
 
 import com.fpt.sba301_su26_groupproject.common.exception.ApiException;
 import com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode;
-import com.fpt.sba301_su26_groupproject.service.GoogleTtsService;
+import com.fpt.sba301_su26_groupproject.service.TtsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -17,7 +18,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Implementation of GoogleTtsService using Google Cloud Text-to-Speech REST API.
+ * Implementation of TtsService using Google Cloud Text-to-Speech REST API.
  *
  * Flow:
  *  1. Strip HTML tags from chapter content
@@ -27,7 +28,8 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 @Service
-public class GoogleTtsServiceImpl implements GoogleTtsService {
+@Transactional(readOnly = true)
+public class GoogleTtsServiceImpl implements TtsService {
 
     private static final String GOOGLE_TTS_URL =
             "https://texttospeech.googleapis.com/v1/text:synthesize";

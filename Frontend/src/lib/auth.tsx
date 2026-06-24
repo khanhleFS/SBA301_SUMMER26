@@ -1,146 +1,54 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { api } from './api'
+import { useAuthStore } from '@/store/auth.store'
 
-export interface User {
-  id: string | number
-  username: string
-  email: string
-  role: string
-  avatarUrl?: string
-  fullName?: string
+// ─── Re-export shared types ──────────────────────────────────────────────────
+export type { User } from '@/types'
+
+
+// ─── useAuth ─────────────────────────────────────────────────────────────────
+// Thin wrapper — identical API as before, zero call-site changes required.
+
+export function useAuth() {
+  const { user, token, isAuthenticated, isLoading, login, logout, refreshProfile } = useAuthStore()
+  return { user, token, isAuthenticated, isLoading, login, logout, refreshProfile }
 }
 
-interface AuthContextType {
-  user: User | null
-  token: string | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  login: (user: User, token: string) => void
-  logout: () => Promise<void>
-  refreshProfile: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+// ─── AuthProvider ─────────────────────────────────────────────────────────────
+// No longer a Context.Provider — just a bootstrap component that verifies the
+// persisted token once on mount. Children render immediately; loading state is
+// read from the store by guards/layouts that need it.
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const raw = localStorage.getItem('user')
-      return raw ? JSON.parse(raw) : null
-    } catch {
-      return null
-    }
-  })
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
-  const [isLoading, setIsLoading] = useState(true)
-
-  const login = (userData: User, tokenData: string) => {
-    setUser(userData)
-    setToken(tokenData)
-    localStorage.setItem('user', JSON.stringify(userData))
-    localStorage.setItem('token', tokenData)
-  }
-
-  const logout = async () => {
-    try {
-      await api.post('/auth/logout')
-    } catch (e) {
-      // Fallback for custom path if backend uses root /logout
-      try {
-        await api.post('/logout')
-      } catch (err) {
-        console.warn('Backend logout call failed:', err)
-      }
-    } finally {
-      setUser(null)
-      setToken(null)
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
-    }
-  }
-
-  const refreshProfile = async () => {
-    try {
-      const response = await api.get('/auth/profile')
-      if (response.data && response.data.code === 200) {
-        const profile = response.data.result
-        const updatedUser: User = {
-          id: profile.id || user?.id || 0,
-          username: profile.username || user?.username || '',
-          email: profile.email || user?.email || '',
-          role: profile.role || user?.role || 'USER',
-          fullName: profile.fullName || user?.fullName || '',
-          avatarUrl: profile.avatarUrl || undefined,
-        }
-        setUser(updatedUser)
-        localStorage.setItem('user', JSON.stringify(updatedUser))
-      }
-    } catch (error) {
-      console.warn('Failed to verify profile session:', error)
-      setUser(null)
-      setToken(null)
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { token, refreshProfile } = useAuthStore()
 
   useEffect(() => {
     if (token) {
       refreshProfile()
     } else {
-      setUser(null)
-      setIsLoading(false)
+      useAuthStore.setState({ isLoading: false })
     }
-  }, [token])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // run once on mount
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-        refreshProfile,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+  return <>{children}</>
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+// ─── Utility helpers (unchanged signatures) ───────────────────────────────────
 
 export function isAuthenticated(): boolean {
-  try {
-    return Boolean(localStorage.getItem('token'))
-  } catch {
-    return false
-  }
+  return useAuthStore.getState().isAuthenticated
 }
 
-export function getAuthUser(): any | null {
-  try {
-    const raw = localStorage.getItem('user')
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
+export function getAuthUser() {
+  return useAuthStore.getState().user
 }
 
-// Guard that ensures only unauthenticated (guest) users can access children
+// ─── Route Guards ─────────────────────────────────────────────────────────────
+
+/** Allows only unauthenticated (guest) users. Redirects authenticated users to /. */
 export function GuestOnly({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useAuthStore()
   const location = useLocation()
 
   if (isLoading) {
@@ -152,16 +60,15 @@ export function GuestOnly({ children }: { children: React.ReactNode }) {
   }
 
   if (isAuthenticated) {
-    // If user is authenticated, send them to the app home
     return <Navigate to="/" replace state={{ from: location }} />
   }
 
   return <>{children}</>
 }
 
-// Guard that ensures only authenticated users can access children
+/** Allows only authenticated users. Redirects guests to /login. */
 export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useAuthStore()
   const location = useLocation()
 
   if (isLoading) {
@@ -173,14 +80,13 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    // Redirect to login and preserve the attempted path
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 
   return <>{children}</>
 }
 
-// Guard for payment pages: ensures there is an active pending payment id in sessionStorage
+/** Allows access only when there is an active pending payment in sessionStorage. */
 export function RequirePaymentAccess({ children }: { children: React.ReactNode }) {
   const pending = typeof window !== 'undefined' ? sessionStorage.getItem('pendingPaymentId') : null
 

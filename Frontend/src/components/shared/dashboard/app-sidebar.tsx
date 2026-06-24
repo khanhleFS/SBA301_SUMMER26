@@ -2,10 +2,9 @@
 
 import * as React from "react"
 import { useLocation } from 'react-router-dom'
-import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, TrophyIcon, WalletIcon, BookOpen } from "lucide-react"
+import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, TrophyIcon, WalletIcon, BookOpen, LogOut } from "lucide-react"
 
 import { NavMain } from "@/components/shared/dashboard/nav-main"
-import { NavUser } from "@/components/shared/dashboard/nav-user"
 import { TeamSwitcher } from "@/components/shared/dashboard/team-switcher"
 import {
   Sidebar,
@@ -13,7 +12,14 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+
+import { useThemeStore } from "@/store/theme.store"
+import { useAuth } from "@/lib/auth"
 
 type ThemeMode = 'light' | 'dark' | 'system'
 const THEME_CYCLE = ['light', 'dark', 'system'] as const
@@ -25,11 +31,6 @@ const THEME_BUTTONS: { mode: ThemeMode; icon: React.ElementType; label: string }
 ]
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     { name: "Acme Inc", logo: <GalleryVerticalEndIcon />, plan: "Enterprise" },
     { name: "Acme Corp.", logo: <AudioLinesIcon />, plan: "Startup" },
@@ -45,12 +46,8 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation()
 
-  const [themeMode, setThemeMode] = React.useState<ThemeMode>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('theme-mode') as ThemeMode) || 'system'
-    }
-    return 'system'
-  })
+  const { themeMode, setThemeMode } = useThemeStore()
+  const { user, logout } = useAuth()
 
   const [resolvedTheme, setResolvedTheme] = React.useState<'light' | 'dark'>('light')
   const [themeAnimating, setThemeAnimating] = React.useState(false)
@@ -179,7 +176,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </div>
 
       <SidebarFooter className="px-4 py-4 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-1.5 group-data-[collapsible=icon]:py-4">
-        <NavUser user={data.user} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              onClick={logout}
+              className="bg-primary-container text-[var(--on-primary-container)] hover:bg-primary-container/90 hover:text-[var(--on-primary-container)] focus-visible:bg-primary-container focus-visible:text-[var(--on-primary-container)]"
+              title="Đăng xuất"
+            >
+              <Avatar className="h-8 w-8 rounded-lg bg-[var(--on-primary)] p-0.5">
+                <AvatarImage src={user?.avatarUrl} alt={user?.username} />
+                <AvatarFallback className="rounded-lg bg-primary text-on-primary font-bold text-xs">
+                  {user?.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                <span className="truncate font-medium">{user?.fullName || user?.username || "Người dùng"}</span>
+                <span className="truncate text-xs text-[var(--on-primary-container)]/70">{user?.email}</span>
+              </div>
+              <LogOut className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

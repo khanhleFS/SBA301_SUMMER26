@@ -1,4 +1,4 @@
-import { DashboardProvider, useDashboard } from './context/dashboard.context'
+import { useDashboard } from './context/dashboard.context'
 import { DashboardSkeleton } from './components/dashboard-skeleton'
 import {
   DashboardChartSection,
@@ -34,9 +34,5 @@ function DashboardContent() {
 }
 
 export default function DashboardFeature() {
-  return (
-    <DashboardProvider>
-      <DashboardContent />
-    </DashboardProvider>
-  )
+  return <DashboardContent />
 }

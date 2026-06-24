@@ -16,14 +16,18 @@ interface SiteLayoutProps {
  * Can be configured to require authentication.
  */
 export default function SiteLayout({ requireAuth = false }: SiteLayoutProps) {
-	const { isAuthenticated, isLoading } = useAuth()
+	const { isAuthenticated, isLoading, user } = useAuth()
 
-	if (requireAuth && isLoading) {
+	if (isLoading) {
 		return (
 			<div className="min-h-screen flex items-center justify-center bg-background text-foreground">
 				<span className="loading loading-spinner loading-lg text-primary"></span>
 			</div>
 		)
+	}
+
+	if (isAuthenticated && user?.role === 'ADMIN') {
+		return <Navigate to="/admin/dashboard" replace />
 	}
 
 	if (requireAuth && !isAuthenticated) {

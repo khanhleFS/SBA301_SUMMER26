@@ -18,6 +18,8 @@ const PAGE_TRANSITION_STYLE = `
 
 export default function RootLayout() {
   return (
+    // AuthProvider runs refreshProfile once on mount to validate the stored token.
+    // It is NOT a Context.Provider — state lives in the Zustand store.
     <AuthProvider>
       {/* Inject global keyframe once */}
       <style dangerouslySetInnerHTML={{ __html: PAGE_TRANSITION_STYLE }} />
@@ -26,4 +28,4 @@ export default function RootLayout() {
       </div>
     </AuthProvider>
   )
-}
+}

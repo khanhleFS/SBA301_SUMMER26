@@ -1,14 +1,19 @@
 import { Navigate, Outlet, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import AuthGalleryPlaceholder from '@/components/custom/auth-gallery-placeholder/AuthGalleryPlaceholder'
-
 import { useAuth } from '@/lib/auth'
 
 export default function GuestLayout() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
-  // If user is already authenticated, redirect to home
+  // If user is already authenticated, redirect based on role
   if (isAuthenticated) {
+    if (user?.role === 'ADMIN') {
+      return <Navigate to="/admin/dashboard" replace />
+    }
+    if (user?.role === 'AUTHOR') {
+      return <Navigate to="/author/dashboard" replace />
+    }
     return <Navigate to="/" replace />
   }
 

@@ -1,10 +1,12 @@
 package com.fpt.sba301_su26_groupproject.controller;
 
 import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
-import com.fpt.sba301_su26_groupproject.controller.api.NovelAPI;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelResponseDTO;
 import com.fpt.sba301_su26_groupproject.service.NovelService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,14 +19,18 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/api/author/novels")
+@Tag(name = "Novel APIs", description = "Author novel management APIs")
+@SecurityRequirement(name = "Bearer Authentication")
 @RequiredArgsConstructor
-public class NovelController implements NovelAPI {
+public class NovelController {
 
     private final NovelService novelService;
 
-    @Override
+    @Operation(summary = "Create novel")
+    @PostMapping
     public ResponseEntity<ApiResponse<NovelResponseDTO>> createNovel(
-            NovelRequestDTO request,
+            @Valid @RequestBody NovelRequestDTO request,
             Authentication authentication) {
         NovelResponseDTO result = novelService.createNovel(request, authentication.getName());
 
@@ -35,7 +41,8 @@ public class NovelController implements NovelAPI {
                 .build());
     }
 
-    @Override
+    @Operation(summary = "Get my novels")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<NovelResponseDTO>>> getMyNovels(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.<List<NovelResponseDTO>>builder()
                 .code(200)
@@ -44,8 +51,10 @@ public class NovelController implements NovelAPI {
                 .build());
     }
 
-    @Override
-    public ResponseEntity<ApiResponse<NovelResponseDTO>> getNovelById(UUID id) {
+    @Operation(summary = "Get novel by ID")
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<NovelResponseDTO>> getNovelById(
+            @PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.<NovelResponseDTO>builder()
                 .code(200)
                 .message("Lấy thông tin bộ truyện thành công")
@@ -53,10 +62,11 @@ public class NovelController implements NovelAPI {
                 .build());
     }
 
-    @Override
+    @Operation(summary = "Update novel")
+    @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<NovelResponseDTO>> updateNovel(
-            UUID id,
-            NovelRequestDTO request,
+            @PathVariable UUID id,
+            @Valid @RequestBody NovelRequestDTO request,
             Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.<NovelResponseDTO>builder()
                 .code(200)
@@ -65,8 +75,11 @@ public class NovelController implements NovelAPI {
                 .build());
     }
 
-    @Override
-    public ResponseEntity<ApiResponse<Void>> deleteNovel(UUID id, Authentication authentication) {
+    @Operation(summary = "Delete novel")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteNovel(
+            @PathVariable UUID id,
+            Authentication authentication) {
         novelService.deleteNovel(id, authentication.getName());
 
         return ResponseEntity.ok(ApiResponse.<Void>builder()

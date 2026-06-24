@@ -3,7 +3,7 @@ import { Coins, CheckCircle2, Landmark, Zap } from 'lucide-react'
 import Container from '@/components/shared/site/container'
 import { WalletCard } from '@/features/profile/components/wallet-card'
 
-export default function PaymentCreatePage() {
+export default function PaymentCreateFeature() {
   const navigate = useNavigate()
 
   return (
@@ -74,7 +74,7 @@ export default function PaymentCreatePage() {
                 <label key={method.label} className="flex cursor-pointer items-center justify-between rounded-md border border-outline/10 bg-surface p-4 transition-all hover:border-primary/30 hover:bg-surface-container-high has-[:checked]:border-primary has-[:checked]:bg-primary/20 has-[:checked]:text-primary has-[:checked]:ring-2 has-[:checked]:ring-primary has-[:checked]:ring-offset-2 has-[:checked]:ring-offset-background">
                   <div className="flex items-center gap-4">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-highest">
-                      <method.icon className="h-5 w-5 text-on-surface-variant" />
+                       <method.icon className="h-5 w-5 text-on-surface-variant" />
                     </div>
                     <span className="text-sm font-bold text-on-surface">{method.label}</span>
                   </div>

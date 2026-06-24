@@ -11,7 +11,7 @@ import com.fpt.sba301_su26_groupproject.entity.Novel;
 import com.fpt.sba301_su26_groupproject.repository.ChapterRepository;
 import com.fpt.sba301_su26_groupproject.repository.NovelRepository;
 import com.fpt.sba301_su26_groupproject.service.ChapterService;
-import com.fpt.sba301_su26_groupproject.service.GoogleTtsService;
+import com.fpt.sba301_su26_groupproject.service.TtsService;
 import com.fpt.sba301_su26_groupproject.service.UploadService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     private final NovelRepository novelRepository;
 
-    private final GoogleTtsService googleTtsService;
+    private final TtsService ttsService;
 
     private final UploadService uploadService;
 
@@ -150,7 +150,7 @@ public class ChapterServiceImpl implements ChapterService {
         log.info("[TTS] Bắt đầu tạo audio cho chapter {} của novel {}", chapterNumber, novelId);
 
         // 2. Gọi Google TTS → nhận MP3 bytes
-        byte[] audioBytes = googleTtsService.synthesizeSpeech(chapter.getContent());
+        byte[] audioBytes = ttsService.synthesizeSpeech(chapter.getContent());
         log.info("[TTS] Đã nhận {} bytes audio từ Google TTS", audioBytes.length);
 
         // 3. Upload MP3 lên Cloudinary

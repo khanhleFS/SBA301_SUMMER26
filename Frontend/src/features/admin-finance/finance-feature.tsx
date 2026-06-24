@@ -1,4 +1,4 @@
-import { FinanceProvider, useFinance } from './context/finance.context'
+import { useFinance } from './context/finance.context'
 import { FinanceSkeleton } from './components/finance-skeleton'
 import {
   FinanceChartsAndDepositsSection,
@@ -25,10 +25,6 @@ function FinanceContent() {
 }
 
 export default function FinanceFeature() {
-  return (
-    <FinanceProvider>
-      <FinanceContent />
-    </FinanceProvider>
-  )
+  return <FinanceContent />
 }
 

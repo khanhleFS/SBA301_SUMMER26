@@ -6,6 +6,7 @@ import StaggeredMenu from '@/components/custom/staggered-menu/StaggeredMenu'
 import { SearchInput } from './search-input'
 import { useAuth } from '@/lib/auth'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { useThemeStore } from '@/store/theme.store'
 
 export default function SiteHeader() {
   const navigate = useNavigate()
@@ -36,12 +37,7 @@ export default function SiteHeader() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('theme-mode') as 'light' | 'dark' | 'system') || 'system'
-    }
-    return 'system'
-  })
+  const { themeMode, setThemeMode } = useThemeStore()
 
   // Synchronize header theme icon state with the actual html class (so other pages can update it)
   useEffect(() => {

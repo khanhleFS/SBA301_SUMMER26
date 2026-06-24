@@ -1,8 +1,3 @@
-import {
-  createContext,
-  useContext,
-  type ReactNode
-} from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchFinanceData, type FinanceData } from '../services/finance.service'
 
@@ -13,9 +8,7 @@ interface FinanceContextValue {
   refresh: () => void
 }
 
-const FinanceContext = createContext<FinanceContextValue | null>(null)
-
-export function FinanceProvider({ children }: { children: ReactNode }) {
+export function useFinance(): FinanceContextValue {
   const query = useQuery({
     queryKey: ['admin-finance'],
     queryFn: fetchFinanceData,
@@ -28,17 +21,5 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     void query.refetch()
   }
 
-  return (
-    <FinanceContext.Provider value={{ data, isLoading, error, refresh }}>
-      {children}
-    </FinanceContext.Provider>
-  )
-}
-
-export function useFinance(): FinanceContextValue {
-  const ctx = useContext(FinanceContext)
-  if (!ctx) {
-    throw new Error('useFinance must be used inside <FinanceProvider>')
-  }
-  return ctx
+  return { data, isLoading, error, refresh }
 }

@@ -1,4 +1,4 @@
-import { LeaderboardProvider, useLeaderboard } from './context/leaderboard.context'
+import { useLeaderboard } from './context/leaderboard.context'
 import { LeaderboardSkeleton } from './components/leaderboard-skeleton'
 import { LeaderboardContentSection } from './components/leaderboard-sections'
 
@@ -15,9 +15,5 @@ function LeaderboardContent() {
 }
 
 export default function LeaderboardFeature() {
-  return (
-    <LeaderboardProvider>
-      <LeaderboardContent />
-    </LeaderboardProvider>
-  )
+  return <LeaderboardContent />
 }

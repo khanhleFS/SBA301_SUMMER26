@@ -1,10 +1,13 @@
 package com.fpt.sba301_su26_groupproject.controller;
 
 import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
-import com.fpt.sba301_su26_groupproject.controller.api.CategoryAPI;
 import com.fpt.sba301_su26_groupproject.dto.category.CategoryRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.category.CategoryResponseDTO;
 import com.fpt.sba301_su26_groupproject.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +18,15 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/api")
+@Tag(name = "Category APIs", description = "Category public and admin APIs")
 @RequiredArgsConstructor
-public class CategoryController implements CategoryAPI {
+public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @Override
+    @Operation(summary = "Get all categories")
+    @GetMapping("/categories")
     public ResponseEntity<ApiResponse<List<CategoryResponseDTO>>> getAllCategories() {
         return ResponseEntity.ok(ApiResponse.<List<CategoryResponseDTO>>builder()
                 .code(200)
@@ -29,8 +35,10 @@ public class CategoryController implements CategoryAPI {
                 .build());
     }
 
-    @Override
-    public ResponseEntity<ApiResponse<CategoryResponseDTO>> getCategoryById(UUID id) {
+    @Operation(summary = "Get category by ID")
+    @GetMapping("/categories/{id}")
+    public ResponseEntity<ApiResponse<CategoryResponseDTO>> getCategoryById(
+            @PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.<CategoryResponseDTO>builder()
                 .code(200)
                 .message("Lấy thông tin danh mục thành công")
@@ -38,9 +46,14 @@ public class CategoryController implements CategoryAPI {
                 .build());
     }
 
-    @Override
+    @Operation(
+            summary = "Create category",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PostMapping("/admin/categories")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
-    public ResponseEntity<ApiResponse<CategoryResponseDTO>> createCategory(CategoryRequestDTO request) {
+    public ResponseEntity<ApiResponse<CategoryResponseDTO>> createCategory(
+            @Valid @RequestBody CategoryRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.<CategoryResponseDTO>builder()
                 .code(201)
                 .message("Tạo danh mục thành công")
@@ -48,9 +61,15 @@ public class CategoryController implements CategoryAPI {
                 .build());
     }
 
-    @Override
+    @Operation(
+            summary = "Update category",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PutMapping("/admin/categories/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
-    public ResponseEntity<ApiResponse<CategoryResponseDTO>> updateCategory(UUID id, CategoryRequestDTO request) {
+    public ResponseEntity<ApiResponse<CategoryResponseDTO>> updateCategory(
+            @PathVariable UUID id,
+            @Valid @RequestBody CategoryRequestDTO request) {
         return ResponseEntity.ok(ApiResponse.<CategoryResponseDTO>builder()
                 .code(200)
                 .message("Cập nhật danh mục thành công")
@@ -58,9 +77,14 @@ public class CategoryController implements CategoryAPI {
                 .build());
     }
 
-    @Override
+    @Operation(
+            summary = "Delete category",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @DeleteMapping("/admin/categories/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
-    public ResponseEntity<ApiResponse<Void>> deleteCategory(UUID id) {
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(
+            @PathVariable UUID id) {
         categoryService.deleteCategory(id);
 
         return ResponseEntity.ok(ApiResponse.<Void>builder()

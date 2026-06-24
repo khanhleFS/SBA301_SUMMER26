@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import useSubmit from '../../hooks/useSubmit'
-import { useAuth } from '../../lib/auth'
-import { api } from '../../lib/api'
+import useSubmit from '@/hooks/useSubmit'
+import { useAuth } from '@/lib/auth'
+import { loginUser } from '@/services/auth-service'
 
-export default function LoginPage() {
+export default function LoginFeature() {
   const navigate = useNavigate()
   const { login } = useAuth()
   const [email, setEmail] = useState('')
@@ -16,23 +16,24 @@ export default function LoginPage() {
   const handleSubmit = wrap(async () => {
     setError(null)
     try {
-      const response = await api.post('/auth/login', { email, password })
-      if (response.data && response.data.code === 200) {
-        const { accessToken, userId, username, email: userEmail, role } = response.data.result
-        login(
-          {
-            id: userId,
-            username,
-            email: userEmail,
-            role,
-            fullName: username,
-            avatarUrl: undefined,
-          },
-          accessToken
-        )
-        navigate('/', { replace: true })
+      const { accessToken, userId, username, email: userEmail, role } = await loginUser({ email, password })
+      login(
+        {
+          id: userId,
+          username,
+          email: userEmail,
+          role,
+          fullName: username,
+          avatarUrl: undefined,
+        },
+        accessToken
+      )
+      if (role === 'ADMIN') {
+        navigate('/admin/dashboard', { replace: true })
+      } else if (role === 'AUTHOR') {
+        navigate('/author/dashboard', { replace: true })
       } else {
-        setError(response.data?.message || 'Đăng nhập thất bại')
+        navigate('/', { replace: true })
       }
     } catch (err: any) {
       setError(err?.message || 'Email hoặc mật khẩu không chính xác.')

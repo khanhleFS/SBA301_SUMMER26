@@ -2,11 +2,11 @@ import { useState, useRef, useEffect } from 'react'
 import type { ClipboardEvent, KeyboardEvent } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { api } from '../../lib/api'
-import { useErrorHandler } from '../../lib/error-handler'
-import { cn } from '../../lib/utils'
+import { useErrorHandler } from '@/lib/error-handler'
+import { cn } from '@/lib/utils'
+import { verifyRegisterOtp, resendOtp } from '@/services/auth-service'
 
-export default function VerifyOtpPage() {
+export default function VerifyOtpFeature() {
   const navigate = useNavigate()
   const location = useLocation()
   const email = location.state?.email || ''
@@ -116,28 +116,15 @@ export default function VerifyOtpPage() {
       setError(null)
       setIsSubmitting(true)
       try {
-        const response = await api.post('/auth/verify-register-otp', {
-          email,
-          otpCode: otpValue
+        await verifyRegisterOtp({ email, otpCode: otpValue })
+        addToast({
+          title: 'Kích hoạt tài khoản thành công!',
+          message: 'Đang chuyển hướng sang đăng nhập...',
+          variant: 'success'
         })
-        if (response.data && response.data.code === 200) {
-          addToast({
-            title: 'Kích hoạt tài khoản thành công!',
-            message: 'Đang chuyển hướng sang đăng nhập...',
-            variant: 'success'
-          })
-          setTimeout(() => {
-            navigate('/login', { replace: true })
-          }, 2000)
-        } else {
-          const errMsg = response.data?.message || 'Xác thực OTP thất bại'
-          setError(errMsg)
-          addToast({
-            title: 'Lỗi xác thực',
-            message: errMsg,
-            variant: 'error'
-          })
-        }
+        setTimeout(() => {
+          navigate('/login', { replace: true })
+        }, 2000)
       } catch (err: any) {
         const errMsg = err?.message || 'Mã OTP không chính xác hoặc đã hết hạn.'
         setError(errMsg)
@@ -151,7 +138,7 @@ export default function VerifyOtpPage() {
   const handleResend = async () => {
     setError(null)
     try {
-      await api.post('/auth/forgot-password', { email })
+      await resendOtp(email)
       addToast({
         title: 'Đã gửi lại OTP',
         message: 'Mã OTP mới đã được gửi lại vào email của bạn.',

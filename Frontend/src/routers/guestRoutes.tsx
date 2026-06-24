@@ -1,17 +1,17 @@
 import type { RouteObject } from 'react-router-dom'
 import SiteLayout from '@/layouts/SiteLayout'
 import GuestLayout from '@/layouts/GuestLayout'
-import LoginPage from '@/pages/guest/login'
-import RegisterPage from '@/pages/guest/register'
-import ForgotPasswordPage from '@/pages/guest/forgot-password'
-import VerifyOtpPage from '@/pages/guest/verify-otp'
+import LoginPage from '@/features/auth/login-feature'
+import RegisterPage from '@/features/auth/register-feature'
+import ForgotPasswordPage from '@/features/auth/forgot-password-feature'
+import VerifyOtpPage from '@/features/auth/verify-otp-feature'
 import DemoPage from '@/pages/guest/demo'
 
 // Import public content pages
 import HomePage from '@/pages/guest/home'
-import SearchPage from '@/pages/guest/search'
-import StoryDetailPage from '@/pages/guest/story-detail'
-import ReaderPage from '@/pages/guest/reader'
+import SearchPage from '@/features/search/search-feature'
+import StoryDetailPage from '@/features/story-detail/story-detail-feature'
+import ReaderPage from '@/features/reader/reader-feature'
 
 
 

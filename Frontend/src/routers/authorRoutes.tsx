@@ -1,12 +1,12 @@
 import type { RouteObject } from 'react-router-dom'
 import { Navigate } from 'react-router-dom'
 import DashboardLayout from '@/layouts/DashboardLayout'
-import Dashboard from '@/pages/author/dashboard'
-import FinancePage from '@/pages/author/finance'
-import LeaderboardPage from '@/pages/author/leaderboard'
-import AuthorNovelsPage from '@/pages/author/novels'
-import AuthorNovelDetailPage from '@/pages/author/novel-detail'
-import AuthorChapterDetailPage from '@/pages/author/chapter-detail'
+import Dashboard from '@/features/admin-dashboard/dashboard-feature'
+import FinancePage from '@/features/admin-finance/finance-feature'
+import LeaderboardPage from '@/features/admin-leaderboard/leaderboard-feature'
+import AuthorNovelsPage from '@/features/author-novel/novels-feature'
+import AuthorNovelDetailPage from '@/features/author-novel/novel-detail-feature'
+import AuthorChapterDetailPage from '@/features/author-novel/chapter-detail-feature'
 
 export const authorRoutes: RouteObject[] = [
 	{
