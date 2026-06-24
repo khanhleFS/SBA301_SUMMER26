@@ -5,10 +5,12 @@ import com.fpt.sba301_su26_groupproject.common.exception.ChapterErrorCode;
 import com.fpt.sba301_su26_groupproject.common.exception.NovelErrorCode;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterResponseDTO;
+import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.entity.Chapter;
 import com.fpt.sba301_su26_groupproject.entity.Enumeration.ChapterStatus;
 import com.fpt.sba301_su26_groupproject.entity.Novel;
 import com.fpt.sba301_su26_groupproject.repository.ChapterRepository;
+import com.fpt.sba301_su26_groupproject.repository.EnumRepository;
 import com.fpt.sba301_su26_groupproject.repository.NovelRepository;
 import com.fpt.sba301_su26_groupproject.service.ChapterService;
 import com.fpt.sba301_su26_groupproject.service.TtsService;
@@ -35,6 +37,8 @@ public class ChapterServiceImpl implements ChapterService {
     private final TtsService ttsService;
 
     private final UploadService uploadService;
+
+    private final EnumRepository enumRepository;
 
     @Override
     @Transactional
@@ -199,5 +203,10 @@ public class ChapterServiceImpl implements ChapterService {
             throw new ApiException(ChapterErrorCode.CHAPTER_INVALID,
                     "Chương trả phí bắt buộc phải có giá coin lớn hơn 0.");
         }
+    }
+
+    @Override
+    public List<EnumResponseDTO> getEnums() {
+        return enumRepository.getChapterEnums();
     }
 }

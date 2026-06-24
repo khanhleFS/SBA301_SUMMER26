@@ -5,9 +5,11 @@ import com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode;
 import com.fpt.sba301_su26_groupproject.common.exception.NovelErrorCode;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelResponseDTO;
+import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.entity.*;
 import com.fpt.sba301_su26_groupproject.entity.Enumeration.NovelStatus;
 import com.fpt.sba301_su26_groupproject.repository.CategoryRepository;
+import com.fpt.sba301_su26_groupproject.repository.EnumRepository;
 import com.fpt.sba301_su26_groupproject.repository.NovelCategoryRepository;
 import com.fpt.sba301_su26_groupproject.repository.NovelRepository;
 import com.fpt.sba301_su26_groupproject.repository.UserRepository;
@@ -29,6 +31,7 @@ public class NovelServiceImpl implements NovelService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final NovelCategoryRepository novelCategoryRepository;
+    private final EnumRepository enumRepository;
 
     @Override
     @Transactional
@@ -251,5 +254,10 @@ public class NovelServiceImpl implements NovelService {
                 throw new ApiException(NovelErrorCode.NOVEL_CATEGORY_NOT_FOUND);
             }
         }
+    }
+
+    @Override
+    public List<EnumResponseDTO> getEnums() {
+        return enumRepository.getNovelEnums();
     }
 }

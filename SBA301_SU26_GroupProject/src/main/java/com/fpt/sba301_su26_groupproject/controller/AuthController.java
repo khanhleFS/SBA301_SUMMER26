@@ -32,6 +32,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
+
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
@@ -159,6 +163,16 @@ public class AuthController {
                 .code(200)
                 .message("Lấy token mới thành công")
                 .result(refreshResponse)
+                .build());
+    }
+
+    @Operation(summary = "Get enums")
+    @GetMapping("/enums")
+    public ResponseEntity<ApiResponse<List<EnumResponseDTO>>> getEnums() {
+        return ResponseEntity.ok(ApiResponse.<List<EnumResponseDTO>>builder()
+                .code(200)
+                .message("Lấy danh sách enums thành công")
+                .result(authenService.getEnums())
                 .build());
     }
 }

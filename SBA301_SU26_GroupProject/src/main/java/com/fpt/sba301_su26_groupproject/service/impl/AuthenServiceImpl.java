@@ -6,10 +6,12 @@ import com.fpt.sba301_su26_groupproject.common.security.CustomUserDetail;
 import com.fpt.sba301_su26_groupproject.common.security.JwtService;
 import com.fpt.sba301_su26_groupproject.common.security.TokenBlacklistService;
 import com.fpt.sba301_su26_groupproject.dto.authen.*;
+import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.entity.Enumeration.UserRole;
 import com.fpt.sba301_su26_groupproject.entity.OTP;
 import com.fpt.sba301_su26_groupproject.entity.RefreshTokenRedis;
 import com.fpt.sba301_su26_groupproject.entity.User;
+import com.fpt.sba301_su26_groupproject.repository.EnumRepository;
 import com.fpt.sba301_su26_groupproject.repository.OTPRepository;
 import com.fpt.sba301_su26_groupproject.repository.RefreshTokenRedisRepository;
 import com.fpt.sba301_su26_groupproject.repository.UserRepository;
@@ -17,6 +19,7 @@ import com.fpt.sba301_su26_groupproject.service.AuthenService;
 import com.fpt.sba301_su26_groupproject.service.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -48,6 +51,7 @@ public class AuthenServiceImpl implements AuthenService {
     private final JwtService jwtService;
     private final RefreshTokenRedisRepository refreshTokenRepository;
     private final TokenBlacklistService tokenBlacklistService;
+    private final EnumRepository enumRepository;
 
     @Override
     @Transactional
@@ -319,5 +323,10 @@ public class AuthenServiceImpl implements AuthenService {
             password.append(charSet.charAt(randomIndex));
         }
         return password.toString();
+    }
+
+    @Override
+    public List<EnumResponseDTO> getEnums() {
+        return enumRepository.getAuthEnums();
     }
 }

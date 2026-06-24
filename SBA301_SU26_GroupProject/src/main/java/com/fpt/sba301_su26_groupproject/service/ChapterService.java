@@ -1,5 +1,6 @@
 package com.fpt.sba301_su26_groupproject.service;
 
+import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterResponseDTO;
 
@@ -23,4 +24,6 @@ public interface ChapterService {
 
     // Tạo audio từ nội dung chương bằng Google TTS → upload Cloudinary → lưu URL
     ChapterResponseDTO generateChapterAudio(UUID novelId, Integer chapterNumber);
+
+    List<EnumResponseDTO> getEnums();
 }

@@ -1,6 +1,7 @@
 package com.fpt.sba301_su26_groupproject.service;
 
 
+import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.coin.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,4 +45,6 @@ public interface CoinPackageService {
 
     // Xóa gói (chỉ xóa được nếu chưa có ai mua)
     void deletePackage(UUID id);
+
+    List<EnumResponseDTO> getEnums();
 }

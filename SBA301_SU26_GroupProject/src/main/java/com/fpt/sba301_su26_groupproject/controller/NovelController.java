@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -85,6 +87,16 @@ public class NovelController {
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .code(200)
                 .message("Xóa bộ truyện thành công")
+                .build());
+    }
+
+    @Operation(summary = "Get enums")
+    @GetMapping("/enums")
+    public ResponseEntity<ApiResponse<List<EnumResponseDTO>>> getEnums() {
+        return ResponseEntity.ok(ApiResponse.<List<EnumResponseDTO>>builder()
+                .code(200)
+                .message("Lấy danh sách enums thành công")
+                .result(novelService.getEnums())
                 .build());
     }
 }

@@ -3,8 +3,10 @@ package com.fpt.sba301_su26_groupproject.service.impl;
 import com.fpt.sba301_su26_groupproject.common.exception.ApiException;
 import com.fpt.sba301_su26_groupproject.common.exception.CoinPackageErrorCode;
 import com.fpt.sba301_su26_groupproject.dto.coin.*;
+import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.entity.CoinPackage;
 import com.fpt.sba301_su26_groupproject.repository.CoinPackageRepository;
+import com.fpt.sba301_su26_groupproject.repository.EnumRepository;
 import com.fpt.sba301_su26_groupproject.service.CoinPackageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class CoinPackageServiceImpl implements CoinPackageService {
 
     private final CoinPackageRepository coinPackageRepository;
+    private final EnumRepository enumRepository;
 
     // -----------------------------------------------------------------------
     // HELPER: map Entity → Response
@@ -164,5 +167,10 @@ public class CoinPackageServiceImpl implements CoinPackageService {
         if(request.isActive() == false) {
             throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_INVALID, "Gói mới phải được kích hoạt");
         }
+    }
+
+    @Override
+    public List<EnumResponseDTO> getEnums() {
+        return enumRepository.getCoinEnums();
     }
 }

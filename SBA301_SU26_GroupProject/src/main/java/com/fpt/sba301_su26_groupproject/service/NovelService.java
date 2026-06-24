@@ -1,5 +1,6 @@
 package com.fpt.sba301_su26_groupproject.service;
 
+import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelResponseDTO;
 
@@ -12,4 +13,5 @@ public interface NovelService {
     void deleteNovel(UUID novelId, String authorEmail);
     NovelResponseDTO getNovelById(UUID novelId);
     List<NovelResponseDTO> getAllNovelsByAuthor(String authorEmail);
+    List<EnumResponseDTO> getEnums();
 }

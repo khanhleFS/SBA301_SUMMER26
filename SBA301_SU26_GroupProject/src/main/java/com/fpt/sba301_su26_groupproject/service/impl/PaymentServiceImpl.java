@@ -23,10 +23,13 @@ import com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode;
 import com.fpt.sba301_su26_groupproject.dto.payment.PaymentMomoCallbackDTO;
 import com.fpt.sba301_su26_groupproject.dto.payment.PaymentMomoCreateRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.payment.PaymentMomoCreateResponseDTO;
+import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
+import com.fpt.sba301_su26_groupproject.repository.EnumRepository;
 import com.fpt.sba301_su26_groupproject.service.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentServiceImpl implements PaymentService {
 
     private final MomoConfig momoConfig;
+    private final EnumRepository enumRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
@@ -151,5 +155,10 @@ public class PaymentServiceImpl implements PaymentService {
                 throw new IllegalStateException("Failed to calculate MoMo signature", e);
             }
         }
+    }
+
+    @Override
+    public List<EnumResponseDTO> getEnums() {
+        return enumRepository.getPaymentEnums();
     }
 }
