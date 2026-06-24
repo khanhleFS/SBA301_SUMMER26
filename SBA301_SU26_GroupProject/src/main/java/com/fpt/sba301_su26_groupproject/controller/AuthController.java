@@ -149,4 +149,16 @@ public class AuthController {
                 .message("Xác thực thành công. Tài khoản đã được kích hoạt.")
                 .build());
     }
+
+    @Operation(summary = "Refresh token", description = "Generate new access token and refresh token using existing refresh token")
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> refresh(
+            @Valid @RequestBody TokenRefreshRequestDTO requestDTO) {
+        LoginResponseDTO refreshResponse = authenService.refreshToken(requestDTO);
+        return ResponseEntity.ok(ApiResponse.<LoginResponseDTO>builder()
+                .code(200)
+                .message("Lấy token mới thành công")
+                .result(refreshResponse)
+                .build());
+    }
 }
