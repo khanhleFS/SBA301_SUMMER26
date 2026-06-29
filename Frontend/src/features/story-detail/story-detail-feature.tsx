@@ -74,9 +74,9 @@ function StoryDetailContent() {
 }
 
 export default function StoryDetailFeature() {
-  const { novelSlug } = useParams<{ novelSlug: string }>()
+  const { novelSlugWithId } = useParams<{ novelSlugWithId: string }>()
   return (
-    <StoryDetailProvider storyId={novelSlug || 'vong-am-toa-thap-neon-walker'}>
+    <StoryDetailProvider storyId={novelSlugWithId || ''}>
       <StoryDetailContent />
     </StoryDetailProvider>
   )

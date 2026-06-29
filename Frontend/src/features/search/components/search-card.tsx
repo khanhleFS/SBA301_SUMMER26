@@ -4,7 +4,7 @@ import SpotlightCard from '@/components/custom/spot-light-card/SpotlightCard'
 import type { UserReadState } from '../context/search-context'
 
 export interface Story {
-  id: number
+  id: string
   slug: string
   title: string
   reads: string
@@ -107,7 +107,7 @@ export function SearchCard({ story, userReadState }: SearchCardProps) {
         {/* Book Cover */}
         <Link
           to={`/${story.slug}`}
-          className="relative w-10 h-14 sm:w-28 sm:h-40 rounded sm:rounded-lg bg-surface-container-highest overflow-hidden flex-shrink-0 shadow border border-outline/5 z-0 cursor-pointer block"
+          className="relative w-10 h-14 sm:w-28 sm:h-40 rounded sm:rounded-md bg-surface-container-highest overflow-hidden flex-shrink-0 shadow border border-outline/5 z-0 cursor-pointer block"
         >
           {story.imgUrl ? (
             <img

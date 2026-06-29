@@ -1,5 +1,5 @@
 import { api } from '@/lib/api'
-import type { ChapterRequestDTO, ChapterResponseDTO, ChapterStatus } from '@/types'
+import type { ChapterRequestDTO, ChapterResponseDTO, EnumResponseDTO } from '@/types'
 
 
 /**
@@ -68,3 +68,15 @@ export async function deleteChapter(chapterId: string): Promise<void> {
   }
   throw new Error(response.data?.message || 'Xóa chương thất bại')
 }
+
+/**
+ * Lấy danh sách enum của Chapter (ChapterStatus) từ backend.
+ */
+export async function getChapterEnums(): Promise<EnumResponseDTO[]> {
+  const response = await api.get('/novels/chapters/enums')
+  if (response.data && response.data.code === 200) {
+    return response.data.result
+  }
+  throw new Error(response.data?.message || 'Không thể tải enums của chương')
+}
+

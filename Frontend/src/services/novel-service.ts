@@ -1,5 +1,5 @@
 import { api } from '@/lib/api'
-import type { NovelRequestDTO, NovelResponseDTO, NovelStatus } from '@/types'
+import type { NovelRequestDTO, NovelResponseDTO, NovelPageResponseDTO, EnumResponseDTO } from '@/types'
 
 
 /**
@@ -56,3 +56,54 @@ export async function deleteNovel(id: string): Promise<void> {
   }
   throw new Error(response.data?.message || 'Xóa truyện thất bại')
 }
+
+/**
+ * Lấy danh sách enum của Novel (NovelStatus) từ backend.
+ */
+export async function getNovelEnums(): Promise<EnumResponseDTO[]> {
+  const response = await api.get('/author/novels/enums')
+  if (response.data && response.data.code === 200) {
+    return response.data.result
+  }
+  throw new Error(response.data?.message || 'Không thể tải enums của truyện')
+}
+
+/**
+ * Fetches public details of a single novel by ID for readers/guests.
+ */
+export async function getPublicNovelById(id: string): Promise<NovelResponseDTO> {
+  const response = await api.get(`/novels/${id}`)
+  if (response.data && (response.data.code === 200 || response.status === 200)) {
+    return response.data.result
+  }
+  throw new Error(response.data?.message || 'Không thể tải chi tiết truyện')
+}
+
+/**
+ * Searches/lists public novels with optional filters and pagination.
+ */
+export async function searchNovels(params: {
+  q?: string
+  category?: string
+  status?: string
+  minChapters?: number
+  page?: number
+  size?: number
+}): Promise<NovelPageResponseDTO> {
+  const response = await api.get('/novels', { params: {
+    q: params.q || undefined,
+    category: params.category || undefined,
+    status: params.status || undefined,
+    minChapters: params.minChapters || undefined,
+    page: params.page ?? 0,
+    size: params.size ?? 20,
+  }})
+  if (response.data && response.data.code === 200) {
+    return response.data.result
+  }
+  throw new Error(response.data?.message || 'Không thể tải danh sách truyện')
+}
+
+
+
+

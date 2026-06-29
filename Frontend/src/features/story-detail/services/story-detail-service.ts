@@ -1,4 +1,5 @@
-import { MOCK_STORIES } from '@/services/mock-db'
+import { getPublicNovelById } from '@/services/novel-service'
+import { getChaptersByNovel } from '@/services/chapter-service'
 
 export interface StoryDetailInfo {
   id: string
@@ -24,49 +25,51 @@ export interface ChapterItem {
   price?: number
 }
 
+export function extractUuid(slugWithId: string): string {
+  if (!slugWithId) return ''
+  const parts = slugWithId.split('-')
+  if (parts.length >= 5) {
+    const possibleUuid = parts.slice(-5).join('-')
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (uuidRegex.test(possibleUuid)) {
+      return possibleUuid
+    }
+  }
+  return slugWithId
+}
+
 export const storyDetailService = {
-  getStoryInfo: (storyId: string): Promise<StoryDetailInfo> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const story = MOCK_STORIES.find((s) => s.slug === storyId || s.id.toString() === storyId) || MOCK_STORIES[0]
-        
-        resolve({
-          id: story.id.toString(),
-          slug: story.slug,
-          title: story.title,
-          author: story.author,
-          status: story.status,
-          chaptersCount: story.chapters.length,
-          views: story.reads,
-          rating: story.rating,
-          synopsis: story.synopsis,
-          genres: story.genres,
-          cover: story.imgUrl
-        })
-      }, 500)
-    })
+  getStoryInfo: async (storyId: string): Promise<StoryDetailInfo> => {
+    const uuid = extractUuid(storyId)
+    const novel = await getPublicNovelById(uuid)
+    return {
+      id: novel.id,
+      slug: `${novel.slug}-${novel.id}`,
+      title: novel.title,
+      author: novel.authorName || 'Tác giả',
+      status: novel.status,
+      chaptersCount: 0, // Will be updated by chapters length
+      views: (novel.viewCount || 0).toString(),
+      rating: 4.8,
+      synopsis: novel.description ? novel.description.split('\n') : ['Chưa có mô tả.'],
+      genres: novel.categories || [],
+      cover: novel.coverImageUrl || undefined
+    }
   },
   
-  getStoryChapters: (storyId: string): Promise<ChapterItem[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const story = MOCK_STORIES.find((s) => s.slug === storyId || s.id.toString() === storyId) || MOCK_STORIES[0]
-        
-        const mappedChapters: ChapterItem[] = story.chapters.map((c) => ({
-          id: c.id,
-          slug: c.slug,
-          title: `${c.chapterNum}: ${c.title}`,
-          time: c.time,
-          views: c.views,
-          isLocked: c.id > 2,
-          price: c.id > 2 ? 50 : undefined
-        }))
-        
-        resolve(mappedChapters)
-      }, 500)
-    })
+  getStoryChapters: async (storyId: string): Promise<ChapterItem[]> => {
+    const uuid = extractUuid(storyId)
+    const chapters = await getChaptersByNovel(uuid)
+    return chapters.map((c) => ({
+      id: c.chapterNumber,
+      slug: `${c.slug}-${c.id}`,
+      title: c.title,
+      time: c.createdAt ? new Date(c.createdAt).toLocaleDateString('vi-VN') : 'Vừa xong',
+      views: (c.viewCount || 0).toString(),
+      isLocked: c.status === 'LOCKED' || c.coinPrice > 0,
+      price: c.coinPrice > 0 ? c.coinPrice : undefined
+    }))
   }
 }
 
-// TODO: replace mock service with real API query when backend endpoint is available.
 

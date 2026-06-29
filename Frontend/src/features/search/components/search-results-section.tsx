@@ -5,14 +5,14 @@ import { SearchCard } from './search-card'
 import { SearchSkeletonList } from './search-skeleton'
 
 export function SearchResultsSection() {
-  const { filteredStories, isLoading, clearFilters, userReadState } = useSearchContext()
+  const { filteredStories, pagedStories, isLoading, clearFilters, userReadState } = useSearchContext()
 
-  // Split stories into "Đang đọc & Đã mua" vs "Khám phá thêm"
+  // Split pagedStories into "Đang đọc & Đã mua" vs "Khám phá thêm"
   const { readingOrUnlocked, exploreMore } = useMemo(() => {
-    const readingOrUnlocked: typeof filteredStories = []
-    const exploreMore: typeof filteredStories = []
+    const readingOrUnlocked: typeof pagedStories = []
+    const exploreMore: typeof pagedStories = []
 
-    filteredStories.forEach((story) => {
+    pagedStories.forEach((story) => {
       const isBookmarked = !!userReadState?.bookmarks[story.id]
       const hasUnlocked = (userReadState?.unlockedChapters[story.id] ?? []).length > 0
       if (isBookmarked || hasUnlocked) {
@@ -23,7 +23,7 @@ export function SearchResultsSection() {
     })
 
     return { readingOrUnlocked, exploreMore }
-  }, [filteredStories, userReadState])
+  }, [pagedStories, userReadState])
 
   if (isLoading) {
     return <SearchSkeletonList />
@@ -73,7 +73,7 @@ export function SearchResultsSection() {
               <span className="h-2 w-2 rounded-full bg-primary" />
               <h3 className="font-serif text-lg font-bold text-on-surface">Khám phá thêm</h3>
               <span className="text-xs bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full">
-                {exploreMore.length}
+                {filteredStories.length}
               </span>
             </div>
           )}
@@ -87,3 +87,4 @@ export function SearchResultsSection() {
     </div>
   )
 }
+

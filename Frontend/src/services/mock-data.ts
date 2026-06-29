@@ -47,8 +47,8 @@ export interface MockStory {
 }
 
 export interface UserReadState {
-  bookmarks: Record<number, number>
-  unlockedChapters: Record<number, number[]>
+  bookmarks: Record<string | number, number>
+  unlockedChapters: Record<string | number, number[]>
 }
 
 export interface KpiData {

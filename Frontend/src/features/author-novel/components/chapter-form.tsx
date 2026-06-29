@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Save, Loader2, Headphones, Mic, Volume2 } from 'lucide-react'
 import { useCreateChapter, useUpdateChapter, useGenerateChapterAudio } from '../hooks/use-author-novels'
-import type { ChapterResponseDTO, ChapterStatus } from '@/services/chapter-service'
+import type { ChapterResponseDTO, ChapterStatus } from '@/types'
 
 interface ChapterFormProps {
   novelId: string

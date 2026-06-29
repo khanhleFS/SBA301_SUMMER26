@@ -24,6 +24,8 @@ public record NovelResponseDTO(
         NovelStatus status,
         @Schema(example = "1520")
         Integer viewCount,
+        @Schema(example = "42")
+        Integer chapterCount,
         @Schema(example = "2026-06-09T08:30:00Z")
         Instant createdAt,
         @Schema(example = "2026-06-09T09:00:00Z")

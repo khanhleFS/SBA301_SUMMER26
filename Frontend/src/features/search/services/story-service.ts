@@ -1,92 +1,84 @@
 import type { Story } from '../components/search-card'
-import { MOCK_STORIES } from '@/services/mock-data'
+import { searchNovels } from '@/services/novel-service'
 import { filterService, type FilterGroup, type FilterOption } from '@/services/filter-service'
+import { getAllCategories } from '@/services/category-service'
 
 export type { FilterGroup, FilterOption }
 
 export const storyService = {
-  getStories: (params: { 
+  getStories: async (params: {
     searchQuery?: string
     category?: string
     minChapters?: string
-    status?: string 
-  }): Promise<Story[]> => {
-    // Deliberate mock delay of 600ms to allow skeletons to transition gracefully
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Map MockStory to Story structure expected by the search page
-        const searchStories: Story[] = MOCK_STORIES.map((s) => ({
-          id: s.id,
-          slug: s.slug,
-          title: s.title,
-          reads: s.reads,
-          publishTime: s.publishTime,
-          author: s.author,
-          genres: s.genres,
-          currentChapter: s.chapters.length, // Dynamic length matching
-          status: s.status,
-          imgUrl: s.imgUrl
-        }))
+    status?: string
+    page?: number
+    size?: number
+  }): Promise<{ stories: Story[]; totalPages: number; totalElements: number }> => {
+    // Map frontend status labels → backend enum values
+    const statusMap: Record<string, string> = {
+      'Ongoing': 'ONGOING',
+      'Completed': 'COMPLETED',
+      'Paused': 'PAUSED',
+      'Dropped': 'DROPPED',
+    }
+    const backendStatus = params.status && params.status !== 'All'
+      ? (statusMap[params.status] ?? params.status)
+      : undefined
 
-        const filtered = searchStories.filter(story => {
-          // 1. Text Search matching (checks title, author, genres)
-          let matchesQuery = true
-          if (params.searchQuery) {
-            const q = params.searchQuery.toLowerCase().trim()
-            matchesQuery = 
-              story.title.toLowerCase().includes(q) || 
-              story.author.toLowerCase().includes(q) ||
-              story.genres.some(g => g.toLowerCase().includes(q))
-          }
+    const minChaptersNum = params.minChapters && params.minChapters !== 'Any'
+      ? parseInt(params.minChapters, 10)
+      : undefined
 
-          // 2. Category filter
-          let matchesCategory = true
-          if (params.category && params.category !== 'Tất cả thể loại') {
-            matchesCategory = story.genres.includes(params.category)
-          }
-
-          // 3. Chapters filter
-          let matchesChapters = true
-          if (params.minChapters) {
-            if (params.minChapters === '5') {
-              matchesChapters = story.currentChapter >= 5
-            } else if (params.minChapters === '10') {
-              matchesChapters = story.currentChapter >= 10
-            } else if (params.minChapters === '20') {
-              matchesChapters = story.currentChapter >= 20
-            }
-          }
-
-          // 4. Status filter
-          let matchesStatus = true
-          if (params.status && params.status !== 'All') {
-            matchesStatus = story.status === params.status
-          }
-
-          return matchesQuery && matchesCategory && matchesChapters && matchesStatus
-        })
-        resolve(filtered)
-      }, 600)
+    const result = await searchNovels({
+      q: params.searchQuery,
+      category: params.category && params.category !== 'Tất cả thể loại' ? params.category : undefined,
+      status: backendStatus,
+      minChapters: minChaptersNum,
+      page: params.page ?? 0,
+      size: params.size ?? 20,
     })
+
+    // Map backend status enum → frontend display label
+    const statusDisplayMap: Record<string, string> = {
+      ONGOING: 'Ongoing',
+      COMPLETED: 'Completed',
+      PAUSED: 'Paused',
+      DROPPED: 'Dropped',
+    }
+
+    const stories: Story[] = result.content.map((novel) => ({
+      id: novel.id,
+      // slug-id pattern: slug + UUID for the URL
+      slug: `${novel.slug}-${novel.id}`,
+      title: novel.title,
+      reads: (novel.viewCount || 0).toString(),
+      publishTime: novel.createdAt
+        ? new Date(novel.createdAt).toLocaleDateString('vi-VN')
+        : 'Vừa xong',
+      author: novel.authorName || 'Tác giả',
+      genres: novel.categories || [],
+      currentChapter: novel.chapterCount ?? 0,
+      status: statusDisplayMap[novel.status] ?? novel.status,
+      imgUrl: novel.coverImageUrl || undefined,
+    }))
+
+    return {
+      stories,
+      totalPages: result.totalPages,
+      totalElements: result.totalElements,
+    }
   },
 
-  getCategories: (): string[] => {
-    // Synchronous helper falls back or delegates to mock values for legacy code
-    return [
-      'Tất cả thể loại',
-      'Hành động',
-      'Hài hước',
-      'Drama',
-      'Kỳ ảo',
-      'Khoa học viễn tưởng',
-      'Lãng mạn'
-    ]
+  getCategories: async (): Promise<string[]> => {
+    try {
+      const cats = await getAllCategories()
+      return ['Tất cả thể loại', ...cats.map(c => c.name)]
+    } catch {
+      return ['Tất cả thể loại']
+    }
   },
 
   getSearchFilters: (): Promise<FilterGroup[]> => {
     return filterService.getFiltersByScope('search')
   }
 }
-
-// TODO: replace mock search service with real API query when backend endpoint is available.
-

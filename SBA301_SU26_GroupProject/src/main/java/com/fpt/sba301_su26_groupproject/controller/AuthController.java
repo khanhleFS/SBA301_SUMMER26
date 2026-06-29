@@ -17,6 +17,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,12 +51,25 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponseDTO>> login(
             @Valid @RequestBody LoginRequestDTO loginRequestDTO) {
         LoginResponseDTO loginResponse = authenService.login(loginRequestDTO);
-        return ResponseEntity.ok(ApiResponse.<LoginResponseDTO>builder()
-                .code(200)
-                .message("Đăng nhập thành công")
-                .result(loginResponse)
-                .build());
+        
+        // Đóng gói Refresh Token vào HttpOnly Cookie
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", loginResponse.refreshToken())
+                .httpOnly(true)
+                .secure(true) // Chỉ truyền qua HTTPS (hoặc localhost)
+                .sameSite("Strict")
+                .path("/api/auth/refresh") // Chỉ gửi cookie này đến endpoint refresh
+                .maxAge(7 * 24 * 60 * 60) // Hạn 7 ngày trùng khớp với TTL Redis
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.<LoginResponseDTO>builder()
+                        .code(200)
+                        .message("Đăng nhập thành công")
+                        .result(loginResponse)
+                        .build());
     }
+
 
     @Operation(
             summary = "Logout",
@@ -157,14 +172,42 @@ public class AuthController {
     @Operation(summary = "Refresh token", description = "Generate new access token and refresh token using existing refresh token")
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<LoginResponseDTO>> refresh(
-            @Valid @RequestBody TokenRefreshRequestDTO requestDTO) {
-        LoginResponseDTO refreshResponse = authenService.refreshToken(requestDTO);
-        return ResponseEntity.ok(ApiResponse.<LoginResponseDTO>builder()
-                .code(200)
-                .message("Lấy token mới thành công")
-                .result(refreshResponse)
-                .build());
+            @RequestBody(required = false) TokenRefreshRequestDTO requestDTO,
+            @org.springframework.web.bind.annotation.CookieValue(name = "refreshToken", required = false) String cookieRefreshToken) {
+        
+        String tokenToUse = null;
+        if (requestDTO != null && requestDTO.refreshToken() != null && !requestDTO.refreshToken().isBlank()) {
+            tokenToUse = requestDTO.refreshToken();
+        } else if (cookieRefreshToken != null && !cookieRefreshToken.isBlank()) {
+            tokenToUse = cookieRefreshToken;
+        }
+
+        if (tokenToUse == null) {
+            throw new com.fpt.sba301_su26_groupproject.common.exception.ApiException(
+                    com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode.UNAUTHORIZED, 
+                    "Không tìm thấy Refresh Token");
+        }
+
+        LoginResponseDTO refreshResponse = authenService.refreshToken(new TokenRefreshRequestDTO(tokenToUse));
+
+        // Tiếp tục xoay vòng Cookie (Rotate Refresh Token)
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshResponse.refreshToken())
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/api/auth/refresh")
+                .maxAge(7 * 24 * 60 * 60)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.<LoginResponseDTO>builder()
+                        .code(200)
+                        .message("Lấy token mới thành công")
+                        .result(refreshResponse)
+                        .build());
     }
+
 
     @Operation(summary = "Get enums")
     @GetMapping("/enums")

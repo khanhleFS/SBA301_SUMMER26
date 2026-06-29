@@ -3,18 +3,23 @@ package com.fpt.sba301_su26_groupproject.service.impl;
 import com.fpt.sba301_su26_groupproject.common.exception.ApiException;
 import com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode;
 import com.fpt.sba301_su26_groupproject.common.exception.NovelErrorCode;
+import com.fpt.sba301_su26_groupproject.dto.novel.NovelPageResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.entity.*;
 import com.fpt.sba301_su26_groupproject.entity.Enumeration.NovelStatus;
 import com.fpt.sba301_su26_groupproject.repository.CategoryRepository;
+import com.fpt.sba301_su26_groupproject.repository.ChapterRepository;
 import com.fpt.sba301_su26_groupproject.repository.EnumRepository;
 import com.fpt.sba301_su26_groupproject.repository.NovelCategoryRepository;
 import com.fpt.sba301_su26_groupproject.repository.NovelRepository;
 import com.fpt.sba301_su26_groupproject.repository.UserRepository;
 import com.fpt.sba301_su26_groupproject.service.NovelService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +37,7 @@ public class NovelServiceImpl implements NovelService {
     private final CategoryRepository categoryRepository;
     private final NovelCategoryRepository novelCategoryRepository;
     private final EnumRepository enumRepository;
+    private final ChapterRepository chapterRepository;
 
     @Override
     @Transactional
@@ -209,6 +215,12 @@ public class NovelServiceImpl implements NovelService {
         }
 
         // 3. Khởi tạo đối tượng Record thông qua Builder cực kỳ sạch sẽ
+        Integer chapterCount = 0;
+        try {
+            chapterCount = chapterRepository.findMaxChapterNumberByNovelId(novel.getId());
+            if (chapterCount == null) chapterCount = 0;
+        } catch (Exception ignored) {}
+
         return NovelResponseDTO.builder()
                 .id(novel.getId())
                 .title(novel.getTitle())
@@ -217,6 +229,7 @@ public class NovelServiceImpl implements NovelService {
                 .coverImageUrl(novel.getCoverImageUrl())
                 .status(novel.getStatus())
                 .viewCount(novel.getViewCount())
+                .chapterCount(chapterCount)
                 .createdAt(novel.getCreatedAt())
                 .updatedAt(novel.getUpdatedAt())
                 .authorId(novel.getAuthor() != null ? novel.getAuthor().getId() : null)
@@ -260,4 +273,43 @@ public class NovelServiceImpl implements NovelService {
     public List<EnumResponseDTO> getEnums() {
         return enumRepository.getNovelEnums();
     }
+
+    @Override
+    public NovelPageResponseDTO searchNovels(String title, String status, String categoryName, Integer minChapters, int page, int size) {
+        NovelStatus novelStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                novelStatus = NovelStatus.valueOf(status.trim().toUpperCase());
+            } catch (IllegalArgumentException ignored) {
+                // invalid status → treat as no status filter
+            }
+        }
+
+        String titleParam = (title != null && !title.isBlank()) ? title.trim() : null;
+        String categoryParam = (categoryName != null && !categoryName.isBlank()) ? categoryName.trim() : null;
+
+        // Sort by createdAt DESC to match previous JPQL order
+        Pageable pageable = PageRequest.of(page, size, org.springframework.data.domain.Sort.by("createdAt").descending());
+        
+        org.springframework.data.jpa.domain.Specification<Novel> spec = 
+                com.fpt.sba301_su26_groupproject.repository.specification.NovelSpecification.filterNovels(
+                        titleParam, novelStatus, categoryParam, minChapters
+                );
+
+        Page<Novel> novelPage = novelRepository.findAll(spec, pageable);
+
+        List<NovelResponseDTO> content = novelPage.getContent()
+                .stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+
+        return NovelPageResponseDTO.builder()
+                .content(content)
+                .page(novelPage.getNumber())
+                .size(novelPage.getSize())
+                .totalElements(novelPage.getTotalElements())
+                .totalPages(novelPage.getTotalPages())
+                .build();
+    }
 }
+

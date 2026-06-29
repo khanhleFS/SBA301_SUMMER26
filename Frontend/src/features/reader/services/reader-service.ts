@@ -1,4 +1,5 @@
-import { MOCK_STORIES } from '@/services/mock-data'
+import { getPublicNovelById } from '@/services/novel-service'
+import { getChaptersByNovel, getChapterDetails } from '@/services/chapter-service'
 
 export interface ChapterSummary {
   id: number
@@ -21,67 +22,78 @@ export interface ChapterDetails {
   chaptersList?: ChapterSummary[]
 }
 
+function extractUuid(slugWithId: string): string {
+  if (!slugWithId) return ''
+  const parts = slugWithId.split('-')
+  if (parts.length >= 5) {
+    const possibleUuid = parts.slice(-5).join('-')
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (uuidRegex.test(possibleUuid)) {
+      return possibleUuid
+    }
+  }
+  return slugWithId
+}
+
 export const readerService = {
-  getChapter: (chapterId: string, novelSlug?: string): Promise<ChapterDetails> => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        let story = MOCK_STORIES[0]
-        let chap = null
+  getChapter: async (chapterSlug: string, novelSlugWithId?: string): Promise<ChapterDetails> => {
+    if (!novelSlugWithId) {
+      throw new Error('Novel slug/ID is required to load chapter details')
+    }
+    const novelId = extractUuid(novelSlugWithId)
+    const chapterId = extractUuid(chapterSlug)
 
-        // 1. Try to find the chapter by slug in any story
-        for (const s of MOCK_STORIES) {
-          const found = s.chapters.find((c) => c.slug === chapterId)
-          if (found) {
-            story = s
-            chap = found
-            break
-          }
-        }
+    // 1. Get all chapters of the novel to find the chapter number and compute prev/next chapter slugs
+    const chapters = await getChaptersByNovel(novelId)
+    // Sort chapters by chapterNumber ascending just to be safe
+    const sortedChapters = [...chapters].sort((a, b) => a.chapterNumber - b.chapterNumber)
 
-        // 2. If not found by exact slug across all, but we have novelSlug, check that novel specifically
-        if (!chap && novelSlug) {
-          const storyIdNum = parseInt(novelSlug.split('-').pop() || '', 10)
-          const foundStory = MOCK_STORIES.find((s) => s.id === storyIdNum || s.slug === novelSlug)
-          if (foundStory) {
-            story = foundStory
-            chap = story.chapters.find((c) => c.slug === chapterId)
-          }
-        }
+    const currentChapterIndex = sortedChapters.findIndex(c => c.id === chapterId || c.slug === chapterId || `${c.slug}-${c.id}` === chapterSlug)
+    if (currentChapterIndex === -1) {
+      throw new Error(`Không tìm thấy chương với ID/slug: ${chapterSlug}`)
+    }
 
-        // 3. Backwards compatibility fallback for numeric ID extraction
-        if (!chap) {
-          let normalizedId = chapterId
-          if (chapterId === 'chapter42') {
-            normalizedId = 'chapter2'
-          }
-          const idNum = parseInt(normalizedId.replace(/[^\d]/g, ''), 10)
-          chap = story.chapters.find((c) => c.id === idNum)
-        }
+    const currentChapterMeta = sortedChapters[currentChapterIndex]
 
-        if (chap) {
-          resolve({
-            id: chap.id,
-            title: chap.title,
-            chapterNum: chap.chapterNum,
-            author: story.author,
-            words: chap.words,
-            readTime: chap.readTime,
-            cover: story.imgUrl,
-            paragraphs: chap.paragraphs,
-            prevChapter: chap.prevChapter,
-            nextChapter: chap.nextChapter,
-            chaptersList: story.chapters.map(c => ({
-              id: c.id,
-              slug: c.slug,
-              chapterNum: c.chapterNum,
-              title: c.title
-            }))
-          })
-        } else {
-          reject(new Error('Chapter not found'))
-        }
-      }, 500)
-    })
+    // 2. Fetch the detailed content of the current chapter
+    const detail = await getChapterDetails(novelId, currentChapterMeta.chapterNumber)
+
+    // 3. Fetch public novel details to get author and cover image
+    const novel = await getPublicNovelById(novelId)
+
+    const prevChapter = currentChapterIndex > 0 
+      ? `${sortedChapters[currentChapterIndex - 1].slug}-${sortedChapters[currentChapterIndex - 1].id}` 
+      : null
+    const nextChapter = currentChapterIndex < sortedChapters.length - 1 
+      ? `${sortedChapters[currentChapterIndex + 1].slug}-${sortedChapters[currentChapterIndex + 1].id}` 
+      : null
+
+    // Split content by paragraphs (e.g. by newlines)
+    const paragraphs = detail.content ? detail.content.split('\n').filter(p => p.trim() !== '') : []
+
+    // Estimate words and readTime
+    const wordCount = detail.content ? detail.content.split(/\s+/).length : 0
+    const readTimeMinutes = Math.max(1, Math.round(wordCount / 200)) // ~200 words per minute
+
+    return {
+      id: detail.chapterNumber,
+      title: detail.title,
+      chapterNum: `Chương ${detail.chapterNumber}`,
+      author: novel.authorName || 'Tác giả',
+      words: `${wordCount} từ`,
+      readTime: `${readTimeMinutes} phút đọc`,
+      cover: novel.coverImageUrl || undefined,
+      paragraphs,
+      prevChapter,
+      nextChapter,
+      chaptersList: sortedChapters.map(c => ({
+        id: c.chapterNumber,
+        slug: `${c.slug}-${c.id}`,
+        chapterNum: `Chương ${c.chapterNumber}`,
+        title: c.title
+      }))
+    }
   }
 }
+
 

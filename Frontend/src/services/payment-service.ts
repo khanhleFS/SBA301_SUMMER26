@@ -1,5 +1,5 @@
 import { api } from '@/lib/api'
-import type { PaymentMomoCreateRequestDTO, PaymentMomoCreateResponseDTO } from '@/types'
+import type { PaymentMomoCreateRequestDTO, PaymentMomoCreateResponseDTO, EnumResponseDTO } from '@/types'
 
 
 /**
@@ -19,3 +19,15 @@ export async function createMomoPayment(request: PaymentMomoCreateRequestDTO): P
 
   throw new Error(response.data?.message || 'Khởi tạo thanh toán MoMo thất bại')
 }
+
+/**
+ * Lấy danh sách enum của Payment (PaymentStatus, PaymentMethod) từ backend.
+ */
+export async function getPaymentEnums(): Promise<EnumResponseDTO[]> {
+  const response = await api.get('/payments/enums')
+  if (response.data && response.data.code === 200) {
+    return response.data.result
+  }
+  throw new Error(response.data?.message || 'Không thể tải enums của giao dịch thanh toán')
+}
+

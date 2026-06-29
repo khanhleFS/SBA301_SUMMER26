@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { BookOpen, Calendar, Eye, Plus } from 'lucide-react'
 import { useMyNovels } from '../hooks/use-author-novels'
-import type { NovelResponseDTO } from '@/services/novel-service'
+import type { NovelResponseDTO } from '@/types'
 
 export function NovelList() {
   const { data: novels, isLoading, error } = useMyNovels()

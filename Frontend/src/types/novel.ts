@@ -8,11 +8,20 @@ export interface NovelResponseDTO {
   coverImageUrl: string | null
   status: NovelStatus
   viewCount: number
+  chapterCount: number
   createdAt: string
   updatedAt: string
   authorId: string
   authorName: string
   categories: string[]
+}
+
+export interface NovelPageResponseDTO {
+  content: NovelResponseDTO[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
 }
 
 export interface NovelRequestDTO {
@@ -22,3 +31,4 @@ export interface NovelRequestDTO {
   status: NovelStatus
   categoryIds: string[]
 }
+

@@ -92,7 +92,7 @@ const MockupContent = ({ isDark }: { isDark: boolean }) => {
 
 export default function Features() {
   return (
-    <section id="features" className="py-24 md:py-40 bg-background overflow-hidden relative">
+    <section id="features" className="pb-50 bg-background overflow-hidden relative">
       <Container>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-24 items-center">
           {/* Left: Phone Mockup with floating effects */}

@@ -31,7 +31,7 @@ export function StoryDetailProvider({ children, storyId }: { children: ReactNode
   const [inLibrary, setInLibrary] = useState(false)
   const [isSortedAsc, setIsSortedAsc] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const itemsPerPage = 15
 
   useEffect(() => {
     setIsLoading(true)

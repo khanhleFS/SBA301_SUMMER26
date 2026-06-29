@@ -3,7 +3,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Sun, Moon, LogOut, SunMoon, Check, LogIn, UserPlus } from 'lucide-react';
+import { Sun, Moon, LogOut, SunMoon, Check, LogIn, UserPlus, Cookie } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { gsap } from 'gsap';
 import './StaggeredMenu.css';
@@ -75,6 +75,9 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [cookieConsent, setCookieConsent] = useState<'granted' | 'denied'>(() => {
+    return (typeof window !== 'undefined' ? localStorage.getItem('cookieConsent') as 'granted' | 'denied' : null) || 'granted'
+  });
   const openRef = useRef(false);
   const panelRef = useRef<HTMLElement>(null);
   const preLayersRef = useRef<HTMLDivElement>(null);
@@ -93,6 +96,15 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const handleConsentChange = () => {
+      const val = (localStorage.getItem('cookieConsent') as 'granted' | 'denied') || 'granted';
+      setCookieConsent(val);
+    };
+    window.addEventListener('cookie-consent-changed', handleConsentChange);
+    return () => window.removeEventListener('cookie-consent-changed', handleConsentChange);
   }, []);
 
   useLayoutEffect(() => {
@@ -587,10 +599,42 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
                 </div>
 
+                {/* Cookie Toggle */}
+                <div className="sm-socials-link flex items-center justify-between gap-3 w-full mb-1 p-3 rounded-md bg-muted/30 select-none transition-colors hover:bg-muted/50">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary">
+                      <Cookie className="w-4 h-4" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-foreground">
+                        Sử dụng Cookie
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        Cá nhân hóa trải nghiệm
+                      </span>
+                    </div>
+                  </div>
+
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={cookieConsent === 'granted'}
+                      onChange={(e) => {
+                        const newConsent = e.target.checked ? 'granted' : 'denied';
+                        localStorage.setItem('cookieConsent', newConsent);
+                        setCookieConsent(newConsent);
+                        window.dispatchEvent(new Event('cookie-consent-changed'));
+                      }}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:after:border-zinc-700 peer-checked:bg-primary shadow-inner"></div>
+                  </label>
+                </div>
+
                 {/* User Row: dynamic based on auth state */}
                 {user ? (
                   /* ── LOGGED IN ── */
-                  <div className="sm-socials-link flex items-center justify-between gap-3 w-full pt-1">
+                  <div className="sm-socials-link flex items-center justify-between gap-3 w-full pt-5">
                     <div className="flex items-center gap-3">
                       {/* Avatar Button → Profile */}
                       <a
@@ -676,6 +720,7 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                     </button>
                   </div>
                 )}
+
               </div >
             </div >
           </aside >

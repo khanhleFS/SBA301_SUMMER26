@@ -23,7 +23,7 @@ import { useReaderContext, type ThemeType, type FontType, type LineHeightType } 
 
 function ReaderContent() {
   const navigate = useNavigate()
-  const { novelSlug } = useParams<{ novelSlug: string }>()
+  const { novelSlugWithId } = useParams<{ novelSlugWithId: string }>()
 
   const {
     currentChapterId: currentChapKey,
@@ -45,10 +45,10 @@ function ReaderContent() {
   } = useReaderContext()
 
   useEffect(() => {
-    if (novelSlug && currentChapKey) {
-      navigate(`/${novelSlug}/${currentChapKey}`, { replace: true })
+    if (novelSlugWithId && currentChapKey) {
+      navigate(`/${novelSlugWithId}/${currentChapKey}`, { replace: true })
     }
-  }, [currentChapKey, novelSlug, navigate])
+  }, [currentChapKey, novelSlugWithId, navigate])
 
   const [showSettings, setShowSettings] = useState(false)
   const [mobileOverlayActive, setMobileOverlayActive] = useState(false)
@@ -209,7 +209,7 @@ function ReaderContent() {
     {
       icon: <ArrowLeft className="size-5 text-on-primary" />,
       label: 'Quay lại',
-      onClick: () => navigate(`/${novelSlug || 'vong-am-toa-thap-neon-walker'}`)
+      onClick: () => navigate(`/${novelSlugWithId || ''}`)
     },
     {
       icon: <Bookmark className="size-5 text-on-primary" />,
@@ -510,7 +510,7 @@ function ReaderContent() {
           className={`fixed top-0 left-0 w-full z-50 bg-surface-container-low/95 backdrop-blur-md border-b border-outline/10 transition-all duration-300 py-3 ${mobileOverlayActive ? 'translate-y-0 opacity-100 pointer-events-auto' : '-translate-y-full opacity-0 pointer-events-none'}`}
         >
           <div className="flex items-center justify-between px-4">
-            <button onClick={() => navigate(`/${novelSlug || 'vong-am-toa-thap-neon-walker'}`)} className="p-2 hover:bg-surface-container rounded-full active:scale-90 transition-transform cursor-pointer">
+            <button onClick={() => navigate(`/${novelSlugWithId || ''}`)} className="p-2 hover:bg-surface-container rounded-full active:scale-90 transition-transform cursor-pointer">
               <ArrowLeft className="h-6 w-6 text-primary" />
             </button>
             <div className="text-center flex-1 max-w-[200px]">

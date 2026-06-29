@@ -2,9 +2,7 @@ import { useSearchContext } from '../context/search-context'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronDown } from 'lucide-react'
 
 export function SearchPagination() {
-  const { currentPage, setCurrentPage } = useSearchContext()
-
-  const totalPages = 8
+  const { currentPage, setCurrentPage, totalPages } = useSearchContext()
 
   return (
     <section className="mt-12 mb-8 animate-fade-slide-up select-none">

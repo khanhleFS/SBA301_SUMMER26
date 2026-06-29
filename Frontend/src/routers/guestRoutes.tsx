@@ -31,9 +31,8 @@ export const guestRoutes: RouteObject[] = [
 			{ index: true, element: <HomePage /> },
 			{ path: 'demo', element: <DemoPage /> },
 			{ path: 'search', element: <SearchPage /> },
-			{ path: ':novelSlug', element: <StoryDetailPage /> },
-			{ path: ':novelSlug/:chapterSlug', element: <ReaderPage /> }
+			{ path: ':novelSlugWithId', element: <StoryDetailPage /> },
+			{ path: ':novelSlugWithId/:chapterSlug', element: <ReaderPage /> }
 		],
 	}
-
 ]

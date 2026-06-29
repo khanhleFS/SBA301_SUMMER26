@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { api } from '@/lib/api'
+import { queryClient } from '@/lib/query-client'
+import { logoutUser, getUserProfile } from '@/services/auth-service'
 import type { User } from '@/types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -11,6 +12,8 @@ interface AuthState {
   user: User | null
   /** JWT token, or null when logged out */
   token: string | null
+  /** Refresh token stored in memory if cookies are rejected */
+  refreshToken: string | null
   /** True while verifying token / fetching profile on startup */
   isLoading: boolean
 
@@ -20,7 +23,7 @@ interface AuthState {
 
   // ── Actions ──────────────────────────────────────────────────────────────
   /** Persist user + token after successful login */
-  login: (user: User, token: string) => void
+  login: (user: User, token: string, refreshToken?: string) => void
   /** Clear state and call the backend logout endpoint */
   logout: () => Promise<void>
   /** Re-fetch profile from the backend and update the stored user */
@@ -39,56 +42,77 @@ export const useAuthStore = create<AuthState>()(
       // ── Initial state ──────────────────────────────────────────────────
       user: null,
       token: null,
+      refreshToken: null,
       isLoading: true,
       isAuthenticated: false,
 
       // ── Actions ────────────────────────────────────────────────────────
-      login(user, token) {
-        set({ user, token, isAuthenticated: true, isLoading: false })
+      login(user, token, refreshToken) {
+        set({ user, token, refreshToken: refreshToken || null, isAuthenticated: true, isLoading: false })
       },
 
       async logout() {
         try {
-          await api.post('/auth/logout')
-        } catch {
-          try {
-            await api.post('/logout')
-          } catch (err) {
-            console.warn('Backend logout call failed:', err)
-          }
+          await logoutUser()
+        } catch (err) {
+          console.warn('Backend logout call failed:', err)
         } finally {
-          set({ user: null, token: null, isAuthenticated: false, isLoading: false })
+          // Xóa cache của TanStack Query để tránh rò rỉ dữ liệu cũ sang user mới
+          queryClient.clear()
+          set({ user: null, token: null, refreshToken: null, isAuthenticated: false, isLoading: false })
         }
       },
 
       async refreshProfile() {
-        const { token, _setUser, _setLoading } = get()
+        const { token, refreshToken: stateRefreshToken, _setUser, _setLoading } = get()
+        const consent = typeof window !== 'undefined' ? localStorage.getItem('cookieConsent') : null
+
+        // Nếu không có token trên RAM, thử thực hiện gọi refresh token qua cookie hoặc RAM
         if (!token) {
-          _setLoading(false)
-          return
+          try {
+            // Import động tránh vòng lặp tham chiếu nếu có
+            const { refreshToken } = await import('@/services/auth-service')
+            const tokenToUse = consent === 'denied' ? (stateRefreshToken || '') : ''
+            const refreshRes = await refreshToken({ refreshToken: tokenToUse })
+            if (refreshRes && refreshRes.accessToken) {
+              set({ 
+                token: refreshRes.accessToken, 
+                refreshToken: consent === 'denied' ? refreshRes.refreshToken : null,
+                isAuthenticated: true 
+              })
+              const profile = await getUserProfile()
+              _setUser(profile)
+              return
+            }
+          } catch {
+            // Thất bại trong việc refresh session tự động
+            set({ user: null, token: null, refreshToken: null, isAuthenticated: false })
+            _setLoading(false)
+            return
+          }
         }
         try {
-          const response = await api.get('/auth/profile')
-          if (response.data?.code === 200) {
-            const profile = response.data.result
-            const currentUser = get().user
-            const updatedUser: User = {
-              id: profile.id ?? currentUser?.id ?? 0,
-              username: profile.username ?? currentUser?.username ?? '',
-              email: profile.email ?? currentUser?.email ?? '',
-              role: profile.role ?? currentUser?.role ?? 'USER',
-              fullName: profile.fullName ?? currentUser?.fullName ?? '',
-              avatarUrl: profile.avatarUrl ?? undefined,
-            }
-            _setUser(updatedUser)
+          // getUserProfile trả ProfileDTO (fullName, email, phone, address)
+          // Dùng any vì ProfileDTO không chứa id/role – giữ lại từ state cũ
+          const profile = await getUserProfile() as any
+          const currentUser = get().user
+          const updatedUser: User = {
+            id: profile.id ?? currentUser?.id ?? '',
+            username: profile.username ?? profile.fullName ?? currentUser?.username ?? '',
+            email: profile.email ?? currentUser?.email ?? '',
+            role: profile.role ?? currentUser?.role ?? 'USER',
+            fullName: profile.fullName ?? currentUser?.fullName ?? '',
+            avatarUrl: profile.avatarUrl ?? currentUser?.avatarUrl ?? undefined,
           }
+          _setUser(updatedUser)
         } catch (error) {
           console.warn('Failed to verify profile session:', error)
-          set({ user: null, token: null, isAuthenticated: false })
+          set({ user: null, token: null, refreshToken: null, isAuthenticated: false })
         } finally {
           _setLoading(false)
         }
       },
+
 
       // ── Internal helpers ───────────────────────────────────────────────
       _setLoading: (v) => set({ isLoading: v }),
@@ -97,8 +121,9 @@ export const useAuthStore = create<AuthState>()(
 
     {
       name: 'auth', // localStorage key
-      // Only persist user + token; isLoading always resets to true on startup
-      partialize: (state) => ({ user: state.user, token: state.token }),
+      // Chỉ lưu trữ thông tin user ở localStorage, KHÔNG lưu bất kỳ token nào
+      partialize: (state) => ({ user: state.user }),
     }
   )
 )
+

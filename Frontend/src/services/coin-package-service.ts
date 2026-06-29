@@ -1,5 +1,5 @@
 import { api } from '@/lib/api'
-import type { CoinCreateRequestDTO, CoinCreateResponseDTO } from '@/types'
+import type { CoinCreateRequestDTO, CoinCreateResponseDTO, EnumResponseDTO } from '@/types'
 
 
 /**
@@ -67,3 +67,15 @@ export async function deleteCoinPackage(id: string): Promise<void> {
   }
   throw new Error(response.data?.message || 'Xóa gói xu thất bại')
 }
+
+/**
+ * Lấy danh sách enum của Coin (CoinTransactionType) từ backend.
+ */
+export async function getCoinEnums(): Promise<EnumResponseDTO[]> {
+  const response = await api.get('/coin-packages/enums')
+  if (response.data && response.data.code === 200) {
+    return response.data.result
+  }
+  throw new Error(response.data?.message || 'Không thể tải enums của gói coin')
+}
+

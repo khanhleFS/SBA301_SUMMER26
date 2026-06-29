@@ -16,7 +16,7 @@ export default function LoginFeature() {
   const handleSubmit = wrap(async () => {
     setError(null)
     try {
-      const { accessToken, userId, username, email: userEmail, role } = await loginUser({ email, password })
+      const { accessToken, refreshToken, userId, username, email: userEmail, role } = await loginUser({ email, password })
       login(
         {
           id: userId,
@@ -26,7 +26,8 @@ export default function LoginFeature() {
           fullName: username,
           avatarUrl: undefined,
         },
-        accessToken
+        accessToken,
+        refreshToken
       )
       if (role === 'ADMIN') {
         navigate('/admin/dashboard', { replace: true })

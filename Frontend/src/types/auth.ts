@@ -16,6 +16,7 @@ export interface LoginRequestDTO {
 
 export interface LoginResponseDTO {
   accessToken: string
+  refreshToken: string  // Dùng cho luồng non-cookie (mobile / cross-domain)
   userId: string
   username: string
   email: string
@@ -35,4 +36,25 @@ export interface VerifyOtpRequestDTO {
   email: string
   otpCode: string
 }
+
+export interface ForgotPasswordRequestDTO {
+  email: string
+}
+
+export interface ForgotPasswordResponseDTO {
+  email: string
+  message: string
+  success: boolean
+}
+
+export interface ResetPasswordResponseDTO {
+  email: string
+  message: string
+  userId: string | number
+}
+
+export interface TokenRefreshRequestDTO {
+  refreshToken: string
+}
+
 

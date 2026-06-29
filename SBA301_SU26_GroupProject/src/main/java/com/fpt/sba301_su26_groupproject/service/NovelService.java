@@ -1,6 +1,7 @@
 package com.fpt.sba301_su26_groupproject.service;
 
 import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
+import com.fpt.sba301_su26_groupproject.dto.novel.NovelPageResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelResponseDTO;
 
@@ -14,4 +15,6 @@ public interface NovelService {
     NovelResponseDTO getNovelById(UUID novelId);
     List<NovelResponseDTO> getAllNovelsByAuthor(String authorEmail);
     List<EnumResponseDTO> getEnums();
+    NovelPageResponseDTO searchNovels(String title, String status, String categoryName, Integer minChapters, int page, int size);
 }
+

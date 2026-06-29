@@ -11,7 +11,7 @@ export function StorySynopsis() {
       {/* --- DESKTOP VIEWPORT --- */}
       <SpotlightCard
         spotlightColor="rgba(79, 55, 138, 0.18)"
-        className="hidden md:block bg-surface-container-low p-6 rounded-2xl border border-outline/5 space-y-4"
+        className="hidden md:block bg-surface-container-low p-6 rounded-lg border border-outline/5 space-y-4"
       >
         <h2 className="text-2xl font-serif font-bold text-foreground">Giới thiệu</h2>
         <div className="space-y-3 text-on-surface-variant leading-relaxed text-sm text-justify">

@@ -20,13 +20,18 @@ interface SearchContextType {
   currentPage: number
   setCurrentPage: (page: number) => void
   filteredStories: Story[]
+  pagedStories: Story[]
   isLoading: boolean
   categories: string[]
   filterGroups: FilterGroup[]
   isFiltersLoading: boolean
   clearFilters: () => void
   userReadState: UserReadState
+  totalPages: number
+  totalElements: number
 }
+
+const ITEMS_PER_PAGE = 12
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined)
 
@@ -34,19 +39,25 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const [searchParams] = useSearchParams()
   const searchQuery = searchParams.get('q') || ''
 
-  const [selectedCategory, setSelectedCategory] = useState('Tất cả thể loại')
-  const [selectedChapters, setSelectedChapters] = useState('Any')
-  const [selectedStatus, setSelectedStatus] = useState('All')
+  const [selectedCategory, setSelectedCategoryRaw] = useState('Tất cả thể loại')
+  const [selectedChapters, setSelectedChaptersRaw] = useState('Any')
+  const [selectedStatus, setSelectedStatusRaw] = useState('All')
   const [showUnlockedOnly, setShowUnlockedOnly] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
   const userReadState = MOCK_USER_READ_STATE
 
+  // Reset page to 1 whenever filter changes
+  const setSelectedCategory = (cat: string) => { setSelectedCategoryRaw(cat); setCurrentPage(1) }
+  const setSelectedChapters = (chap: string) => { setSelectedChaptersRaw(chap); setCurrentPage(1) }
+  const setSelectedStatus = (status: string) => { setSelectedStatusRaw(status); setCurrentPage(1) }
+
   const clearFilters = () => {
-    setSelectedCategory('Tất cả thể loại')
-    setSelectedChapters('Any')
-    setSelectedStatus('All')
+    setSelectedCategoryRaw('Tất cả thể loại')
+    setSelectedChaptersRaw('Any')
+    setSelectedStatusRaw('All')
     setShowUnlockedOnly(false)
+    setCurrentPage(1)
   }
 
   // Load filter groups once on mount
@@ -55,21 +66,28 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     queryFn: storyService.getSearchFilters,
   })
 
-  // Dynamically map categories from the loaded API filter groups (the category options)
-  const categories = useMemo(() => {
-    return filterGroups.find(g => g.id === 'category')?.options.map(opt => opt.value) || []
-  }, [filterGroups])
+  // Load categories from backend (real API)
+  const { data: categories = [] } = useQuery<string[]>({
+    queryKey: ['searchCategories'],
+    queryFn: storyService.getCategories,
+    staleTime: 5 * 60 * 1000, // cache 5 min
+  })
 
-  // Reload stories whenever the search keyword or filter choices update
-  const { data: allStories = [], isLoading } = useQuery<Story[]>({
+  // Fetch all matching stories once per filter combo (no page param — client handles paging)
+  const { data: storyResult, isLoading } = useQuery({
     queryKey: ['stories', searchQuery, selectedCategory, selectedChapters, selectedStatus],
     queryFn: () => storyService.getStories({
       searchQuery,
       category: selectedCategory,
       minChapters: selectedChapters,
-      status: selectedStatus
+      status: selectedStatus,
+      page: 0,
+      size: 100, // fetch up to 100 at once, client paginates
     })
   })
+
+  const allStories = storyResult?.stories ?? []
+  const totalElements = storyResult?.totalElements ?? 0
 
   // Apply "show unlocked only" client-side filter on top of server results
   const filteredStories = useMemo(() => {
@@ -82,6 +100,14 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     return allStories
   }, [allStories, showUnlockedOnly, userReadState.unlockedChapters])
 
+  // Client-side pagination slice
+  const totalPages = Math.max(1, Math.ceil(filteredStories.length / ITEMS_PER_PAGE))
+  const safePage = Math.min(currentPage, totalPages)
+  const pagedStories = useMemo(() => {
+    const start = (safePage - 1) * ITEMS_PER_PAGE
+    return filteredStories.slice(start, start + ITEMS_PER_PAGE)
+  }, [filteredStories, safePage])
+
   return (
     <SearchContext.Provider value={{
       searchQuery,
@@ -93,15 +119,18 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       setSelectedStatus,
       showUnlockedOnly,
       setShowUnlockedOnly,
-      currentPage,
+      currentPage: safePage,
       setCurrentPage,
       filteredStories,
+      pagedStories,
       isLoading,
       categories,
       filterGroups,
       isFiltersLoading,
       clearFilters,
       userReadState,
+      totalPages,
+      totalElements,
     }}>
       {children}
     </SearchContext.Provider>
@@ -115,3 +144,4 @@ export function useSearchContext() {
   }
   return context
 }
+

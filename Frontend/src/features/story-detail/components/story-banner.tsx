@@ -29,7 +29,7 @@ export function StoryBanner({ inLibrary, onLibraryToggle, onScrollToChapters }: 
         <div className="absolute inset-0 z-20 flex items-end">
           <div className="w-full px-8 pb-8 flex flex-col md:flex-row gap-8 items-end">
             {/* Book Cover */}
-            <div className="w-full md:w-[240px] aspect-[2/3] shrink-0 rounded-2xl overflow-hidden shadow-2xl border border-outline/10 transform hover:scale-[1.02] duration-500">
+            <div className="w-full md:w-[240px] aspect-[2/3] shrink-0 rounded-md overflow-hidden shadow-2xl border border-outline/10 transform hover:scale-[1.02] duration-500">
               <img
                 alt={storyInfo.title}
                 className="w-full h-full object-cover"
@@ -49,7 +49,7 @@ export function StoryBanner({ inLibrary, onLibraryToggle, onScrollToChapters }: 
                   {storyInfo.status === 'Ongoing' ? 'Đang ra' : 'Hoàn thành'}
                 </span>
               </div>
-              <h1 className="font-serif text-5xl font-bold text-primary leading-tight drop-shadow-md">
+              <h1 className="font-serif text-5xl font-bold leading-tight drop-shadow-md">
                 {storyInfo.title}
               </h1>
               <p className="text-xl font-serif text-on-surface opacity-90 italic font-medium">Tác giả: {storyInfo.author}</p>
