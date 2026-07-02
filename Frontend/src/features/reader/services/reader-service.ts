@@ -10,6 +10,7 @@ export interface ChapterSummary {
 
 export interface ChapterDetails {
   id: number
+  novelId: string
   title: string
   chapterNum: string
   author: string
@@ -19,10 +20,11 @@ export interface ChapterDetails {
   paragraphs: string[]
   prevChapter: string | null
   nextChapter: string | null
+  audioUrl: string | null
   chaptersList?: ChapterSummary[]
 }
 
-function extractUuid(slugWithId: string): string {
+export function extractUuid(slugWithId: string): string {
   if (!slugWithId) return ''
   const parts = slugWithId.split('-')
   if (parts.length >= 5) {
@@ -77,6 +79,7 @@ export const readerService = {
 
     return {
       id: detail.chapterNumber,
+      novelId: novelId,
       title: detail.title,
       chapterNum: `Chương ${detail.chapterNumber}`,
       author: novel.authorName || 'Tác giả',
@@ -86,6 +89,7 @@ export const readerService = {
       paragraphs,
       prevChapter,
       nextChapter,
+      audioUrl: detail.audioUrl || null,
       chaptersList: sortedChapters.map(c => ({
         id: c.chapterNumber,
         slug: `${c.slug}-${c.id}`,

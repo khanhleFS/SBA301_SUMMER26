@@ -20,14 +20,11 @@ export function useAuth() {
 // read from the store by guards/layouts that need it.
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { token, refreshProfile } = useAuthStore()
+  const { refreshProfile } = useAuthStore()
 
   useEffect(() => {
-    if (token) {
-      refreshProfile()
-    } else {
-      useAuthStore.setState({ isLoading: false })
-    }
+    // Luôn luôn chạy refreshProfile trên mount để tự động khôi phục phiên (Silent Refresh) từ HttpOnly Cookie
+    refreshProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // run once on mount
 

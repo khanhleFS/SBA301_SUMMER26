@@ -81,6 +81,7 @@ export const MOCK_PROFILE_DATA: ProfileData = {
       stories: [
         {
           id: 'story-bm-1',
+          novelId: 'novel-bm-1',
           title: 'The Obsidian Spires',
           meta: 'Đã đánh dấu chương 42',
           progress: 72,
@@ -90,6 +91,7 @@ export const MOCK_PROFILE_DATA: ProfileData = {
         },
         {
           id: 'story-bm-2',
+          novelId: 'novel-bm-2',
           title: 'Neon Walker',
           meta: 'Đã đánh dấu chương 18',
           progress: 38,
@@ -105,6 +107,7 @@ export const MOCK_PROFILE_DATA: ProfileData = {
       stories: [
         {
           id: 'story-rl-1',
+          novelId: 'novel-rl-1',
           title: 'The Obsidian Spires',
           meta: 'Đã đọc 72%',
           progress: 72,
@@ -114,6 +117,7 @@ export const MOCK_PROFILE_DATA: ProfileData = {
         },
         {
           id: 'story-rl-2',
+          novelId: 'novel-rl-2',
           title: 'Vong Am Toa Thap',
           meta: 'Tiếp theo: Chương 12',
           progress: 24,
@@ -129,6 +133,7 @@ export const MOCK_PROFILE_DATA: ProfileData = {
       stories: [
         {
           id: 'story-h-1',
+          novelId: 'novel-h-1',
           title: 'The Obsidian Spires',
           meta: 'Đã đọc 72% - 2 giờ trước',
           progress: 72,
@@ -138,6 +143,7 @@ export const MOCK_PROFILE_DATA: ProfileData = {
         },
         {
           id: 'story-h-2',
+          novelId: 'novel-h-2',
           title: 'Neon Walker',
           meta: 'Đã đọc 38% - hôm qua',
           progress: 38,

@@ -40,13 +40,19 @@ export function CollectionSection() {
 
                 <div className="collapse-content">
                   <div className="space-y-2">
-                    {collection.stories.map((story: CollectionStory) => (
-                      <CollectionStoryItem
-                        key={story.id}
-                        story={story}
-                        onClick={() => navigate(story.path)}
-                      />
-                    ))}
+                    {collection.stories.length > 0 ? (
+                      collection.stories.map((story: CollectionStory) => (
+                        <CollectionStoryItem
+                          key={story.id}
+                          story={story}
+                          onClick={() => navigate(story.path)}
+                        />
+                      ))
+                    ) : (
+                      <p className="py-2 text-center text-xs text-on-surface-variant/60">
+                        Chưa có truyện nào trong danh mục này.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -83,17 +89,19 @@ function CollectionStoryItem({
         <span className="truncate text-sm font-bold text-on-surface transition-colors group-hover:text-primary">
           {story.title}
         </span>
-        <span className="mt-2 h-1 w-full bg-outline/15">
-          <span
-            className="block h-full bg-primary"
-            style={{ width: `${story.progress}%` }}
-          />
-        </span>
+        {!story.hideProgress && (
+          <span className="mt-2 h-1 w-full bg-outline/15">
+            <span
+              className="block h-full bg-primary"
+              style={{ width: `${story.progress}%` }}
+            />
+          </span>
+        )}
         <span className="mt-1.5 truncate text-[11px] font-semibold text-on-surface-variant">
           {story.meta}
         </span>
       </span>
-      {isCompleted && (
+      {isCompleted && !story.hideProgress && (
         <CheckCircle2 className="self-center h-6 w-6 shrink-0 fill-primary text-on-primary" />
       )}
     </button>

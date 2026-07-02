@@ -12,7 +12,16 @@ import {
   AlignLeft,
   ArrowUp,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Headphones,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Sparkles,
+  Loader2,
+  RotateCcw,
+  RotateCw
 } from 'lucide-react'
 import Dock from './dock'
 import ReaderSuggestions from './reader-suggestions'
@@ -20,6 +29,7 @@ import ChapterSelector from './chapter-selector'
 import ReaderConfigMenu from './reader-config-menu'
 import { ReaderSkeleton } from './reader-skeleton'
 import { useReaderContext, type ThemeType, type FontType, type LineHeightType } from '../context/reader-context'
+import { generateChapterAudio } from '@/services/chapter-service'
 
 function ReaderContent() {
   const navigate = useNavigate()
@@ -30,6 +40,7 @@ function ReaderContent() {
     setCurrentChapterId: setCurrentChapKey,
     activeChapter: activeChap,
     isLoading,
+    scrollProgress,
     theme,
     setTheme,
     fontFamily,
@@ -52,13 +63,117 @@ function ReaderContent() {
 
   const [showSettings, setShowSettings] = useState(false)
   const [mobileOverlayActive, setMobileOverlayActive] = useState(false)
-  const [scrollProgress, setScrollProgress] = useState(0)
   const [showDock, setShowDock] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [activeSelector, setActiveSelector] = useState<'top' | 'bottom' | null>(null)
   const showDockRef = useRef(false)
-  const scrollProgressRef = useRef(0)
   const scrollFrameRef = useRef<number | null>(null)
+
+  // ── Audio Player State ──
+  const [isAudioOpen, setIsAudioOpen] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
+  const [duration, setDuration] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Reset audio when active chapter changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+    }
+    setIsPlaying(false)
+    setCurrentTime(0)
+    setDuration(0)
+    
+    if (activeChap) {
+      setCurrentAudioUrl(activeChap.audioUrl)
+    }
+  }, [activeChap])
+
+  // Sync audio play state
+  const handlePlayPause = () => {
+    if (!audioRef.current) return
+    if (isPlaying) {
+      audioRef.current.pause()
+      setIsPlaying(false)
+    } else {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true)
+      }).catch(err => {
+        console.warn('Playback failed:', err)
+      })
+    }
+  }
+
+  const handleMuteToggle = () => {
+    if (!audioRef.current) return
+    audioRef.current.muted = !isMuted
+    setIsMuted(!isMuted)
+  }
+
+  const handleTimeUpdate = () => {
+    if (!audioRef.current) return
+    setCurrentTime(audioRef.current.currentTime)
+  }
+
+  const handleLoadedMetadata = () => {
+    if (!audioRef.current) return
+    setDuration(audioRef.current.duration)
+  }
+
+  const handleAudioSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value)
+    if (audioRef.current) {
+      audioRef.current.currentTime = val
+      setCurrentTime(val)
+    }
+  }
+
+  const skipTime = (amount: number) => {
+    if (audioRef.current) {
+      let nextTime = audioRef.current.currentTime + amount
+      if (nextTime < 0) nextTime = 0
+      if (nextTime > duration) nextTime = duration
+      audioRef.current.currentTime = nextTime
+      setCurrentTime(nextTime)
+    }
+  }
+
+  // AI TTS Generation call
+  const handleGenerateAudio = async () => {
+    if (!activeChap || isGenerating) return
+    setIsGenerating(true)
+    try {
+      // get novelId and chapterId (from activeChap.id = chapterNumber)
+      const res = await generateChapterAudio(activeChap.novelId, activeChap.id)
+      if (res && res.audioUrl) {
+        setCurrentAudioUrl(res.audioUrl)
+        // Automatically play when generated
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.play().then(() => {
+              setIsPlaying(true)
+            }).catch(e => console.warn(e))
+          }
+        }, 300)
+      }
+    } catch (err: any) {
+      alert(err.message || 'Sinh giọng đọc thất bại. Vui lòng thử lại sau.')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  // Format seconds to mm:ss
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return '0:00'
+    const mins = Math.floor(time / 60)
+    const secs = Math.floor(time % 60)
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`
+  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -78,19 +193,13 @@ function ReaderContent() {
 
       const winScroll = document.body.scrollTop || document.documentElement.scrollTop
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight
-      const scrolled = height > 0 ? (winScroll / height) * 100 : 0
-      const roundedProgress = Math.round(scrolled)
-
-      if (roundedProgress !== scrollProgressRef.current) {
-        scrollProgressRef.current = roundedProgress
-        setScrollProgress(roundedProgress)
-      }
 
       let nextShowDock: boolean
       if (readingContainerRef.current) {
         const rect = readingContainerRef.current.getBoundingClientRect()
         nextShowDock = rect.top < 120 && rect.bottom > 220
       } else {
+        const scrolled = height > 0 ? (winScroll / height) * 100 : 0
         nextShowDock = winScroll > 150 && scrolled < 92
       }
 
@@ -216,6 +325,11 @@ function ReaderContent() {
       label: 'Đánh dấu',
       onClick: () => alert('Đã đánh dấu chương này thành công!')
     },
+    {
+      icon: <Headphones className="size-5 text-on-primary" />,
+      label: 'Giọng đọc',
+      onClick: () => setIsAudioOpen(prev => !prev)
+    },
     ...(isMobile ? [] : [
       {
         icon: fullFrame ? <Minimize2 className="size-5 text-on-primary" /> : <Maximize2 className="size-5 text-on-primary" />,
@@ -240,6 +354,17 @@ function ReaderContent() {
       className="min-h-[calc(100vh-4rem)] sm:min-h-screen w-full mt-16 sm:mt-0 pt-0 sm:pt-24 transition-all duration-500 pb-28 relative"
       style={{ backgroundColor: currentTheme.pageBg }}
     >
+      {/* Hidden audio element */}
+      {currentAudioUrl && (
+        <audio
+          ref={audioRef}
+          src={currentAudioUrl}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={() => setIsPlaying(false)}
+        />
+      )}
+
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-primary z-[60] origin-left shadow-[0_1px_6px_rgba(79,55,138,0.5)]"
         style={{ scaleX: scrollYProgress }}
@@ -278,7 +403,128 @@ function ReaderContent() {
               <span className="w-1 h-1 bg-current opacity-30 rounded-full" />
               <span>{activeChap.words}</span>
             </div>
+
+            {/* Audio Toggle Button in Header */}
+            <button
+              onClick={() => setIsAudioOpen(prev => !prev)}
+              className="mt-4 flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 active:scale-95 transition-all text-xs font-bold cursor-pointer"
+            >
+              <Headphones className="w-4 h-4" />
+              {isAudioOpen ? 'Ẩn trình nghe' : 'Nghe giọng đọc AI'}
+            </button>
           </div>
+
+          {/* Collapsible Audio Player Block */}
+          <AnimatePresence>
+            {isAudioOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                animate={{ height: 'auto', opacity: 1, marginBottom: 24 }}
+                exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                className="overflow-hidden w-full"
+              >
+                <div className="p-4 sm:p-5 rounded-2xl bg-current/[0.04] border border-current/10 flex flex-col gap-4 text-left select-none">
+                  {currentAudioUrl ? (
+                    <>
+                      {/* Audio exists panel */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary ${isPlaying ? 'animate-pulse' : ''}`}>
+                            <Headphones className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-sm font-bold truncate">{activeChap.title}</h4>
+                            <p className="text-[10px] opacity-75 font-semibold">{activeChap.chapterNum}</p>
+                          </div>
+                        </div>
+
+                        {/* Player Controls */}
+                        <div className="flex items-center gap-4 self-center">
+                          <button
+                            onClick={() => skipTime(-10)}
+                            className="p-2 hover:bg-current/[0.05] rounded-full text-foreground/80 hover:text-foreground cursor-pointer transition-colors"
+                            title="Lùi 10 giây"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                          </button>
+                          
+                          <button
+                            onClick={handlePlayPause}
+                            className="w-10 h-10 rounded-full bg-primary text-on-primary hover:brightness-105 flex items-center justify-center cursor-pointer shadow active:scale-95 transition-all"
+                            title={isPlaying ? 'Tạm dừng' : 'Phát'}
+                          >
+                            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-current ml-0.5" />}
+                          </button>
+
+                          <button
+                            onClick={() => skipTime(10)}
+                            className="p-2 hover:bg-current/[0.05] rounded-full text-foreground/80 hover:text-foreground cursor-pointer transition-colors"
+                            title="Tiến 10 giây"
+                          >
+                            <RotateCw className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={handleMuteToggle}
+                            className="p-2 hover:bg-current/[0.05] rounded-full text-foreground/80 hover:text-foreground cursor-pointer transition-colors ml-2"
+                            title={isMuted ? 'Bật âm' : 'Tắt âm'}
+                          >
+                            {isMuted ? <VolumeX className="w-4 h-4 text-destructive" /> : <Volume2 className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar slider */}
+                      <div className="space-y-1">
+                        <input
+                          type="range"
+                          min="0"
+                          max={duration || 0}
+                          value={currentTime}
+                          onChange={handleAudioSeek}
+                          className="w-full accent-primary h-1 bg-current/15 rounded-full appearance-none cursor-pointer"
+                        />
+                        <div className="flex justify-between text-[10px] font-bold opacity-60">
+                          <span>{formatTime(currentTime)}</span>
+                          <span>{formatTime(duration)}</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    /* Audio generation panel */
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Sparkles className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold">Chưa có giọng đọc AI cho chương này</h4>
+                          <p className="text-[11px] opacity-75 font-medium mt-0.5">Sinh giọng đọc AI chất lượng cao để nghe Audio ngay lập tức.</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleGenerateAudio}
+                        disabled={isGenerating}
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center justify-center gap-2 hover:brightness-105 active:scale-95 disabled:opacity-50 transition-all cursor-pointer shrink-0"
+                      >
+                        {isGenerating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Đang sinh audio...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4" />
+                            Sinh giọng đọc AI (Mỹ)
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="h-[1px] w-full bg-current opacity-10 my-6" />
 

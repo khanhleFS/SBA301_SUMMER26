@@ -654,7 +654,7 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         <Avatar className="h-9 w-9">
                           <AvatarImage src={user.avatarUrl} alt={user.username} />
                           <AvatarFallback className="bg-primary text-on-primary font-bold text-xs">
-                            {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                            {user.username ? user.username.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
                           </AvatarFallback>
                         </Avatar>
                       </a >
@@ -664,7 +664,7 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                           {user.username}
                         </span>
                         <span className="text-[10px] text-muted-foreground capitalize">
-                          {user.role.toLowerCase()}
+                          {user.role ? user.role.toLowerCase() : 'user'}
                         </span>
                       </div >
                     </div >

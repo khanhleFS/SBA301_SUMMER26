@@ -31,11 +31,13 @@ export interface Transaction {
 
 export interface CollectionStory {
   id: string
+  novelId: string
   title: string
   meta: string
   progress: number
   path: string
   coverUrl: string
+  hideProgress?: boolean
 }
 
 export interface CollectionItem {

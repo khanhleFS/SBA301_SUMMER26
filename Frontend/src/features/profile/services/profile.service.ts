@@ -1,5 +1,6 @@
 import { api } from '@/lib/api'
-import type { ProfileData, ProfileDTO, ResetPasswordRequestDTO } from '@/types'
+import type { ProfileData, ProfileDTO, ResetPasswordRequestDTO, CollectionItem, CollectionStory } from '@/types'
+import { getMyBookmarks } from '@/services/bookmark-service'
 
 
 /**
@@ -9,6 +10,58 @@ export async function fetchProfileData(): Promise<ProfileData> {
   const response = await api.get('/auth/profile')
   if (response.data && response.data.code === 200) {
     const profile = response.data.result
+
+    // Load bookmark collections
+    let collections: CollectionItem[] = []
+    try {
+      const bookmarks = await getMyBookmarks()
+
+      const toStory = (b: typeof bookmarks[0], hideProgress: boolean): CollectionStory => {
+        // Đối với danh mục Đang đọc, progress = b.lastPage (vị trí cuộn trang % trong chapter)
+        const progress = hideProgress ? 0 : (b.lastPage ?? 0)
+        
+        // Nếu là tab Đang đọc và có chapter slug, trỏ trực tiếp tới chapter. Ngược lại trỏ tới novel details
+        const targetPath = (!hideProgress && b.lastChapterSlug)
+          ? `/${b.novelSlug}-${b.novelId}/${b.lastChapterSlug}`
+          : `/${b.novelSlug}-${b.novelId}`
+
+        // Thiết lập meta text mô tả vị trí cuộn trang hiện tại
+        let metaText = `${b.totalChapters} chương`
+        if (!hideProgress && b.lastChapterNumber != null) {
+          metaText = `Chương ${b.lastChapterNumber} (${progress > 0 ? `Đang đọc ${progress}%` : 'Bắt đầu đọc'})`
+        }
+
+        return {
+          id: b.id,
+          novelId: b.novelId,
+          title: b.novelTitle,
+          meta: metaText,
+          progress,
+          path: targetPath,
+          coverUrl: b.coverImageUrl || 'https://placehold.co/48x72/1C1B1F/E6E1E5?text=Novel',
+          hideProgress,
+        }
+      }
+
+      const favorites = bookmarks.filter(b => b.isFavorite)
+      const reading = bookmarks.filter(b => b.lastChapterNumber != null)
+
+      collections = [
+        {
+          key: 'bookmarks',
+          label: 'Yêu thích',
+          stories: favorites.map(b => toStory(b, true)), // Ẩn progress
+        },
+        {
+          key: 'reading-list',
+          label: 'Đang đọc',
+          stories: reading.map(b => toStory(b, false)), // Hiện progress & dẫn tới chapter
+        },
+      ]
+    } catch (err) {
+      console.warn('Could not load bookmark collections:', err)
+    }
+
     return {
       user: {
         id: profile.id || 'usr-001',
@@ -24,7 +77,7 @@ export async function fetchProfileData(): Promise<ProfileData> {
         currency: 'Lumi Coins',
       },
       transactions: [],
-      collections: [],
+      collections,
     }
   }
   throw new Error(response.data?.message || 'Không thể tải thông tin cá nhân')

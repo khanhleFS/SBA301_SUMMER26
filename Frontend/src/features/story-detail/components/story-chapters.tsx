@@ -1,21 +1,26 @@
 import { Link } from 'react-router-dom'
-import { Eye, ArrowUpDown, ChevronLeft, ChevronsLeft, ChevronsRight, ChevronRight, ChevronDown, Lock, Bookmark } from 'lucide-react'
+import { ArrowUpDown, ChevronLeft, ChevronsLeft, ChevronsRight, ChevronRight, Lock, Bookmark } from 'lucide-react'
 import SpotlightCard from '@/components/custom/spot-light-card/SpotlightCard'
 import { useStoryDetailContext } from '../context/story-detail-context'
 import { MOCK_USER_READ_STATE } from '@/services/mock-data'
 import { useMemo, useState, useEffect } from 'react'
+import type { ChapterItem } from '../services/story-detail-service'
 
-// ... (các interface giữ nguyên)
+interface StoryChaptersProps {
+  storySlug: string
+  chaptersLength: number
+  paginatedChapters: ChapterItem[]
+  currentPage: number
+  totalPages: number
+  isSortedAsc: boolean
+  onSortToggle: () => void
+  onPageChange: (page: number | ((p: number) => number)) => void
+}
 
 export function StoryChapters({
   storySlug,
-  chaptersLength,
-  paginatedChapters, // Vẫn nhận để dùng cho các logic khác nếu cần
-  currentPage,
-  totalPages,
   isSortedAsc,
   onSortToggle,
-  onPageChange
 }: StoryChaptersProps) {
   const { storyInfo, chapters } = useStoryDetailContext()
 

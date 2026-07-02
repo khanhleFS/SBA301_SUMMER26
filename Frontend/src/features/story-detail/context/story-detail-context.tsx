@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
-import { storyDetailService, type StoryDetailInfo, type ChapterItem } from '../services/story-detail-service'
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { storyDetailService, type StoryDetailInfo, type ChapterItem, extractUuid } from '../services/story-detail-service'
+import { getBookmark, upsertBookmark, removeBookmark } from '@/services/bookmark-service'
+import { useAuthStore } from '@/store/auth.store'
 
 interface StoryDetailContextType {
   storyId: string
@@ -9,6 +11,7 @@ interface StoryDetailContextType {
   
   // Library states
   inLibrary: boolean
+  isFavorite: boolean
   toggleLibrary: () => void
   
   // Chapter list states
@@ -29,10 +32,14 @@ export function StoryDetailProvider({ children, storyId }: { children: ReactNode
   const [isLoading, setIsLoading] = useState(true)
   
   const [inLibrary, setInLibrary] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false)
   const [isSortedAsc, setIsSortedAsc] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 15
 
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated)
+
+  // Load story info + chapters
   useEffect(() => {
     setIsLoading(true)
     Promise.all([
@@ -48,7 +55,57 @@ export function StoryDetailProvider({ children, storyId }: { children: ReactNode
     })
   }, [storyId])
 
-  const toggleLibrary = () => setInLibrary(prev => !prev)
+  // Load bookmark state from API (only when authenticated)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setInLibrary(false)
+      setIsFavorite(false)
+      return
+    }
+    const novelId = extractUuid(storyId)
+    if (!novelId) return
+
+    getBookmark(novelId).then(bookmark => {
+      if (bookmark) {
+        setInLibrary(true)
+        setIsFavorite(bookmark.isFavorite ?? false)
+      } else {
+        setInLibrary(false)
+        setIsFavorite(false)
+      }
+    }).catch(() => {
+      setInLibrary(false)
+      setIsFavorite(false)
+    })
+  }, [storyId, isAuthenticated])
+
+  // Toggle bookmark (add / remove from library)
+  const toggleLibrary = useCallback(async () => {
+    if (!isAuthenticated) return
+
+    const novelId = extractUuid(storyId)
+    if (!novelId) return
+
+    if (inLibrary) {
+      // Xóa bookmark
+      try {
+        await removeBookmark(novelId)
+        setInLibrary(false)
+        setIsFavorite(false)
+      } catch (err) {
+        console.error('Failed to remove bookmark', err)
+      }
+    } else {
+      // Tạo bookmark mới với isFavorite = true
+      try {
+        await upsertBookmark({ novelId, isFavorite: true })
+        setInLibrary(true)
+        setIsFavorite(true)
+      } catch (err) {
+        console.error('Failed to add bookmark', err)
+      }
+    }
+  }, [isAuthenticated, storyId, inLibrary])
 
   const toggleSort = () => {
     setChapters(prev => [...prev].reverse())
@@ -66,6 +123,7 @@ export function StoryDetailProvider({ children, storyId }: { children: ReactNode
       chapters,
       isLoading,
       inLibrary,
+      isFavorite,
       toggleLibrary,
       isSortedAsc,
       toggleSort,

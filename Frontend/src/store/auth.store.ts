@@ -70,7 +70,6 @@ export const useAuthStore = create<AuthState>()(
         // Nếu không có token trên RAM, thử thực hiện gọi refresh token qua cookie hoặc RAM
         if (!token) {
           try {
-            // Import động tránh vòng lặp tham chiếu nếu có
             const { refreshToken } = await import('@/services/auth-service')
             const tokenToUse = consent === 'denied' ? (stateRefreshToken || '') : ''
             const refreshRes = await refreshToken({ refreshToken: tokenToUse })
@@ -80,12 +79,26 @@ export const useAuthStore = create<AuthState>()(
                 refreshToken: consent === 'denied' ? refreshRes.refreshToken : null,
                 isAuthenticated: true 
               })
-              const profile = await getUserProfile()
-              _setUser(profile)
+              try {
+                const profile = await getUserProfile() as any
+                const currentUser = get().user
+                const updatedUser: User = {
+                  id: profile.id ?? currentUser?.id ?? '',
+                  username: profile.username ?? profile.fullName ?? currentUser?.username ?? '',
+                  email: profile.email ?? currentUser?.email ?? '',
+                  role: profile.role ?? currentUser?.role ?? 'USER',
+                  fullName: profile.fullName ?? currentUser?.fullName ?? '',
+                  avatarUrl: profile.avatarUrl ?? currentUser?.avatarUrl ?? undefined,
+                }
+                _setUser(updatedUser)
+              } catch {
+                // profile fetch thất bại nhưng token vẫn còn hợp lệ, giữ nguyên user cũ
+              }
+              _setLoading(false)
               return
             }
           } catch {
-            // Thất bại trong việc refresh session tự động
+            // Thất bại trong việc refresh session tự động → logout sạch
             set({ user: null, token: null, refreshToken: null, isAuthenticated: false })
             _setLoading(false)
             return
