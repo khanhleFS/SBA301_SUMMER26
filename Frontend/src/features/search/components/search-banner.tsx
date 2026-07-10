@@ -16,7 +16,7 @@ const BANNER_SLIDES = [
     id: 2,
     title: "Bộ Lọc Đa Dạng",
     subtitle: "Tối ưu hiển thị",
-    description: "Sử dụng công cụ lọc nâng cao để khoanh vùng kết quả theo thể loại yêu thích, số lượng chương hoặc trạng thái hoàn thành.",
+    description: "Sử dụng công cụ lọc nâng cao để khoanh vùng kết quả theo thể loại yêu thích, số lượng chương hoặc trạng thái Kết thúc.",
     icon: SlidersHorizontal,
     image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&q=80",
     color: "from-indigo-900/80"
@@ -151,8 +151,8 @@ export function SearchBanner() {
             key={index}
             onClick={() => setCurrentSlide(index)}
             className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${index === currentSlide
-                ? 'w-6 bg-primary shadow-[0_0_8px_rgba(79,55,138,0.8)]'
-                : 'w-1.5 bg-on-surface-variant/40 hover:bg-on-surface-variant/80'
+              ? 'w-6 bg-primary shadow-[0_0_8px_rgba(79,55,138,0.8)]'
+              : 'w-1.5 bg-on-surface-variant/40 hover:bg-on-surface-variant/80'
               }`}
             aria-label={`Go to slide ${index + 1}`}
           />

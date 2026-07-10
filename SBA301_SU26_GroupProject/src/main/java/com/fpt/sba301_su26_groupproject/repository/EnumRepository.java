@@ -12,7 +12,8 @@ public class EnumRepository {
 
     public List<EnumResponseDTO> getNovelEnums() {
         return List.of(
-                new EnumResponseDTO("NovelStatus", Arrays.stream(NovelStatus.values()).map(Enum::name).toList())
+                new EnumResponseDTO("NovelStatus", Arrays.stream(NovelStatus.values()).map(Enum::name).toList()),
+                new EnumResponseDTO("ChapterRange", List.of("5", "10", "20", "50", "100"))
         );
     }
 

@@ -214,11 +214,14 @@ public class NovelServiceImpl implements NovelService {
             categoryNames = List.of();
         }
 
-        // 3. Khởi tạo đối tượng Record thông qua Builder cực kỳ sạch sẽ
         Integer chapterCount = 0;
+        Integer viewCount = 0;
         try {
             chapterCount = chapterRepository.findMaxChapterNumberByNovelId(novel.getId());
             if (chapterCount == null) chapterCount = 0;
+            
+            viewCount = chapterRepository.findLatestChapterViewCountByNovelId(novel.getId());
+            if (viewCount == null) viewCount = 0;
         } catch (Exception ignored) {}
 
         return NovelResponseDTO.builder()
@@ -228,7 +231,7 @@ public class NovelServiceImpl implements NovelService {
                 .description(novel.getDescription())
                 .coverImageUrl(novel.getCoverImageUrl())
                 .status(novel.getStatus())
-                .viewCount(novel.getViewCount())
+                .viewCount(viewCount)
                 .chapterCount(chapterCount)
                 .createdAt(novel.getCreatedAt())
                 .updatedAt(novel.getUpdatedAt())

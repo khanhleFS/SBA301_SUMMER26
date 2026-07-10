@@ -46,7 +46,7 @@ export function StoryBanner({ inLibrary, onLibraryToggle, onScrollToChapters }: 
                   </span>
                 ))}
                 <span className="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full text-xs font-semibold border border-outline/10">
-                  {storyInfo.status === 'Ongoing' ? 'Đang ra' : 'Hoàn thành'}
+                  {storyInfo.status === 'Ongoing' ? 'Chưa kết thúc' : 'Kết thúc'}
                 </span>
               </div>
               <h1 className="font-serif text-5xl font-bold leading-tight drop-shadow-md">
@@ -106,7 +106,7 @@ export function StoryBanner({ inLibrary, onLibraryToggle, onScrollToChapters }: 
                 </span>
               ))}
               <span className="px-2 py-0.5 bg-surface-container-highest/80 text-on-surface-variant rounded-full text-[10px] font-semibold border border-outline/10">
-                {storyInfo.status === 'Ongoing' ? 'Đang ra' : 'Hoàn thành'}
+                {storyInfo.status === 'Ongoing' ? 'Chưa kết thúc' : 'Kết thúc'}
               </span>
             </div>
             <div className="space-y-1">

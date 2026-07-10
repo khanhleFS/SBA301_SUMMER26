@@ -48,6 +48,7 @@ export interface MockStory {
 
 export interface UserReadState {
   bookmarks: Record<string | number, number>
+  bookmarkSlugs?: Record<string | number, string>
   unlockedChapters: Record<string | number, number[]>
 }
 
@@ -168,8 +169,8 @@ export const MOCK_FILTER_REGISTRY: Record<string, FilterGroup[]> = {
       type: 'grid-3',
       options: [
         { label: 'Tất cả', value: 'All' },
-        { label: 'Đang ra', value: 'Ongoing' },
-        { label: 'Hoàn thành', value: 'Completed' },
+        { label: 'Chưa kết thúc', value: 'Ongoing' },
+        { label: 'Kết thúc', value: 'Completed' },
       ],
     },
   ],

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowUpDown, ChevronLeft, ChevronsLeft, ChevronsRight, ChevronRight, Lock, Bookmark } from 'lucide-react'
+import { ArrowUpDown, ChevronLeft, ChevronsLeft, ChevronsRight, ChevronRight, Lock, Bookmark, Eye } from 'lucide-react'
 import SpotlightCard from '@/components/custom/spot-light-card/SpotlightCard'
 import { useStoryDetailContext } from '../context/story-detail-context'
 import { MOCK_USER_READ_STATE } from '@/services/mock-data'
@@ -106,6 +106,12 @@ export function StoryChapters({
                   <span className={`font-semibold text-sm transition-colors flex items-center gap-2 ${isCurrentBookmark ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
                     {isCurrentBookmark ? <Bookmark className="size-3.5 text-primary fill-primary shrink-0 animate-pulse" /> : chap.isLocked ? <Lock className="size-3.5 text-amber-500 shrink-0" /> : null}
                     {chap.title}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5 text-xs text-on-surface-variant/80 font-medium whitespace-nowrap shrink-0 select-none">
+                  <span className="flex items-center gap-1.5">
+                    <Eye className="size-4 text-on-surface-variant/60" />
+                    {chap.views} lượt xem
                   </span>
                 </div>
               </Link>

@@ -23,6 +23,7 @@ interface SearchCardProps {
 
 export function ReadingStoryCard({ story, userReadState }: SearchCardProps) {
   const bookmarkedChapterId = userReadState?.bookmarks[story.id]
+  const bookmarkedChapterSlug = userReadState?.bookmarkSlugs?.[story.id]
   const unlockedChapterIds = userReadState?.unlockedChapters[story.id] ?? []
   const isBookmarked = !!bookmarkedChapterId
 
@@ -31,7 +32,7 @@ export function ReadingStoryCard({ story, userReadState }: SearchCardProps) {
     : 0
 
   const targetPath = isBookmarked
-    ? `/${story.slug}/chapter/${bookmarkedChapterId}`
+    ? (bookmarkedChapterSlug ? `/${story.slug}/${bookmarkedChapterSlug}` : `/${story.slug}/chapter/${bookmarkedChapterId}`)
     : `/${story.slug}`
 
   const metaParts: string[] = []
@@ -89,6 +90,7 @@ export function ReadingStoryCard({ story, userReadState }: SearchCardProps) {
 
 export function SearchCard({ story, userReadState }: SearchCardProps) {
   const bookmarkedChapterId = userReadState?.bookmarks[story.id]
+  const bookmarkedChapterSlug = userReadState?.bookmarkSlugs?.[story.id]
   const unlockedChapterIds = userReadState?.unlockedChapters[story.id] ?? []
   const isBookmarked = !!bookmarkedChapterId
   const hasUnlocked = unlockedChapterIds.length > 0
@@ -136,12 +138,12 @@ export function SearchCard({ story, userReadState }: SearchCardProps) {
               {/* Row 1: chips / badges */}
               {(story.status !== '' || isBookmarked || hasUnlocked) && (
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  {story.status === 'Ongoing' && (
+                  {story.status === 'Đang ra' && (
                     <span className="bg-primary text-on-primary text-[9px] font-bold px-2 py-0.5 rounded shadow-sm uppercase tracking-wider select-none">
                       Đang ra
                     </span>
                   )}
-                  {story.status === 'Completed' && (
+                  {story.status === 'Hoàn thành' && (
                     <span className="bg-tertiary text-on-tertiary text-[9px] font-bold px-2 py-0.5 rounded shadow-sm uppercase tracking-wider select-none">
                       Hoàn thành
                     </span>
@@ -234,7 +236,7 @@ export function SearchCard({ story, userReadState }: SearchCardProps) {
                       <div className="flex gap-2">
                         {isBookmarked && (
                           <Link
-                            to={`/${story.slug}/chapter/${bookmarkedChapterId}`}
+                            to={bookmarkedChapterSlug ? `/${story.slug}/${bookmarkedChapterSlug}` : `/${story.slug}/chapter/${bookmarkedChapterId}`}
                             className="inline-flex flex-1 items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-on-primary text-xs font-bold px-3 py-2 rounded-lg transition-all shadow-sm text-center"
                           >
                             <Bookmark className="size-3.5 fill-on-primary" />
@@ -277,10 +279,12 @@ export function SearchCard({ story, userReadState }: SearchCardProps) {
                   <Feather className="size-2 text-primary/60 shrink-0" />
                   <span>Tác giả: {story.author}</span>
                 </div>
-                {story.status === 'Ongoing' ? (
+                {story.status === 'Đang ra' ? (
                   <span className="text-primary font-bold text-[7.5px] uppercase tracking-wider">Đang ra</span>
-                ) : (
+                ) : story.status === 'Hoàn thành' ? (
                   <span className="text-tertiary font-bold text-[7.5px] uppercase tracking-wider">Hoàn thành</span>
+                ) : (
+                  <span className="text-on-surface-variant/50 font-bold text-[7.5px] uppercase tracking-wider">{story.status}</span>
                 )}
               </div>
 

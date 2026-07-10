@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
-import { SlidersHorizontal, Check, X } from 'lucide-react'
+import { SlidersHorizontal, Check, X, BookOpen, Crown } from 'lucide-react'
 import { useSearchContext } from '../context/search-context'
+import type { ReadingStateFilter } from '../context/search-context'
+import { useAuthStore } from '@/store/auth.store'
 
 interface SearchMobileFiltersProps {
   isOpen: boolean
@@ -17,8 +19,12 @@ export function SearchMobileFilters({ isOpen, onClose }: SearchMobileFiltersProp
     setSelectedChapters,
     selectedStatus,
     setSelectedStatus,
+    selectedReadingState,
+    setSelectedReadingState,
     filterGroups,
   } = useSearchContext()
+
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated)
 
   // LOCK SCROLL: Ngăn cuộn trang nền khi mở ngăn kéo bộ lọc di động
   useEffect(() => {
@@ -115,6 +121,36 @@ export function SearchMobileFilters({ isOpen, onClose }: SearchMobileFiltersProp
                 </div>
               )
             })
+          )}
+
+          {/* Reading State Filter — auth only */}
+          {isAuthenticated && (
+            <div className="space-y-1.5">
+              <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">Của tôi</h3>
+              <div className="flex flex-wrap gap-1.5">
+                {([
+                  { label: 'Tất cả', value: 'all' as ReadingStateFilter },
+                  { label: 'Đang đọc', value: 'reading' as ReadingStateFilter, icon: <BookOpen className="size-2.5" /> },
+                  { label: 'Đã mua', value: 'purchased' as ReadingStateFilter, icon: <Crown className="size-2.5" /> },
+                ]).map(opt => {
+                  const isActive = selectedReadingState === opt.value
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => setSelectedReadingState(opt.value)}
+                      className={`inline-flex items-center gap-1 py-1 px-2.5 rounded-md font-semibold text-[10px] border transition-all cursor-pointer select-none ${
+                        isActive
+                          ? 'bg-primary/20 text-primary border-primary/30 font-bold'
+                          : 'bg-surface-container border-outline/10 text-on-surface-variant hover:border-primary/25'
+                      }`}
+                    >
+                      {opt.icon}
+                      {opt.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           )}
         </div>
 

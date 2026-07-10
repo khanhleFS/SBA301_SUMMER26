@@ -187,7 +187,7 @@ export function NovelForm({ novel }: NovelFormProps) {
               className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
             >
               <option value="ONGOING">Đang tiến hành (Ongoing)</option>
-              <option value="COMPLETED">Hoàn thành (Completed)</option>
+              <option value="COMPLETED">Kết thúc (Completed)</option>
               <option value="PAUSED">Tạm ngưng (Paused)</option>
               <option value="DROPPED">Ngưng cập nhật (Dropped)</option>
             </select>

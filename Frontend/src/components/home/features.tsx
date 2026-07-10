@@ -147,7 +147,7 @@ export default function Features() {
                 textAlign="left"
               >
                 Trải nghiệm đọc <br />
-                <span className="text-gradient-animated">hoàn hảo</span> nhất.
+                <span className="text-gradient-animated inline-block align-baseline">hoàn hảo</span> nhất.
               </SplitText>
               <SplitText
                 className="text-lg text-muted-foreground font-medium max-w-xl leading-relaxed"

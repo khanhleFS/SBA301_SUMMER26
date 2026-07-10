@@ -1,7 +1,9 @@
 import { useSearchContext } from '../context/search-context'
-import { SlidersHorizontal, RotateCcw } from 'lucide-react'
+import type { ReadingStateFilter } from '../context/search-context'
+import { SlidersHorizontal, RotateCcw, BookOpen, Crown } from 'lucide-react'
 import SpotlightCard from '@/components/custom/spot-light-card/SpotlightCard'
 import { SidebarFiltersSkeleton } from './search-skeleton'
+import { useAuthStore } from '@/store/auth.store'
 
 export function SearchSidebar() {
   const {
@@ -13,10 +15,12 @@ export function SearchSidebar() {
     setSelectedChapters,
     selectedStatus,
     setSelectedStatus,
-    showUnlockedOnly,
-    setShowUnlockedOnly,
+    selectedReadingState,
+    setSelectedReadingState,
     clearFilters
   } = useSearchContext()
+
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated)
 
   const handleSelectFilter = (groupId: string, value: string) => {
     if (groupId === 'category') setSelectedCategory(value)
@@ -31,20 +35,26 @@ export function SearchSidebar() {
     return ''
   }
 
+  const readingStateOptions: { label: string; value: ReadingStateFilter; icon?: React.ReactNode }[] = [
+    { label: 'Tất cả', value: 'all' },
+    { label: 'Đang đọc', value: 'reading', icon: <BookOpen className="size-3" /> },
+    { label: 'Đã mua', value: 'purchased', icon: <Crown className="size-3" /> },
+  ]
+
   return (
     <aside className="w-full lg:w-80 flex-shrink-0">
-      <SpotlightCard 
+      <SpotlightCard
         spotlightColor="rgba(79, 55, 138, 0.15)"
         className="space-y-8 bg-surface-container-low/50 border border-outline/10 rounded-lg p-6 backdrop-blur-md"
       >
-        
+
         {/* Sidebar Header */}
         <div className="flex items-center justify-between pb-4 border-b border-outline/10">
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="size-5 text-on-surface" />
             <h2 className="font-serif text-xl font-bold text-on-surface">Bộ lọc</h2>
           </div>
-          <button 
+          <button
             onClick={clearFilters}
             className="text-xs text-primary font-semibold hover:underline cursor-pointer select-none bg-transparent border-0 p-0 flex items-center gap-1"
           >
@@ -59,37 +69,35 @@ export function SearchSidebar() {
         ) : (
           filterGroups.map((group) => {
             const selectedValue = getSelectedValue(group.id)
-            
+
             return (
-              <div 
-                key={group.id} 
+              <div
+                key={group.id}
                 className={`space-y-3 ${group.id === 'category' ? 'hidden lg:block' : ''}`}
               >
                 <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">
                   {group.title}
                 </h3>
-                
+
                 <div className={
-                  group.type === 'pills' 
-                    ? 'flex flex-wrap gap-2' 
-                    : group.type === 'grid-2' 
-                      ? 'grid grid-cols-2 gap-2' 
+                  group.type === 'pills'
+                    ? 'flex flex-wrap gap-2'
+                    : group.type === 'grid-2'
+                      ? 'grid grid-cols-2 gap-2'
                       : 'grid grid-cols-3 gap-2'
                 }>
                   {group.options.map((opt) => {
                     const isActive = selectedValue === opt.value
-                    
+
                     return (
-                      <button 
+                      <button
                         key={opt.value}
                         onClick={() => handleSelectFilter(group.id, opt.value)}
-                        className={`px-3 py-2 rounded-lg font-semibold text-xs border transition-all text-center cursor-pointer select-none ${
-                          group.type === 'pills' ? 'rounded-full py-1.5' : ''
-                        } ${
-                          isActive 
-                            ? 'bg-primary/20 text-primary border-primary/30 font-semibold' 
+                        className={`px-3 py-2 rounded-lg font-semibold text-xs border transition-all text-center cursor-pointer select-none ${group.type === 'pills' ? 'rounded-full py-1.5' : ''
+                          } ${isActive
+                            ? 'bg-primary/20 text-primary border-primary/30 font-semibold'
                             : 'bg-surface-container border-outline/10 text-on-surface-variant hover:border-primary/30'
-                        }`}
+                          }`}
                       >
                         {opt.label}
                       </button>
@@ -101,21 +109,31 @@ export function SearchSidebar() {
           })
         )}
 
-        {/* Ownership Toggle */}
-        <div className="space-y-3 pt-4 border-t border-outline/10">
-          <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">
-            Sở hữu
-          </h3>
-          <label className="flex items-center gap-2.5 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={showUnlockedOnly}
-              onChange={(e) => setShowUnlockedOnly(e.target.checked)}
-              className="rounded border-outline/25 text-primary focus:ring-primary size-4"
-            />
-            <span className="text-xs font-semibold text-on-surface-variant">Chỉ hiện truyện đã mua VIP</span>
-          </label>
-        </div>
+        {/* Reading State Filter — only shown when authenticated */}
+        {isAuthenticated && (
+          <div className="space-y-3 pt-4 border-t border-outline/10">
+            <h3 className="font-sans text-xs font-bold uppercase tracking-wider text-on-surface-variant/70">
+              Của tôi
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {readingStateOptions.map(opt => {
+                const isActive = selectedReadingState === opt.value
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => setSelectedReadingState(opt.value)}
+                    className={`flex items-center justify-center gap-1 px-2 py-2 rounded-lg font-semibold text-xs border transition-all cursor-pointer select-none ${isActive
+                        ? 'bg-primary/20 text-primary border-primary/30'
+                        : 'bg-surface-container border-outline/10 text-on-surface-variant hover:border-primary/30'
+                      }`}
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
       </SpotlightCard>
     </aside>

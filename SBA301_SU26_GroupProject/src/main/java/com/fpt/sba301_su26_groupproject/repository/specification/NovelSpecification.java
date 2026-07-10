@@ -20,9 +20,14 @@ public class NovelSpecification {
         return (Root<Novel> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // 1. Filter by Title (case-insensitive contains)
+            // 1. Filter by Title or Author's name (case-insensitive contains)
             if (title != null && !title.isBlank()) {
-                predicates.add(cb.like(cb.lower(root.get("title")), "%" + title.trim().toLowerCase() + "%"));
+                String searchPattern = "%" + title.trim().toLowerCase() + "%";
+                Join<Novel, User> authorJoin = root.join("author", JoinType.LEFT);
+                predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("title")), searchPattern),
+                    cb.like(cb.lower(authorJoin.get("username")), searchPattern)
+                ));
             }
 
             // 2. Filter by Status

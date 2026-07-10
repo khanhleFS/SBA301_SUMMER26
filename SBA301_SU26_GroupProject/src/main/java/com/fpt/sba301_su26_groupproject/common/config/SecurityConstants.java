@@ -9,6 +9,7 @@ public class SecurityConstants {
             "/api/payments/**",
             "/api/auth/**",
             "/api/enums",
+            "/api/categories",
             "/api/novels/**",
             "/api/chapters/**",
             "/",

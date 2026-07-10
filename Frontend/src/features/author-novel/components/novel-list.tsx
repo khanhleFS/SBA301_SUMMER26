@@ -68,8 +68,8 @@ export function NovelList() {
 
 function NovelCard({ novel }: { novel: NovelResponseDTO }) {
   const statusLabels: Record<string, string> = {
-    ONGOING: 'Đang ra',
-    COMPLETED: 'Hoàn thành',
+    ONGOING: 'Chưa kết thúc',
+    COMPLETED: 'Kết thúc',
     PAUSED: 'Tạm ngưng',
     DROPPED: 'Đã hủy',
   }

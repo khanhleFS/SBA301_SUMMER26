@@ -19,4 +19,7 @@ public interface ChapterRepository extends JpaRepository<Chapter, UUID> {
     Optional<Chapter> findByNovelIdAndChapterNumber(UUID novelId, Integer chapterNumber);
 
     boolean existsByNovelIdAndChapterNumber(UUID novelId, Integer chapterNumber);
+
+    @Query("SELECT c.viewCount FROM Chapter c WHERE c.novel.id = :novelId AND c.chapterNumber = (SELECT MAX(c2.chapterNumber) FROM Chapter c2 WHERE c2.novel.id = :novelId)")
+    Integer findLatestChapterViewCountByNovelId(@Param("novelId") UUID novelId);
 }

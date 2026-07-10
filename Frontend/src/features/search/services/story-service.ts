@@ -1,9 +1,18 @@
 import type { Story } from '../components/search-card'
-import { searchNovels } from '@/services/novel-service'
+import { searchNovels, getPublicNovelEnums } from '@/services/novel-service'
 import { filterService, type FilterGroup, type FilterOption } from '@/services/filter-service'
 import { getAllCategories } from '@/services/category-service'
 
 export type { FilterGroup, FilterOption }
+
+// Map backend enum names → Vietnamese display labels
+const STATUS_DISPLAY_MAP: Record<string, string> = {
+  ONGOING: 'Đang ra',
+  COMPLETED: 'Hoàn thành',
+  CANCELLED: 'Đã huỷ',
+  PAUSED: 'Tạm dừng',
+  DROPPED: 'Drop',
+}
 
 export const storyService = {
   getStories: async (params: {
@@ -14,15 +23,8 @@ export const storyService = {
     page?: number
     size?: number
   }): Promise<{ stories: Story[]; totalPages: number; totalElements: number }> => {
-    // Map frontend status labels → backend enum values
-    const statusMap: Record<string, string> = {
-      'Ongoing': 'ONGOING',
-      'Completed': 'COMPLETED',
-      'Paused': 'PAUSED',
-      'Dropped': 'DROPPED',
-    }
     const backendStatus = params.status && params.status !== 'All'
-      ? (statusMap[params.status] ?? params.status)
+      ? params.status  // already the backend enum value (ONGOING, COMPLETED, etc.)
       : undefined
 
     const minChaptersNum = params.minChapters && params.minChapters !== 'Any'
@@ -38,14 +40,6 @@ export const storyService = {
       size: params.size ?? 20,
     })
 
-    // Map backend status enum → frontend display label
-    const statusDisplayMap: Record<string, string> = {
-      ONGOING: 'Ongoing',
-      COMPLETED: 'Completed',
-      PAUSED: 'Paused',
-      DROPPED: 'Dropped',
-    }
-
     const stories: Story[] = result.content.map((novel) => ({
       id: novel.id,
       // slug-id pattern: slug + UUID for the URL
@@ -58,7 +52,7 @@ export const storyService = {
       author: novel.authorName || 'Tác giả',
       genres: novel.categories || [],
       currentChapter: novel.chapterCount ?? 0,
-      status: statusDisplayMap[novel.status] ?? novel.status,
+      status: STATUS_DISPLAY_MAP[novel.status] ?? novel.status,
       imgUrl: novel.coverImageUrl || undefined,
     }))
 
@@ -78,7 +72,71 @@ export const storyService = {
     }
   },
 
+  /**
+   * Fetches NovelStatus enum values from the public backend API.
+   * Returns FilterOption[] ready to be used in the status filter group.
+   * First option is always "Tất cả" (All).
+   */
+  getNovelStatuses: async (): Promise<FilterOption[]> => {
+    try {
+      const enums = await getPublicNovelEnums()
+      const novelStatusEnum = enums.find(e => e.name === 'NovelStatus')
+      if (!novelStatusEnum) return getDefaultStatusOptions()
+
+      return [
+        { label: 'Tất cả', value: 'All' },
+        ...novelStatusEnum.value.map(v => ({
+          label: STATUS_DISPLAY_MAP[v] ?? v,
+          value: v, // send backend enum value directly (no mapping needed on submit)
+        }))
+      ]
+    } catch {
+      return getDefaultStatusOptions()
+    }
+  },
+
+  /**
+   * Fetches ChapterRange threshold values from the public backend API.
+   * Returns FilterOption[] for the chapters filter group.
+   */
+  getChapterRanges: async (): Promise<FilterOption[]> => {
+    try {
+      const enums = await getPublicNovelEnums()
+      const rangeEnum = enums.find(e => e.name === 'ChapterRange')
+      if (!rangeEnum) return getDefaultChapterOptions()
+
+      return [
+        { label: 'Tất cả', value: 'Any' },
+        ...rangeEnum.value.map(v => ({
+          label: `${v}+ chương`,
+          value: v,
+        }))
+      ]
+    } catch {
+      return getDefaultChapterOptions()
+    }
+  },
+
   getSearchFilters: (): Promise<FilterGroup[]> => {
     return filterService.getFiltersByScope('search')
   }
+}
+
+function getDefaultStatusOptions(): FilterOption[] {
+  return [
+    { label: 'Tất cả', value: 'All' },
+    { label: 'Đang ra', value: 'ONGOING' },
+    { label: 'Hoàn thành', value: 'COMPLETED' },
+    { label: 'Đã huỷ', value: 'CANCELLED' },
+  ]
+}
+
+function getDefaultChapterOptions(): FilterOption[] {
+  return [
+    { label: 'Tất cả', value: 'Any' },
+    { label: '5+ chương', value: '5' },
+    { label: '10+ chương', value: '10' },
+    { label: '20+ chương', value: '20' },
+    { label: '50+ chương', value: '50' },
+  ]
 }

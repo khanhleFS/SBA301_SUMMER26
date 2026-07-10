@@ -102,6 +102,16 @@ public class NovelController {
                 .build());
     }
 
+    @Operation(summary = "Get novel enums (Public)")
+    @GetMapping("/novels/enums")
+    public ResponseEntity<ApiResponse<List<EnumResponseDTO>>> getPublicEnums() {
+        return ResponseEntity.ok(ApiResponse.<List<EnumResponseDTO>>builder()
+                .code(200)
+                .message("Lấy danh sách enums thành công")
+                .result(novelService.getEnums())
+                .build());
+    }
+
     @Operation(
             summary = "Update novel",
             security = @SecurityRequirement(name = "Bearer Authentication")

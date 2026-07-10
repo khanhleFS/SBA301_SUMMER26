@@ -58,10 +58,21 @@ export async function deleteNovel(id: string): Promise<void> {
 }
 
 /**
- * Lấy danh sách enum của Novel (NovelStatus) từ backend.
+ * Lấy danh sách enum của Novel (NovelStatus) từ backend (Author-only).
  */
 export async function getNovelEnums(): Promise<EnumResponseDTO[]> {
   const response = await api.get('/author/novels/enums')
+  if (response.data && response.data.code === 200) {
+    return response.data.result
+  }
+  throw new Error(response.data?.message || 'Không thể tải enums của truyện')
+}
+
+/**
+ * Lấy danh sách enum của Novel (NovelStatus) từ public endpoint (không cần auth).
+ */
+export async function getPublicNovelEnums(): Promise<EnumResponseDTO[]> {
+  const response = await api.get('/novels/enums')
   if (response.data && response.data.code === 200) {
     return response.data.result
   }
