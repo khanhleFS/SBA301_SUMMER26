@@ -4,7 +4,6 @@ import com.fpt.sba301_su26_groupproject.entity.Enumeration.OrderStatus;
 import lombok.Builder;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import java.time.Instant;
 
 @Builder
 public record OrderResponseDTO(
@@ -16,5 +15,5 @@ public record OrderResponseDTO(
     Integer amountVnd,
     Integer coins,
     OrderStatus status,
-    Instant createdAt
+    LocalDateTime createdAt
 ) {}
