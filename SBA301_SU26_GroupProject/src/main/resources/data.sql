@@ -28,13 +28,13 @@ INSERT INTO users (id, role, username, email, password, phone, address, is_activ
 -- -------------------------------------------------------------------------
 -- 2. Categories
 -- -------------------------------------------------------------------------
-INSERT INTO categories (id, name, slug, created_at, updated_at) VALUES
-                                                                    ('e9f4fcaf-1649-52e4-a292-dae12b5e7b98', 'Action', 'action', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                    ('466322a1-7ab0-5749-ae30-2e4a5851bc3e', 'Romance', 'romance', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                    ('55e43d6c-b7f3-5c5b-a3aa-0802c206ab0b', 'Fantasy', 'fantasy', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                    ('6f27a300-c786-563d-961c-6edd6454152b', 'Science Fiction', 'science-fiction', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                    ('d34aed05-d4af-5c08-935f-e405d44503bf', 'Mystery', 'mystery', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                    ('4d51807e-17d1-5767-87f8-b888a8c01657', 'Adventure', 'adventure', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO categories (id, name, slug) VALUES 
+('e9f4fcaf-1649-52e4-a292-dae12b5e7b98', 'Action', 'action'), 
+('466322a1-7ab0-5749-ae30-2e4a5851bc3e', 'Romance', 'romance'), 
+('55e43d6c-b7f3-5c5b-a3aa-0802c206ab0b', 'Fantasy', 'fantasy'), 
+('6f27a300-c786-563d-961c-6edd6454152b', 'Science Fiction', 'science-fiction'), 
+('d34aed05-d4af-5c08-935f-e405d44503bf', 'Mystery', 'mystery'), 
+('4d51807e-17d1-5767-87f8-b888a8c01657', 'Adventure', 'adventure');
 
 -- -------------------------------------------------------------------------
 -- 3. Novels
