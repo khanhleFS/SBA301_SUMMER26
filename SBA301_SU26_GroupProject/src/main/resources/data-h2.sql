@@ -5,6 +5,7 @@
 -- =========================================================================
 
 -- Clear existing data
+DELETE FROM orders;
 DELETE FROM revenues;
 DELETE FROM chapter_unlocks;
 DELETE FROM bookmarks;
