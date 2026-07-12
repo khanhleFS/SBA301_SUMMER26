@@ -654,7 +654,7 @@ INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) 
 -- -------------------------------------------------------------------------
 -- 10. Bookmarks
 -- -------------------------------------------------------------------------
-INSERT INTO bookmarks (id, user_id, novel_id, last_chapter_id, is_favorite, last_page, created_at, updated_at) VALUES ('20e2c54a-7029-5fc3-8e56-95849a5fc3f3', '98bc5d00-38e0-54b1-8499-03ec52fb016a', '99a75b58-54c1-547d-b4a1-c61de7cce305', '7510c636-f421-5554-a1eb-e5df624e3dcd', TRUE, 1, DATEADD(DAY, -3, CURRENT_TIMESTAMP), CURRENT_TIMESTAMP);
+INSERT INTO bookmarks (id, user_id, novel_id, last_chapter_id, is_favorite, last_page, created_at, updated_at) VALUES ('20e2c54a-7029-5fc3-8e56-95849a5fc3f3', '98bc5d00-38e0-54b1-8499-03ec52fb016a', '99a75b58-54c1-547d-b4a1-c61de7cce305', '7510c636-f421-5554-a1eb-e5df624e3dcd', 1, 1, DATEADD(DAY, -3, CURRENT_TIMESTAMP), CURRENT_TIMESTAMP);
 
 -- -------------------------------------------------------------------------
 -- 11. Revenues
