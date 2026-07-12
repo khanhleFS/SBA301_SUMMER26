@@ -142,7 +142,7 @@ DECLARE @CurrentConflict NVARCHAR(260);
 DECLARE @CurrentTone NVARCHAR(160);
 DECLARE @ChapterNo INT;
 DECLARE @ChapterId UNIQUEIDENTIFIER;
-DECLARE @IsFree BIT;
+DECLARE @Status NVARCHAR(20);
 DECLARE @CoinPrice INT;
 DECLARE @ChapterTitle NVARCHAR(255);
 DECLARE @ChapterSlug NVARCHAR(300);
@@ -200,7 +200,7 @@ BEGIN
     WHILE @ChapterNo <= 20
     BEGIN
         SET @ChapterId = NEWID();
-        SET @IsFree = CASE WHEN @ChapterNo <= 5 THEN 1 ELSE 0 END;
+        SET @Status = CASE WHEN @ChapterNo <= 5 THEN 'FREE' ELSE 'LOCKED' END;
         SET @CoinPrice = CASE WHEN @ChapterNo <= 5 THEN 0 ELSE 20 + ((@ChapterNo % 5) * 5) END;
         SELECT
             @BeatTitle = beat_title,
@@ -244,7 +244,7 @@ BEGIN
             N' By the final paragraph, the chapter gives readers a concrete development, a character choice, and a hook for the next chapter.'
         );
 
-        INSERT INTO chapters (id, novel_id, chapter_number, title, slug, content, is_free, coin_price, view_count, created_at)
+        INSERT INTO chapters (id, novel_id, chapter_number, title, slug, content, status, coin_price, view_count, created_at)
         VALUES (
             @ChapterId,
             @CurrentNovelId,
@@ -252,7 +252,7 @@ BEGIN
             @ChapterTitle,
             @ChapterSlug,
             @ChapterContent,
-            @IsFree,
+            @Status,
             @CoinPrice,
             40 + (@CurrentNovelRow * 15) + (@ChapterNo * 9),
             @CreatedAt
@@ -330,7 +330,7 @@ BEGIN
         BEGIN
             SET @ChapterNo = 20 + @ExtraChapterIndex;
             SET @ChapterId = NEWID();
-            SET @IsFree = 0;
+            SET @Status = 'LOCKED';
             SET @CoinPrice = 25 + ((@ChapterNo % 6) * 5);
             SET @BeatTitle = CONCAT(N'Extended Arc ', @ExtraChapterIndex);
             SET @ChapterTitle = CONCAT(N'Chapter ', @ChapterNo, N': ', @BeatTitle);
@@ -365,7 +365,7 @@ BEGIN
                 N' By the ending, chapter ', @ChapterNo, N' has its own event, its own decision, and a hook that continues naturally from chapter ', @ChapterNo - 1, N'.'
             );
 
-            INSERT INTO chapters (id, novel_id, chapter_number, title, slug, content, is_free, coin_price, view_count, created_at)
+            INSERT INTO chapters (id, novel_id, chapter_number, title, slug, content, status, coin_price, view_count, created_at)
             VALUES (
                 @ChapterId,
                 @CurrentNovelId,
@@ -373,7 +373,7 @@ BEGIN
                 @ChapterTitle,
                 @ChapterSlug,
                 @ChapterContent,
-                @IsFree,
+                @Status,
                 @CoinPrice,
                 40 + (@CurrentNovelRow * 15) + (@ChapterNo * 9),
                 @CreatedAt
@@ -436,7 +436,7 @@ SELECT N'Novel - Categories count', COUNT(*) FROM novel_categories
 UNION ALL
 SELECT N'Chapters count', COUNT(*) FROM chapters
 UNION ALL
-SELECT N'Free Chapters count', COUNT(*) FROM chapters WHERE is_free = 1
+SELECT N'Free Chapters count', COUNT(*) FROM chapters WHERE status = 'FREE'
 UNION ALL
 SELECT N'Payments count', COUNT(*) FROM payments
 UNION ALL
@@ -448,7 +448,7 @@ SELECT N'Bookmarks count', COUNT(*) FROM bookmarks
 UNION ALL
 SELECT N'Revenues count', COUNT(*) FROM revenues;
 
-SELECT n.title, COUNT(c.id) AS chapter_count, SUM(CASE WHEN c.is_free = 1 THEN 1 ELSE 0 END) AS free_chapter_count
+SELECT n.title, COUNT(c.id) AS chapter_count, SUM(CASE WHEN c.status = 'FREE' THEN 1 ELSE 0 END) AS free_chapter_count
 FROM novels n
 JOIN chapters c ON c.novel_id = n.id
 GROUP BY n.title

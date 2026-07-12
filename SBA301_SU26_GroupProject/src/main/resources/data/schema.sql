@@ -116,7 +116,6 @@ CREATE TABLE chapters (
     content NVARCHAR(MAX),
     audio_url NVARCHAR(1000),
     status NVARCHAR(20) NOT NULL DEFAULT 'FREE' CHECK (status IN ('LOCKED','UNLOCKED','FREE')),
-    is_free BIT NOT NULL DEFAULT 0,
     coin_price INT NOT NULL DEFAULT 0 CHECK (coin_price >= 0),
     view_count INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
@@ -127,7 +126,7 @@ CREATE TABLE chapters (
 
 CREATE INDEX idx_chapters_novel_id ON chapters(novel_id);
 CREATE INDEX idx_chapters_slug ON chapters(slug);
-CREATE INDEX idx_chapters_is_free ON chapters(is_free);
+CREATE INDEX idx_chapters_status ON chapters(status);
 CREATE INDEX idx_chapters_created_at ON chapters(created_at);
 
 -- -------------------------------------------------------------------------

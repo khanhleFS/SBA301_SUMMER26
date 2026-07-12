@@ -688,7 +688,7 @@ UNION ALL SELECT 'Categories', COUNT(*) FROM categories
 UNION ALL SELECT 'Novels', COUNT(*) FROM novels
 UNION ALL SELECT 'Novel_Categories', COUNT(*) FROM novel_categories
 UNION ALL SELECT 'Chapters', COUNT(*) FROM chapters
-UNION ALL SELECT 'Free Chapters', COUNT(*) FROM chapters WHERE is_free = TRUE
+UNION ALL SELECT 'Free Chapters', COUNT(*) FROM chapters WHERE status = 'FREE'
 UNION ALL SELECT 'Payments', COUNT(*) FROM payments
 UNION ALL SELECT 'Coin Transactions', COUNT(*) FROM coin_transactions
 UNION ALL SELECT 'Chapter Unlocks', COUNT(*) FROM chapter_unlocks
