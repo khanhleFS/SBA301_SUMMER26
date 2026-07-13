@@ -5,6 +5,7 @@
 -- =========================================================================
 
 -- Clear existing data
+DELETE FROM orders;
 DELETE FROM revenues;
 DELETE FROM chapter_unlocks;
 DELETE FROM bookmarks;
@@ -637,13 +638,13 @@ INSERT INTO chapters (id, novel_id, chapter_number, title, slug, content, status
 -- -------------------------------------------------------------------------
 -- 7. Payments
 -- -------------------------------------------------------------------------
-INSERT INTO payments (id, user_id, amount_vnd, coins_received, status, provider, transaction_ref, created_at, updated_at) VALUES ('9b317733-ca7f-5fac-b0b1-a42f4e129f0e', '98bc5d00-38e0-54b1-8499-03ec52fb016a', 100000, 1000, 'COMPLETED', 'vnpay', 'VNP123456789', DATEADD('DAY', -4, CURRENT_TIMESTAMP), CURRENT_TIMESTAMP);
+INSERT INTO payments (id, user_id, amount_vnd, coins_received, status, provider, transaction_ref, created_at) VALUES ('9b317733-ca7f-5fac-b0b1-a42f4e129f0e', '98bc5d00-38e0-54b1-8499-03ec52fb016a', 100000, 1000, 'SUCCESS', 'vnpay', 'VNP123456789', DATEADD('DAY', -4, CURRENT_TIMESTAMP));
 
 -- -------------------------------------------------------------------------
 -- 8. Coin Transactions
 -- -------------------------------------------------------------------------
-INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, ref_id, note, created_at) VALUES ('8c77310c-281c-5e19-8721-bdfb5bc591ad', '98bc5d00-38e0-54b1-8499-03ec52fb016a', 'deposit', 1000, 1000, '9b317733-ca7f-5fac-b0b1-a42f4e129f0e', 'Coin deposit via VNPAY', DATEADD('DAY', -4, CURRENT_TIMESTAMP));
-INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, ref_id, note, created_at) VALUES ('17f89076-c027-55fe-bb07-e2c2fa5bcb7b', '98bc5d00-38e0-54b1-8499-03ec52fb016a', 'spend', 25, 975, 'f1cf624c-3de9-53c2-98a6-01001967aa59', 'Unlocked chapter 6 of Shadow Academy', DATEADD('DAY', -1, CURRENT_TIMESTAMP));
+INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, ref_id, note, created_at) VALUES ('8c77310c-281c-5e19-8721-bdfb5bc591ad', '98bc5d00-38e0-54b1-8499-03ec52fb016a', 'TOPUP', 1000, 1000, '9b317733-ca7f-5fac-b0b1-a42f4e129f0e', 'Coin deposit via VNPAY', DATEADD('DAY', -4, CURRENT_TIMESTAMP));
+INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, ref_id, note, created_at) VALUES ('17f89076-c027-55fe-bb07-e2c2fa5bcb7b', '98bc5d00-38e0-54b1-8499-03ec52fb016a', 'UNLOCKED_CHAPTER', 25, 975, 'f1cf624c-3de9-53c2-98a6-01001967aa59', 'Unlocked chapter 6 of Shadow Academy', DATEADD('DAY', -1, CURRENT_TIMESTAMP));
 
 -- -------------------------------------------------------------------------
 -- 9. Chapter Unlocks
