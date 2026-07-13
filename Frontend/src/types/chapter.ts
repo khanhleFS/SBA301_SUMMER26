@@ -1,4 +1,4 @@
-export type ChapterStatus = 'UNLOCKED' | 'LOCKED' | 'DRAFT' | 'PUBLISHED'
+export type ChapterStatus = 'UNLOCKED' | 'LOCKED' | 'FREE'
 
 export interface ChapterResponseDTO {
   id: string

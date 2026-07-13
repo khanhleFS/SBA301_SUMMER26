@@ -16,7 +16,7 @@ export function ChapterForm({ novelId, chapter }: ChapterFormProps) {
   // Form states
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [status, setStatus] = useState<ChapterStatus>('DRAFT')
+  const [status, setStatus] = useState<ChapterStatus>('FREE')
   const [chapterNumber, setChapterNumber] = useState(1)
   const [coinPrice, setCoinPrice] = useState(0)
 
@@ -137,14 +137,15 @@ export function ChapterForm({ novelId, chapter }: ChapterFormProps) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-foreground">Trạng thái xuất bản</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-foreground">Trạng thái chương</label>
             <select
               value={status}
               onChange={e => setStatus(e.target.value as ChapterStatus)}
               className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
             >
-              <option value="DRAFT">Bản nháp (Draft)</option>
-              <option value="PUBLISHED">Công bố (Published)</option>
+              <option value="FREE">Miễn phí (Free)</option>
+              <option value="UNLOCKED">Trả phí (Unlocked)</option>
+              <option value="LOCKED">Khoá (Locked)</option>
             </select>
           </div>
 

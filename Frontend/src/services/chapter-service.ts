@@ -41,7 +41,7 @@ export async function generateChapterAudio(novelId: string, chapterNumber: numbe
  */
 export async function createChapter(novelId: string, request: ChapterRequestDTO): Promise<ChapterResponseDTO> {
   const response = await api.post(`/author/novels/${novelId}/chapters`, request)
-  if (response.data && response.data.code === 200) {
+  if (response.data && (response.data.code === 201 || response.data.code === 200)) {
     return response.data.result
   }
   throw new Error(response.data?.message || 'Tạo chương mới thất bại')

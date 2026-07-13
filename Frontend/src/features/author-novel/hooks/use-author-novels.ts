@@ -126,30 +126,7 @@ export function useNovel(id: string | undefined) {
 export function useCreateNovel() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (request: NovelRequestDTO) => {
-      try {
-        return await createNovel(request)
-      } catch (err) {
-        console.warn('API createNovel failed, mocking success locally:', err)
-        const newNovel: NovelResponseDTO = {
-          id: `mock-novel-${Date.now()}`,
-          title: request.title,
-          slug: `slug-${Date.now()}`,
-          description: request.description,
-          coverImageUrl: request.coverImageUrl,
-          status: request.status,
-          viewCount: 0,
-          chapterCount: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          authorId: "9999",
-          authorName: "MockAuthor",
-          categories: request.categoryIds
-        }
-        inMemoryNovels.push(newNovel)
-        return newNovel
-      }
-    },
+    mutationFn: (request: NovelRequestDTO) => createNovel(request),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.lists() })
     },
@@ -159,35 +136,7 @@ export function useCreateNovel() {
 export function useUpdateNovel(id: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (request: NovelRequestDTO) => {
-      try {
-        return await updateNovel(id, request)
-      } catch (err) {
-        console.warn('API updateNovel failed, mocking success locally:', err)
-        const index = inMemoryNovels.findIndex(n => n.id === id)
-        const updatedNovel: NovelResponseDTO = {
-          id,
-          title: request.title,
-          slug: `slug-${id}`,
-          description: request.description,
-          coverImageUrl: request.coverImageUrl,
-          status: request.status,
-          viewCount: index !== -1 ? inMemoryNovels[index].viewCount : 100,
-          chapterCount: index !== -1 ? inMemoryNovels[index].chapterCount : 0,
-          createdAt: index !== -1 ? inMemoryNovels[index].createdAt : new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          authorId: "9999",
-          authorName: "MockAuthor",
-          categories: request.categoryIds
-        }
-        if (index !== -1) {
-          inMemoryNovels[index] = updatedNovel
-        } else {
-          inMemoryNovels.push(updatedNovel)
-        }
-        return updatedNovel
-      }
-    },
+    mutationFn: (request: NovelRequestDTO) => updateNovel(id, request),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.lists() })
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.detail(id) })
@@ -198,17 +147,7 @@ export function useUpdateNovel(id: string) {
 export function useDeleteNovel() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (id: string) => {
-      try {
-        await deleteNovel(id)
-      } catch (err) {
-        console.warn('API deleteNovel failed, mocking success locally:', err)
-        const idx = inMemoryNovels.findIndex(n => n.id === id)
-        if (idx !== -1) {
-          inMemoryNovels.splice(idx, 1)
-        }
-      }
-    },
+    mutationFn: (id: string) => deleteNovel(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.lists() })
     },
@@ -264,32 +203,7 @@ export function useChapterDetails(novelId: string | undefined, chapterNumber: nu
 export function useCreateChapter(novelId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (request: ChapterRequestDTO) => {
-      try {
-        return await createChapter(novelId, request)
-      } catch (err) {
-        console.warn('API createChapter failed, mocking success locally:', err)
-        const newChapter: ChapterResponseDTO = {
-          id: `mock-ch-${request.chapterNumber}-${Date.now()}`,
-          novelId,
-          chapterNumber: request.chapterNumber,
-          title: request.title,
-          slug: `chuong-${request.chapterNumber}`,
-          content: request.content,
-          audioUrl: null,
-          status: request.status,
-          coinPrice: request.coinPrice,
-          viewCount: 0,
-          createdAt: new Date().toISOString(),
-          updateAt: new Date().toISOString()
-        }
-        if (!inMemoryChapters[novelId]) {
-          inMemoryChapters[novelId] = []
-        }
-        inMemoryChapters[novelId].push(newChapter)
-        return newChapter
-      }
-    },
+    mutationFn: (request: ChapterRequestDTO) => createChapter(novelId, request),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.chapters(novelId) })
     },
@@ -299,36 +213,7 @@ export function useCreateChapter(novelId: string) {
 export function useUpdateChapter(novelId: string, chapterId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (request: ChapterRequestDTO) => {
-      try {
-        return await updateChapter(chapterId, request)
-      } catch (err) {
-        console.warn('API updateChapter failed, mocking success locally:', err)
-        const list = inMemoryChapters[novelId] || []
-        const index = list.findIndex(c => c.id === chapterId)
-        const updated: ChapterResponseDTO = {
-          id: chapterId,
-          novelId,
-          chapterNumber: request.chapterNumber,
-          title: request.title,
-          slug: `chuong-${request.chapterNumber}`,
-          content: request.content,
-          audioUrl: index !== -1 ? list[index].audioUrl : null,
-          status: request.status,
-          coinPrice: request.coinPrice,
-          viewCount: index !== -1 ? list[index].viewCount : 0,
-          createdAt: index !== -1 ? list[index].createdAt : new Date().toISOString(),
-          updateAt: new Date().toISOString()
-        }
-        if (index !== -1) {
-          list[index] = updated
-        } else {
-          list.push(updated)
-        }
-        inMemoryChapters[novelId] = list
-        return updated
-      }
-    },
+    mutationFn: (request: ChapterRequestDTO) => updateChapter(chapterId, request),
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.chapters(novelId) })
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.chapter(novelId, data.chapterNumber) })
@@ -339,19 +224,7 @@ export function useUpdateChapter(novelId: string, chapterId: string) {
 export function useDeleteChapter(novelId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (chapterId: string) => {
-      try {
-        await deleteChapter(chapterId)
-      } catch (err) {
-        console.warn('API deleteChapter failed, mocking success locally:', err)
-        const list = inMemoryChapters[novelId] || []
-        const idx = list.findIndex(c => c.id === chapterId)
-        if (idx !== -1) {
-          list.splice(idx, 1)
-        }
-        inMemoryChapters[novelId] = list
-      }
-    },
+    mutationFn: (chapterId: string) => deleteChapter(chapterId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.chapters(novelId) })
     },
@@ -361,22 +234,7 @@ export function useDeleteChapter(novelId: string) {
 export function useGenerateChapterAudio(novelId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (chapterNumber: number) => {
-      try {
-        return await generateChapterAudio(novelId, chapterNumber)
-      } catch (err) {
-        console.warn('API generateChapterAudio failed, mocking success locally:', err)
-        // Simulate delay
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        const list = inMemoryChapters[novelId] || []
-        const index = list.findIndex(c => c.chapterNumber === chapterNumber)
-        if (index !== -1) {
-          list[index].audioUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-          return list[index]
-        }
-        throw new Error("Không tìm thấy chương để sinh audio")
-      }
-    },
+    mutationFn: (chapterNumber: number) => generateChapterAudio(novelId, chapterNumber),
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.chapter(novelId, data.chapterNumber) })
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.chapters(novelId) })

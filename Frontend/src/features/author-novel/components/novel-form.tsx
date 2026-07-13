@@ -26,6 +26,7 @@ export function NovelForm({ novel }: NovelFormProps) {
   // Image Upload state
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   // Fetch categories
   const { data: categories } = useQuery({
@@ -81,6 +82,8 @@ export function NovelForm({ novel }: NovelFormProps) {
     e.preventDefault()
     if (!title.trim()) return
 
+    setSubmitError(null)
+
     const payload = {
       title,
       description,
@@ -92,12 +95,13 @@ export function NovelForm({ novel }: NovelFormProps) {
     try {
       if (isEdit) {
         await updateMutation.mutateAsync(payload)
+        navigate('/author/novels')
       } else {
         const created = await createMutation.mutateAsync(payload)
         navigate(`/author/novels/${created.id}`)
       }
     } catch (err) {
-      // Handled by react query mutation error
+      setSubmitError(err instanceof Error ? err.message : 'Đã có lỗi xảy ra, vui lòng thử lại.')
     }
   }
 
@@ -233,6 +237,13 @@ export function NovelForm({ novel }: NovelFormProps) {
             </div>
             {uploadError && <p className="text-[11px] text-red-600 font-semibold">{uploadError}</p>}
           </div>
+
+          {/* Submit error */}
+          {submitError && (
+            <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400">
+              ⚠ {submitError}
+            </p>
+          )}
 
           {/* Action buttons */}
           <div className="pt-2">

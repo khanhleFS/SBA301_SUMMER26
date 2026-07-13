@@ -7,7 +7,7 @@ import type { NovelRequestDTO, NovelResponseDTO, NovelPageResponseDTO, EnumRespo
  */
 export async function createNovel(request: NovelRequestDTO): Promise<NovelResponseDTO> {
   const response = await api.post('/author/novels', request)
-  if (response.data && response.data.code === 200) {
+  if (response.data && (response.data.code === 201 || response.data.code === 200)) {
     return response.data.result
   }
   throw new Error(response.data?.message || 'Tạo truyện mới thất bại')
