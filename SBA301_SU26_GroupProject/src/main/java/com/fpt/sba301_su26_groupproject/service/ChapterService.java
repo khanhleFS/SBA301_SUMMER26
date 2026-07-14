@@ -4,6 +4,8 @@ import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterResponseDTO;
 
+import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterUnlockResponseDTO;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +26,9 @@ public interface ChapterService {
 
     // Tạo audio từ nội dung chương bằng Google TTS → upload Cloudinary → lưu URL
     ChapterResponseDTO generateChapterAudio(UUID novelId, Integer chapterNumber);
+
+    // Mở khóa chương truyện bằng coin của user
+    ChapterUnlockResponseDTO unlockChapter(UUID novelId, Integer chapterNumber, String userEmail);
 
     List<EnumResponseDTO> getEnums();
 }

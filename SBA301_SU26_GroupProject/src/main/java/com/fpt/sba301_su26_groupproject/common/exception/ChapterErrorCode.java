@@ -10,7 +10,11 @@ public enum ChapterErrorCode implements ErrorCode {
     CHAPTER_UPDATE_FAILED(3005, "Cập nhật chương thất bại.", HttpStatus.INTERNAL_SERVER_ERROR, "chapter.update_failed"),
     CHAPTER_UNAUTHORIZED(3006, "Bạn không có quyền thực hiện hành động này.", HttpStatus.FORBIDDEN, "chapter.unauthorized"),
     CHAPTER_NOVEL_NOT_FOUND(3007, "Truyện của chương không tồn tại.", HttpStatus.NOT_FOUND, "chapter.novel_not_found"),
-    CHAPTER_STATUS_INVALID(3008, "Trạng thái chương không hợp lệ.", HttpStatus.BAD_REQUEST, "chapter.status_invalid");
+    CHAPTER_STATUS_INVALID(3008, "Trạng thái chương không hợp lệ.", HttpStatus.BAD_REQUEST, "chapter.status_invalid"),
+    CHAPTER_LOCKED(3009, "Chương này yêu cầu trả phí để đọc.", HttpStatus.FORBIDDEN, "chapter.locked"),
+    CHAPTER_ALREADY_UNLOCKED(3010, "Chương đã được mở khóa trước đó.", HttpStatus.BAD_REQUEST, "chapter.already_unlocked"),
+    INSUFFICIENT_COINS(3011, "Số dư coin không đủ để mở khóa chương.", HttpStatus.BAD_REQUEST, "chapter.insufficient_coins"),
+    CHAPTER_FREE(3012, "Chương này miễn phí, không cần mở khóa.", HttpStatus.BAD_REQUEST, "chapter.free");
 
     private final int code;
     private final String message;

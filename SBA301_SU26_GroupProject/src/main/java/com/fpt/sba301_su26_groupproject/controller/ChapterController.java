@@ -3,6 +3,7 @@ package com.fpt.sba301_su26_groupproject.controller;
 import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterResponseDTO;
+import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterUnlockResponseDTO;
 import com.fpt.sba301_su26_groupproject.service.ChapterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -110,6 +111,22 @@ public class ChapterController {
                 .code(200)
                 .message("Tạo audio cho chương truyện thành công")
                 .result(chapterService.generateChapterAudio(novelId, chapterNumber))
+                .build());
+    }
+
+    @Operation(
+            summary = "Unlock chapter with coins",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/unlock")
+    public ResponseEntity<ApiResponse<ChapterUnlockResponseDTO>> unlockChapter(
+            @PathVariable UUID novelId,
+            @PathVariable Integer chapterNumber,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.<ChapterUnlockResponseDTO>builder()
+                .code(200)
+                .message("Mở khóa chương truyện thành công")
+                .result(chapterService.unlockChapter(novelId, chapterNumber, authentication.getName()))
                 .build());
     }
 

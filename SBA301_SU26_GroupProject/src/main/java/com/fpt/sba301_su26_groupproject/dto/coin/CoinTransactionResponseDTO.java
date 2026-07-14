@@ -10,10 +10,10 @@ import java.util.UUID;
 public record CoinTransactionResponseDTO(
         @Schema(example = "550e8400-e29b-41d4-a716-446655440000")
         UUID transactionId,
-        @Schema(example = "111e8400-e29b-41d4-a716-446655440000")
-        UUID userId,
         @Schema(example = "Nguyen Van A")
-        String username,
+        String userName,
+        @Schema(example = "Gói 1000 coin")
+        String packageName,
         @Schema(example = "50000")
         Integer amount,
         @Schema(example = "TOP_UP")

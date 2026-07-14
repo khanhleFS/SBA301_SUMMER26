@@ -5,13 +5,17 @@ import com.fpt.sba301_su26_groupproject.common.exception.ChapterErrorCode;
 import com.fpt.sba301_su26_groupproject.common.exception.NovelErrorCode;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterResponseDTO;
+import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterUnlockResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.entity.Chapter;
+import com.fpt.sba301_su26_groupproject.entity.ChapterUnlock;
+import com.fpt.sba301_su26_groupproject.entity.CoinTransaction;
 import com.fpt.sba301_su26_groupproject.entity.Enumeration.ChapterStatus;
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.CoinTransactionType;
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.UserRole;
 import com.fpt.sba301_su26_groupproject.entity.Novel;
-import com.fpt.sba301_su26_groupproject.repository.ChapterRepository;
-import com.fpt.sba301_su26_groupproject.repository.EnumRepository;
-import com.fpt.sba301_su26_groupproject.repository.NovelRepository;
+import com.fpt.sba301_su26_groupproject.entity.User;
+import com.fpt.sba301_su26_groupproject.repository.*;
 import com.fpt.sba301_su26_groupproject.service.ChapterService;
 import com.fpt.sba301_su26_groupproject.service.TtsService;
 import com.fpt.sba301_su26_groupproject.service.UploadService;
@@ -39,6 +43,12 @@ public class ChapterServiceImpl implements ChapterService {
     private final UploadService uploadService;
 
     private final EnumRepository enumRepository;
+
+    private final UserRepository userRepository;
+
+    private final ChapterUnlockRepository chapterUnlockRepository;
+
+    private final CoinTransactionRepository coinTransactionRepository;
 
     @Override
     @Transactional
@@ -94,14 +104,26 @@ public class ChapterServiceImpl implements ChapterService {
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện tương ứng."));
         // Kiểm tra phí nếu là chương trả phí (VIP)
         if (!chapter.getStatus().equals(ChapterStatus.FREE)) {
-            // Ở đây sau này bạn sẽ viết logic tích hợp kiểm tra:
-            // if (người dùng chưa mở khóa chương này) { throw new RuntimeException("Chương này cần trả phí để đọc"); }
+            if (userEmail == null) {
+                throw new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Bạn cần đăng nhập để đọc chương này.");
+            }
+            User user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Người dùng không tồn tại."));
+
+            boolean isAuthor = chapter.getNovel().getAuthor().getEmail().equals(userEmail);
+            boolean isAdmin = user.getRole() == UserRole.ADMIN;
+            boolean isUnlocked = chapterUnlockRepository.existsByUserIdAndChapterId(user.getId(), chapter.getId());
+
+            if (!isAuthor && !isAdmin && !isUnlocked) {
+                throw new ApiException(ChapterErrorCode.CHAPTER_LOCKED, "Chương này yêu cầu trả phí để đọc.");
+            }
         }
         // Tăng view count của chương truyện
         chapter.setViewCount(chapter.getViewCount() + 1);
         chapterRepository.save(chapter);
         return mapToResponseDTO(chapter);
     }
+
     @Override
     @Transactional
     public ChapterResponseDTO updateChapter(UUID chapterId, ChapterRequestDTO requestDTO, String authorEmail) {
@@ -143,6 +165,7 @@ public class ChapterServiceImpl implements ChapterService {
         }
         chapterRepository.delete(chapter);
     }
+
     @Override
     @Transactional
     public ChapterResponseDTO generateChapterAudio(UUID novelId, Integer chapterNumber) {
@@ -169,6 +192,76 @@ public class ChapterServiceImpl implements ChapterService {
         return mapToResponseDTO(saved);
     }
 
+    @Override
+    @Transactional
+    public ChapterUnlockResponseDTO unlockChapter(UUID novelId, Integer chapterNumber, String userEmail) {
+        if (userEmail == null) {
+            throw new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Bạn cần đăng nhập để mở khóa chương này.");
+        }
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Người dùng không tồn tại."));
+
+        Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
+                .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện tương ứng."));
+
+        // Kiểm tra xem chương có phải chương trả phí không
+        if (chapter.getStatus().equals(ChapterStatus.FREE)) {
+            throw new ApiException(ChapterErrorCode.CHAPTER_FREE, "Chương này miễn phí, không cần mở khóa.");
+        }
+
+        // Kiểm tra xem user có phải tác giả hoặc admin không (không cần mua)
+        if (user.getRole() == UserRole.ADMIN || chapter.getNovel().getAuthor().getEmail().equals(userEmail)) {
+            throw new ApiException(ChapterErrorCode.CHAPTER_ALREADY_UNLOCKED, "Bạn là Admin hoặc Tác giả của bộ truyện này, bạn có quyền đọc miễn phí mà không cần mở khóa.");
+        }
+
+        // Kiểm tra xem user đã mở khóa chương này chưa
+        boolean alreadyUnlocked = chapterUnlockRepository.existsByUserIdAndChapterId(user.getId(), chapter.getId());
+        if (alreadyUnlocked) {
+            throw new ApiException(ChapterErrorCode.CHAPTER_ALREADY_UNLOCKED, "Chương đã được mở khóa trước đó.");
+        }
+
+        // Kiểm tra số dư coin
+        Integer cost = chapter.getCoinPrice();
+        if (user.getCoinBalance() < cost) {
+            throw new ApiException(ChapterErrorCode.INSUFFICIENT_COINS, "Số dư coin không đủ để mở khóa chương.");
+        }
+
+        // Thực hiện trừ coin
+        user.setCoinBalance(user.getCoinBalance() - cost);
+        userRepository.save(user);
+
+        // Lưu bản ghi mở khóa
+        ChapterUnlock unlock = new ChapterUnlock();
+        unlock.setUser(user);
+        unlock.setChapter(chapter);
+        unlock.setCoinsSpent(cost);
+        unlock.setUnlockedAt(Instant.now());
+        ChapterUnlock savedUnlock = chapterUnlockRepository.save(unlock);
+
+        // Lưu lịch sử giao dịch coin
+        CoinTransaction transaction = new CoinTransaction();
+        transaction.setUser(user);
+        transaction.setType(CoinTransactionType.UNLOCKED_CHAPTER);
+        transaction.setAmount(-cost); // Ghi nhận số coin bị trừ (số âm)
+        transaction.setBalanceAfter(user.getCoinBalance());
+        transaction.setRefId(savedUnlock.getId());
+        transaction.setNote("Mở khóa chương " + chapter.getChapterNumber() + " - " + chapter.getNovel().getTitle());
+        transaction.setCoinPackage(null);
+        transaction.setCreatedAt(Instant.now());
+        coinTransactionRepository.save(transaction);
+
+        return ChapterUnlockResponseDTO.builder()
+                .chapterId(chapter.getId())
+                .novelId(novelId)
+                .chapterNumber(chapterNumber)
+                .title(chapter.getTitle())
+                .coinsSpent(cost)
+                .remainingCoins(user.getCoinBalance())
+                .unlockedAt(savedUnlock.getUnlockedAt())
+                .build();
+    }
+
     private ChapterResponseDTO mapToResponseDTO(Chapter chapter) {
         return ChapterResponseDTO.builder()
                 .id(chapter.getId())
@@ -185,6 +278,7 @@ public class ChapterServiceImpl implements ChapterService {
                 .updateAt(chapter.getUpdateAt())
                 .build();
     }
+
     private String generateSlug(Integer chapterNumber, String title) {
         if (title == null) return "chuong-" + chapterNumber;
         String titleSlug = title.toLowerCase().replaceAll("[^a-z0-9\\p{L}]+", "-").replaceAll("(^-|-$)", "");

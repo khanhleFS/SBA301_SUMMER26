@@ -49,6 +49,10 @@ public class CoinTransaction {
     @Column(name = "note")
     private String note;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coin_package_id")
+    private CoinPackage coinPackage;
+
     @NotNull
     @ColumnDefault("getdate()")
     @Column(name = "created_at", nullable = false)
