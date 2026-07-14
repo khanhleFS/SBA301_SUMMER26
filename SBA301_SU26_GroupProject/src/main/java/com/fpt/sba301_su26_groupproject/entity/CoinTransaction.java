@@ -27,7 +27,6 @@ public class CoinTransaction {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Size(max = 30)
     @NotNull
     @Nationalized
     @Enumerated(EnumType.STRING)

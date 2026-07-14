@@ -2,6 +2,7 @@ package com.fpt.sba301_su26_groupproject.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
 import com.fpt.sba301_su26_groupproject.dto.payment.PaymentMomoCallbackDTO;
@@ -44,14 +46,34 @@ public class PaymentController {
                 .build());
     }
 
-    @Operation(summary = "MoMo callback (webhook)")
+    /**
+     * IPN Callback từ MoMo (server-to-server).
+     * Endpoint này xác thực chữ ký HmacSHA256 trước khi xử lý bất kỳ logic nào.
+     * MoMo yêu cầu backend phải trả về HTTP 204 hoặc 200 để xác nhận đã nhận.
+     */
+    @Operation(summary = "MoMo IPN callback (webhook) — Signature verified")
     @PostMapping("/momo/callback")
     public ResponseEntity<ApiResponse<Void>> momoCallback(@RequestBody PaymentMomoCallbackDTO callback) {
-        log.info("Received MoMo callback: {}", callback);
+        log.info("Received MoMo IPN callback: orderId={}", callback.orderId());
         paymentService.handleMomoCallback(callback);
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .code(200)
                 .message("Callback received")
+                .build());
+    }
+
+    /**
+     * API Đối soát (Query DR) — CS hoặc Admin gọi thủ công khi nghi ngờ Webhook bị mất.
+     * Backend sẽ chủ động gọi MoMo Transaction Status API và tự động cập nhật DB.
+     */
+    @Operation(summary = "Sync payment status with MoMo (Query DR)")
+    @PostMapping("/{orderId}/sync")
+    public ResponseEntity<ApiResponse<Void>> syncPayment(@PathVariable UUID orderId) {
+        log.info("Manual sync requested for orderId={}", orderId);
+        paymentService.syncPaymentStatus(orderId);
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .code(200)
+                .message("Payment status synced successfully")
                 .build());
     }
 
@@ -65,3 +87,4 @@ public class PaymentController {
                 .build());
     }
 }
+

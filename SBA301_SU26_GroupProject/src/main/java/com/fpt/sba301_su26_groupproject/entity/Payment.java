@@ -27,6 +27,10 @@ public class Payment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
     @NotNull
     @Column(name = "amount_vnd", nullable = false)
     private Integer amountVnd;
@@ -35,7 +39,6 @@ public class Payment {
     @Column(name = "coins_received", nullable = false)
     private Integer coinsReceived;
 
-    @Size(max = 20)
     @Enumerated(EnumType.STRING)
     @NotNull
     @Nationalized
@@ -58,4 +61,6 @@ public class Payment {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-}
+    @Column(name = "paid_at")
+    private Instant paidAt;
+}

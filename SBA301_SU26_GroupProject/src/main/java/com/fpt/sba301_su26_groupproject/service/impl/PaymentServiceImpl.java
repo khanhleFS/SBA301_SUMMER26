@@ -6,30 +6,42 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.sba301_su26_groupproject.common.config.MomoConfig;
 import com.fpt.sba301_su26_groupproject.common.exception.ApiException;
 import com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode;
+import com.fpt.sba301_su26_groupproject.common.util.MomoCryptoUtil;
 import com.fpt.sba301_su26_groupproject.dto.payment.PaymentMomoCallbackDTO;
 import com.fpt.sba301_su26_groupproject.dto.payment.PaymentMomoCreateRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.payment.PaymentMomoCreateResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
+import com.fpt.sba301_su26_groupproject.entity.CoinTransaction;
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.CoinTransactionType;
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.OrderStatus;
+import com.fpt.sba301_su26_groupproject.entity.Enumeration.PaymentStatus;
+import com.fpt.sba301_su26_groupproject.entity.Order;
+import com.fpt.sba301_su26_groupproject.entity.Payment;
+import com.fpt.sba301_su26_groupproject.entity.User;
+import com.fpt.sba301_su26_groupproject.repository.CoinTransactionRepository;
 import com.fpt.sba301_su26_groupproject.repository.EnumRepository;
+import com.fpt.sba301_su26_groupproject.repository.OrderRepository;
+import com.fpt.sba301_su26_groupproject.repository.PaymentRepository;
+import com.fpt.sba301_su26_groupproject.repository.UserRepository;
 import com.fpt.sba301_su26_groupproject.service.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -38,36 +50,71 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final MomoConfig momoConfig;
     private final EnumRepository enumRepository;
+    private final PaymentRepository paymentRepository;
+    private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
+    private final CoinTransactionRepository coinTransactionRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
+    // =========================================================================
+    // CREATE PAYMENT
+    // =========================================================================
+
     @Override
+    @Transactional
     public PaymentMomoCreateResponseDTO createMomoPayment(PaymentMomoCreateRequestDTO request) {
+        // 1. Lấy Order từ DB để validate và lấy thông tin User
+        Order order = orderRepository.findById(UUID.fromString(request.orderId()))
+                .orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy đơn hàng"));
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new ApiException(CommonErrorCode.BAD_REQUEST,
+                    "Đơn hàng không ở trạng thái PENDING, không thể tạo thanh toán");
+        }
+
         String requestId = UUID.randomUUID().toString();
         String orderInfo = request.orderInfo() == null || request.orderInfo().isBlank()
                 ? "Thanh toan don hang " + request.orderId()
                 : request.orderInfo();
+
+        // 2. Ghi nhận Payment record PENDING xuống DB TRƯỚC khi gọi sang MoMo.
+        //    Đây là "safety net" — nếu mạng lag hoặc user tắt tab, ta vẫn có dấu vết giao dịch.
+        Payment pendingPayment = new Payment();
+        pendingPayment.setUser(order.getUser());
+        pendingPayment.setOrder(order);
+        pendingPayment.setAmountVnd(request.amount());
+        pendingPayment.setCoinsReceived(order.getCoins());
+        pendingPayment.setStatus(PaymentStatus.PENDING);
+        pendingPayment.setProvider("MOMO");
+        pendingPayment.setTransactionRef(requestId);
+        pendingPayment.setCreatedAt(Instant.now());
+        paymentRepository.save(pendingPayment);
+
+        log.info("[Payment] Persisted PENDING payment: transactionRef={}, orderId={}", requestId, request.orderId());
+
+        // 3. Gọi sang MoMo gateway
+        String requestType = request.requestType() != null ? request.requestType() : "captureWallet";
+        String signature = MomoCryptoUtil.hmacSHA256(buildCreateSignatureRaw(
+                requestId, requestId, request.amount(), orderInfo, requestType), momoConfig.getSecretKey());
 
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("partnerCode", momoConfig.getPartnerCode());
         payload.put("accessKey", momoConfig.getAccessKey());
         payload.put("requestId", requestId);
         payload.put("amount", String.valueOf(request.amount()));
-        payload.put("orderId", request.orderId());
+        payload.put("orderId", requestId);
         payload.put("orderInfo", orderInfo);
         payload.put("redirectUrl", momoConfig.getRedirectUrl());
         payload.put("ipnUrl", momoConfig.getIpnUrl());
         payload.put("extraData", "");
-        payload.put("requestType", request.requestType() != null ? request.requestType() : "captureWallet");
+        payload.put("requestType", requestType);
         payload.put("lang", "vi");
-
-        String requestType = request.requestType() != null ? request.requestType() : "captureWallet";
-        String signature = signMoMoRequest(requestId, request.orderId(), request.amount(), orderInfo, requestType);
         payload.put("signature", signature);
 
-        Map<String, Object> response = callMoMoCreateApi(payload);
+        Map<String, Object> response = callMoMoApi(normalizeCreateEndpoint(momoConfig.getEndpoint()), payload);
         String resultCode = String.valueOf(response.getOrDefault("resultCode", ""));
         if (!"0".equals(resultCode)) {
             String message = String.valueOf(response.getOrDefault("message", "MoMo create payment failed"));
@@ -82,17 +129,192 @@ public class PaymentServiceImpl implements PaymentService {
         return new PaymentMomoCreateResponseDTO(payUrl, request.orderId());
     }
 
+    // =========================================================================
+    // WEBHOOK / IPN CALLBACK (P0 Security + Idempotency + Pessimistic Lock)
+    // =========================================================================
+
     @Override
+    @Transactional
     public void handleMomoCallback(PaymentMomoCallbackDTO callback) {
-        log.info("Handling MoMo callback for orderId={} amount={} resultCode={} transId={}",
-                callback.orderId(), callback.amount(), callback.resultCode(), callback.transId());
+        log.info("[MoMo IPN] Received callback: orderId={}, resultCode={}, transId={}",
+                callback.orderId(), callback.resultCode(), callback.transId());
+
+        // BƯỚC 1: Xác thực chữ ký — nếu sai, từ chối ngay lập tức
+        if (!MomoCryptoUtil.verifyCallbackSignature(callback, momoConfig.getSecretKey(), momoConfig.getAccessKey())) {
+            log.warn("[MoMo IPN] INVALID SIGNATURE — Possible fake request! orderId={}", callback.orderId());
+            throw new ApiException(CommonErrorCode.BAD_REQUEST, "Invalid MoMo callback signature");
+        }
+
+        // BƯỚC 2: Lấy Payment và lock row lại (Pessimistic Write Lock)
+        //         Đảm bảo chỉ 1 trong 2 concurrent request được xử lý, cái còn lại block tại đây.
+        Payment payment = paymentRepository.findByTransactionRefForUpdate(callback.requestId())
+                .orElseGet(() -> {
+                    // Fallback: thử tìm bằng orderId nếu requestId không khớp
+                    log.warn("[MoMo IPN] No payment found by requestId={}, orderId={}",
+                            callback.requestId(), callback.orderId());
+                    return null;
+                });
+
+        if (payment == null) {
+            log.error("[MoMo IPN] Cannot find Payment record for requestId={}", callback.requestId());
+            return; // Không throw để MoMo không retry vô hạn
+        }
+
+        // BƯỚC 3: Kiểm tra Idempotency — nếu đã xử lý rồi thì bỏ qua
+        if (payment.getStatus() != PaymentStatus.PENDING) {
+            log.info("[MoMo IPN] Payment already processed (status={}), skipping. orderId={}",
+                    payment.getStatus(), callback.orderId());
+            return; // Trả về thành công nhưng không làm gì — idempotent
+        }
+
+        Order order = payment.getOrder();
+
+        // BƯỚC 4: Xử lý theo resultCode
+        if ("0".equals(callback.resultCode())) {
+            // --- THANH TOÁN THÀNH CÔNG ---
+            payment.setStatus(PaymentStatus.SUCCESS);
+            payment.setPaidAt(Instant.now());
+            paymentRepository.save(payment);
+
+            // Cập nhật Order → COMPLETED
+            order.setStatus(OrderStatus.COMPLETED);
+            orderRepository.save(order);
+
+            // Cộng coin vào User
+            User user = payment.getUser();
+            int newBalance = user.getCoinBalance() + payment.getCoinsReceived();
+            user.setCoinBalance(newBalance);
+            userRepository.save(user);
+
+            // Ghi CoinTransaction log
+            CoinTransaction tx = new CoinTransaction();
+            tx.setUser(user);
+            tx.setType(CoinTransactionType.TOPUP);
+            tx.setAmount(payment.getCoinsReceived());
+            tx.setBalanceAfter(newBalance);
+            tx.setRefId(payment.getId());
+            tx.setNote("Nạp coin qua MoMo - Order " + order.getId());
+            tx.setCreatedAt(Instant.now());
+            coinTransactionRepository.save(tx);
+
+            log.info("[MoMo IPN] SUCCESS — orderId={}, coinsAdded={}, newBalance={}",
+                    order.getId(), payment.getCoinsReceived(), newBalance);
+
+        } else {
+            // --- THANH TOÁN THẤT BẠI ---
+            payment.setStatus(PaymentStatus.FAILED);
+            paymentRepository.save(payment);
+
+            order.setStatus(OrderStatus.FAILED);
+            orderRepository.save(order);
+
+            log.warn("[MoMo IPN] FAILED — orderId={}, resultCode={}, message={}",
+                    callback.orderId(), callback.resultCode(), callback.message());
+        }
     }
 
-    private Map<String, Object> callMoMoCreateApi(Map<String, Object> payload) {
-        try {
-            String endpoint = normalizeCreateEndpoint(momoConfig.getEndpoint());
-            String body = objectMapper.writeValueAsString(payload);
+    // =========================================================================
+    // QUERY DR — Đối soát chủ động với MoMo
+    // =========================================================================
 
+    @Override
+    @Transactional
+    public void syncPaymentStatus(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy đơn hàng"));
+
+        // Tìm Payment gần nhất của Order
+        Payment payment = paymentRepository.findByTransactionRef(
+                // Lấy transactionRef từ Payment liên kết với Order
+                paymentRepository.findAll().stream()
+                        .filter(p -> p.getOrder() != null && p.getOrder().getId().equals(orderId))
+                        .findFirst()
+                        .map(Payment::getTransactionRef)
+                        .orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND,
+                                "Không tìm thấy giao dịch cho đơn hàng này"))
+        ).orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy Payment record"));
+
+        log.info("[QueryDR] Syncing payment status for orderId={}, transactionRef={}",
+                orderId, payment.getTransactionRef());
+
+        // Gọi MoMo Query Transaction Status API
+        String requestId = UUID.randomUUID().toString();
+        String rawSignature = "accessKey=" + momoConfig.getAccessKey()
+                + "&orderId=" + payment.getTransactionRef()
+                + "&partnerCode=" + momoConfig.getPartnerCode()
+                + "&requestId=" + requestId;
+        String signature = MomoCryptoUtil.hmacSHA256(rawSignature, momoConfig.getSecretKey());
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("partnerCode", momoConfig.getPartnerCode());
+        payload.put("requestId", requestId);
+        payload.put("orderId", payment.getTransactionRef());
+        payload.put("lang", "vi");
+        payload.put("signature", signature);
+
+        String queryEndpoint = normalizeQueryEndpoint(momoConfig.getEndpoint());
+        Map<String, Object> response = callMoMoApi(queryEndpoint, payload);
+
+        String resultCode = String.valueOf(response.getOrDefault("resultCode", ""));
+        log.info("[QueryDR] MoMo query result: orderId={}, resultCode={}", orderId, resultCode);
+
+        if ("0".equals(resultCode) && payment.getStatus() == PaymentStatus.PENDING) {
+            // MoMo báo thành công nhưng DB vẫn PENDING → tự động credit
+            payment.setStatus(PaymentStatus.SUCCESS);
+            payment.setPaidAt(Instant.now());
+            paymentRepository.save(payment);
+
+            order.setStatus(OrderStatus.COMPLETED);
+            orderRepository.save(order);
+
+            User user = payment.getUser();
+            int newBalance = user.getCoinBalance() + payment.getCoinsReceived();
+            user.setCoinBalance(newBalance);
+            userRepository.save(user);
+
+            CoinTransaction tx = new CoinTransaction();
+            tx.setUser(user);
+            tx.setType(CoinTransactionType.TOPUP);
+            tx.setAmount(payment.getCoinsReceived());
+            tx.setBalanceAfter(newBalance);
+            tx.setRefId(payment.getId());
+            tx.setNote("[QueryDR] Đối soát tự động - Order " + orderId);
+            tx.setCreatedAt(Instant.now());
+            coinTransactionRepository.save(tx);
+
+            log.info("[QueryDR] Auto-reconciled SUCCESS for orderId={}", orderId);
+        } else if (!"0".equals(resultCode) && payment.getStatus() == PaymentStatus.PENDING) {
+            payment.setStatus(PaymentStatus.FAILED);
+            paymentRepository.save(payment);
+            order.setStatus(OrderStatus.FAILED);
+            orderRepository.save(order);
+            log.warn("[QueryDR] Marked FAILED for orderId={}, resultCode={}", orderId, resultCode);
+        } else {
+            log.info("[QueryDR] No state change needed for orderId={}, current status={}", orderId, payment.getStatus());
+        }
+    }
+
+    // =========================================================================
+    // PRIVATE HELPERS
+    // =========================================================================
+
+    private String buildCreateSignatureRaw(String requestId, String orderId, int amount,
+                                           String orderInfo, String requestType) {
+        return "accessKey=" + momoConfig.getAccessKey()
+                + "&amount=" + amount
+                + "&extraData="
+                + "&ipnUrl=" + momoConfig.getIpnUrl()
+                + "&orderId=" + orderId
+                + "&orderInfo=" + orderInfo
+                + "&partnerCode=" + momoConfig.getPartnerCode()
+                + "&redirectUrl=" + momoConfig.getRedirectUrl()
+                + "&requestId=" + requestId
+                + "&requestType=" + requestType;
+    }
+
+    private Map<String, Object> callMoMoApi(String endpoint, Map<String, Object> payload) {
+        try {
+            String body = objectMapper.writeValueAsString(payload);
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(endpoint))
                     .timeout(Duration.ofSeconds(20))
@@ -103,7 +325,7 @@ public class PaymentServiceImpl implements PaymentService {
             HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (httpResponse.statusCode() < 200 || httpResponse.statusCode() >= 300) {
                 throw new ApiException(CommonErrorCode.EXTERNAL_SERVICE_ERROR,
-                        "MoMo create payment HTTP status " + httpResponse.statusCode() + ": " + httpResponse.body());
+                        "MoMo HTTP error " + httpResponse.statusCode() + ": " + httpResponse.body());
             }
 
             return objectMapper.readValue(httpResponse.body(), new TypeReference<>() {});
@@ -115,46 +337,14 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    private String signMoMoRequest(String requestId, String orderId, int amount, String orderInfo, String requestType) {
-        String rawSignature = "accessKey=" + momoConfig.getAccessKey()
-                + "&amount=" + amount
-                + "&extraData="
-                + "&ipnUrl=" + momoConfig.getIpnUrl()
-                + "&orderId=" + orderId
-                + "&orderInfo=" + orderInfo
-                + "&partnerCode=" + momoConfig.getPartnerCode()
-                + "&redirectUrl=" + momoConfig.getRedirectUrl()
-                + "&requestId=" + requestId
-                + "&requestType=" + requestType;
-        return HmacSha256Util.hmacSHA256(rawSignature, momoConfig.getSecretKey());
-    }
-
     private String normalizeCreateEndpoint(String endpoint) {
-        if (endpoint.endsWith("/create")) {
-            return endpoint;
-        }
-        return endpoint + "/create";
+        return endpoint.endsWith("/create") ? endpoint : endpoint + "/create";
     }
 
-    private static final class HmacSha256Util {
-        private static String hmacSHA256(String data, String key) {
-            try {
-                javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
-                mac.init(new javax.crypto.spec.SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-                byte[] rawHmac = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
-                StringBuilder hexString = new StringBuilder();
-                for (byte b : rawHmac) {
-                    String hex = Integer.toHexString(0xff & b);
-                    if (hex.length() == 1) {
-                        hexString.append('0');
-                    }
-                    hexString.append(hex);
-                }
-                return hexString.toString();
-            } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-                throw new IllegalStateException("Failed to calculate MoMo signature", e);
-            }
-        }
+    private String normalizeQueryEndpoint(String endpoint) {
+        // MoMo query endpoint: /v2/gateway/api/query
+        String base = endpoint.replaceAll("/create$", "");
+        return base.endsWith("/query") ? base : base + "/query";
     }
 
     @Override

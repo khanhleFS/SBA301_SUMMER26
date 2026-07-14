@@ -1,5 +1,5 @@
 package com.fpt.sba301_su26_groupproject.entity.Enumeration;
 
 public enum OrderStatus {
-    PENDING, COMPLETED, CANCELLED
+    PENDING, COMPLETED, CANCELLED, FAILED
 }

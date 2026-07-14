@@ -12,8 +12,8 @@ IF OBJECT_ID('revenues','U')         IS NOT NULL DROP TABLE revenues;
 IF OBJECT_ID('coin_transactions','U') IS NOT NULL DROP TABLE coin_transactions;
 IF OBJECT_ID('chapter_unlocks','U')  IS NOT NULL DROP TABLE chapter_unlocks;
 IF OBJECT_ID('bookmarks','U')        IS NOT NULL DROP TABLE bookmarks;
-IF OBJECT_ID('orders','U')           IS NOT NULL DROP TABLE orders;
 IF OBJECT_ID('payments','U')         IS NOT NULL DROP TABLE payments;
+IF OBJECT_ID('orders','U')           IS NOT NULL DROP TABLE orders;
 IF OBJECT_ID('chapters','U')         IS NOT NULL DROP TABLE chapters;
 IF OBJECT_ID('novel_categories','U') IS NOT NULL DROP TABLE novel_categories;
 IF OBJECT_ID('novels','U')           IS NOT NULL DROP TABLE novels;
@@ -253,3 +253,11 @@ CREATE TABLE revenues (
 );
 CREATE INDEX idx_revenues_author_id     ON revenues(author_id);
 CREATE INDEX idx_revenues_calculated_at ON revenues(calculated_at);
+
+-- =============================================================================
+-- Bổ sung cột payments
+-- =============================================================================
+
+ALTER TABLE payments ADD order_id UNIQUEIDENTIFIER NULL;
+ALTER TABLE payments ADD paid_at DATETIME2 NULL;
+ALTER TABLE payments ADD CONSTRAINT FK_payments_orders FOREIGN KEY (order_id) REFERENCES orders(id);
