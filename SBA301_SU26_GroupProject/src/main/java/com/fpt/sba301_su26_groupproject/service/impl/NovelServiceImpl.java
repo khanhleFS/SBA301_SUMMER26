@@ -45,7 +45,7 @@ public class NovelServiceImpl implements NovelService {
         User author = userRepository.findByEmail(authorEmail)
                 .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_AUTHOR_NOT_FOUND, "Bạn không có quyền đăng truyện"));
 
-        validateRequest(requestDTO);
+        validateRequest(requestDTO, null);
 
         Novel novel = new Novel();
         novel.setTitle(requestDTO.title()); // Thay đổi: .getTitle() -> .title()
@@ -82,7 +82,7 @@ public class NovelServiceImpl implements NovelService {
             throw new ApiException(NovelErrorCode.NOVEL_UNAUTHORIZED, "Bạn không có quyền chỉnh sửa truyện này");
         }
 
-        validateRequest(requestDTO);
+        validateRequest(requestDTO, novelId);
 
         novel.setTitle(requestDTO.title());
         novel.setSlug(generateSlug(requestDTO.title()));
@@ -247,14 +247,17 @@ public class NovelServiceImpl implements NovelService {
         return title.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
     }
 
-    private void validateRequest(NovelRequestDTO requestDTO) {
+    private void validateRequest(NovelRequestDTO requestDTO, UUID novelId) {
         // 2. Validate title không được null hoặc rỗng
         if (requestDTO.title() == null || requestDTO.title().trim().isEmpty()) {
             throw new ApiException(NovelErrorCode.NOVEL_INVALID);
         }
 
         // 3. Kiểm tra title đã tồn tại chưa
-        if (novelRepository.existsByTitle(requestDTO.title())) {
+        boolean titleExists = novelId == null 
+                ? novelRepository.existsByTitle(requestDTO.title())
+                : novelRepository.existsByTitleAndIdNot(requestDTO.title(), novelId);
+        if (titleExists) {
             throw new ApiException(NovelErrorCode.NOVEL_ALREADY_EXISTS);
         }
 
