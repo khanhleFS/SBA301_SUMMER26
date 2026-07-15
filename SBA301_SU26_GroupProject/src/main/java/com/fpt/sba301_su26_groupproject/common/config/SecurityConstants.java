@@ -6,7 +6,7 @@ public class SecurityConstants {
             "/swagger-ui.html",
             "/v3/api-docs/**",
             "/v3/api-docs.yaml",
-            "/api/payments/**",
+            "/api/orders/momo/callback",
             "/api/auth/**",
             "/api/enums",
             "/api/categories",
