@@ -15,10 +15,10 @@ public record OrderResponseDTO(
     String coinPackageName,
     Integer amountVnd,
     Integer coins,
+    Integer quantity,
     OrderStatus status,
     LocalDateTime createdAt,
 
     @Schema(description = "Link thanh toán MoMo — chỉ có khi vừa tạo order, null khi query lại")
     String payUrl
 ) {}
-

@@ -65,6 +65,7 @@ public class OrderServiceImpl implements OrderService {
                 .coinPackage(coinPackage)
                 .amountVnd(totalVnd)
                 .coins(totalCoins)
+                .quantity(qty)
                 .status(OrderStatus.PENDING)
                 .build();
 
@@ -158,6 +159,7 @@ public class OrderServiceImpl implements OrderService {
                 .coinPackageName(order.getCoinPackage().getName())
                 .amountVnd(order.getAmountVnd())
                 .coins(order.getCoins())
+                .quantity(order.getQuantity())
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
                 .payUrl(payUrl)

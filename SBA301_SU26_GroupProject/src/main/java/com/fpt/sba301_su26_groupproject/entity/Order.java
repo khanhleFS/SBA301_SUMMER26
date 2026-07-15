@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "orders")
@@ -33,6 +34,11 @@ public class Order extends BaseEntity {
     @NotNull
     @Column(name = "coins", nullable = false)
     private Integer coins; // Snapshot số lượng coin nhận
+
+    @NotNull
+    @ColumnDefault("1")
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity = 1; // Số lượng gói mua, mặc định 1
 
     @NotNull
     @Enumerated(EnumType.STRING)

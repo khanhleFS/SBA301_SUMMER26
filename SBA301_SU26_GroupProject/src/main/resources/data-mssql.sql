@@ -704,9 +704,6 @@ UNION ALL SELECT 'Revenues', COUNT(*) FROM revenues;
 INSERT INTO coin_packages (id, name, price_vnd, base_coins, first_time_bonus)
 VALUES 
     -- ID, Tên gói, Giá tiền (VND), Xu cơ bản, Thưởng nạp lần đầu
-    (NEWID(), N'Gói Khởi Động', 20000, 100, 50),
-    (NEWID(), N'Gói Cơ Bản', 50000, 260, 130),
+    (NEWID(), N'Gói Khởi Động', 10000, 100, 50),
     (NEWID(), N'Gói Tiêu Chuẩn', 100000, 550, 275),
-    (NEWID(), N'Gói Cao Cấp', 200000, 1150, 600),
-    (NEWID(), N'Gói Siêu Cấp', 500000, 3000, 1500),
-    (NEWID(), N'Gói VIP', 1000000, 6500, 3500);
+    (NEWID(), N'Gói Siêu Cấp', 500000, 3000, 1500);
