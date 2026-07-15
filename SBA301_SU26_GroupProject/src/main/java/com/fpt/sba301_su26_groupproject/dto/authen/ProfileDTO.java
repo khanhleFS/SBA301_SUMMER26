@@ -35,5 +35,8 @@ public record ProfileDTO(
         @Size(max = 200, message = "Địa chỉ không được vượt quá 200 ký tự.")
         @Pattern(regexp = "^(?!\\s)(?!.*\\s$).*$", message = "Địa chỉ không được có khoảng trắng ở đầu hoặc cuối.")
         @Schema(example = "123 Nguyen Trai, District 1, Ho Chi Minh City")
-        String address
+        String address,
+
+        @Schema(example = "0")
+        Integer coinBalance
 ) {}
