@@ -17,6 +17,8 @@ public interface NovelRepository extends JpaRepository<Novel, UUID>, JpaSpecific
     List<Novel> findByAuthorId(UUID authorId);
     boolean existsBySlug(String slug);
     boolean existsByTitle(String title);
+    @Query("SELECT COUNT(n) > 0 FROM Novel n WHERE n.title = :title AND n.id <> :id")
+    boolean existsByTitleAndIdNot(@Param("title") String title, @Param("id") UUID id);
 
     @Query("""
         SELECT DISTINCT n FROM Novel n

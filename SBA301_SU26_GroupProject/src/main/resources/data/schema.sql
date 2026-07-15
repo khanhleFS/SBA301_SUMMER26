@@ -202,8 +202,10 @@ CREATE TABLE coin_transactions (
     balance_after INT NOT NULL CHECK (balance_after >= 0),
     ref_id UNIQUEIDENTIFIER,
     note NVARCHAR(500),
+    coin_package_id UNIQUEIDENTIFIER,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
+    FOREIGN KEY (coin_package_id) REFERENCES coin_packages(id) ON DELETE NO ACTION
 );
 
 CREATE INDEX idx_coin_transactions_user_id ON coin_transactions(user_id);

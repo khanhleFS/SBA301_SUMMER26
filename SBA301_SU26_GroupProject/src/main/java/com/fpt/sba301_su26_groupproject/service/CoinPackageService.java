@@ -25,7 +25,7 @@ public interface CoinPackageService {
 //    void handlePaymentSuccess(String transactionRef);
 
     // Lịch sử giao dịch coin của user (có phân trang)
-    Page<CoinTransactionResponseDTO> getCoinHistory(Long userId, Pageable pageable);
+    Page<CoinTransactionResponseDTO> getCoinHistory(String userEmail, Pageable pageable);
 
     // -----------------------------------------------------------------------
     // ADMIN APIs

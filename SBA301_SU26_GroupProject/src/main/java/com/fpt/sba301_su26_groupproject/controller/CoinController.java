@@ -12,7 +12,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+import com.fpt.sba301_su26_groupproject.dto.coin.CoinTransactionResponseDTO;
 
 import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 
@@ -34,6 +40,21 @@ public class CoinController {
                 .code(200)
                 .message("Lấy danh sách gói coin thành công")
                 .result(coinPackageService.getActivePackages())
+                .build());
+    }
+
+    @Operation(
+            summary = "Get current user coin transaction history",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @GetMapping("/history")
+    public ResponseEntity<ApiResponse<Page<CoinTransactionResponseDTO>>> getCoinHistory(
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.<Page<CoinTransactionResponseDTO>>builder()
+                .code(200)
+                .message("Lấy lịch sử giao dịch coin thành công")
+                .result(coinPackageService.getCoinHistory(authentication.getName(), pageable))
                 .build());
     }
 

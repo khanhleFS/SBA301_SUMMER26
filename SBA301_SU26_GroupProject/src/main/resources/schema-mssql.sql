@@ -208,8 +208,10 @@ CREATE TABLE coin_transactions (
     balance_after INT              NOT NULL,
     ref_id        UNIQUEIDENTIFIER NULL,
     note          NVARCHAR(255)    NULL,
+    coin_package_id UNIQUEIDENTIFIER NULL,
     created_at    DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
-    CONSTRAINT fk_ct_user FOREIGN KEY (user_id) REFERENCES users(id)
+    CONSTRAINT fk_ct_user FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_ct_package FOREIGN KEY (coin_package_id) REFERENCES coin_packages(id)
 );
 CREATE INDEX idx_coin_transactions_user_id    ON coin_transactions(user_id);
 CREATE INDEX idx_coin_transactions_type       ON coin_transactions(type);

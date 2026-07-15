@@ -12,5 +12,5 @@ import java.util.UUID;
 @Repository
 public interface CoinTransactionRepository extends JpaRepository<CoinTransaction, UUID> {
     // Lịch sử giao dịch coin của user, có phân trang
-    Page<CoinTransaction> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+    Page<CoinTransaction> findByUserId(UUID userId, Pageable pageable);
 }

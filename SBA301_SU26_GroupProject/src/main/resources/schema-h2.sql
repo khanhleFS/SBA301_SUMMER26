@@ -224,8 +224,10 @@ CREATE TABLE coin_transactions (
     balance_after INT          NOT NULL,
     ref_id        UUID,
     note          VARCHAR(255),
+    coin_package_id UUID,
     created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (coin_package_id) REFERENCES coin_packages(id)
 );
 CREATE INDEX idx_coin_transactions_user_id    ON coin_transactions(user_id);
 CREATE INDEX idx_coin_transactions_type       ON coin_transactions(type);

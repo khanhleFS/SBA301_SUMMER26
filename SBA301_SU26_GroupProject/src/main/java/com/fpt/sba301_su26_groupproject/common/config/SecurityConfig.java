@@ -34,48 +34,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-//                // CSRF protection is enabled by default in Spring Security 6
-//                .csrf(csrf -> csrf.disable())
-//
-//                .authorizeHttpRequests(auth -> auth
-//                        // Public endpoints
-//                        .requestMatchers(HttpMethod.POST, "/forgot-password", "/reset-password").permitAll()
-//                        .requestMatchers(SecurityConstants.PUBLIC_MATCHERS).permitAll()
-//                        // Require AUTHOR role for author novel management APIs
-//                        .requestMatchers("/api/author/**").hasRole("AUTHOR")
-//                        .anyRequest().authenticated())
-//                .securityContext(context -> context
-//                        .securityContextRepository(securityContextRepository()))
-//                .exceptionHandling(exception -> exception
-//                        .authenticationEntryPoint((request, response, authException) -> {
-//                            System.out.println("Authentication failed: " + authException.getMessage());
-//                            if (request.getRequestURI().startsWith("/api/")) {
-//                                response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-//                            } else {
-//                                response.sendRedirect("/login");
-//                            }
-//                        })
-//                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-//                            if (request.getRequestURI().startsWith("/api/")) {
-//                                response.sendError(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN, "Forbidden");
-//                            } else {
-//                                // Redirect ADMIN away from customer pages → admin dashboard
-//                                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//                                if (auth != null && auth.getAuthorities().stream()
-//                                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-//                                    response.sendRedirect("/admin");
-//                                } else {
-//                                    response.sendRedirect("/home");
-//                                }
-//                            }
-//                        }))
-//                .logout(logout -> logout
-//                        .logoutRequestMatcher(request -> "/logout".equals(request.getServletPath()))
-//                        .logoutSuccessUrl("/login?logout=true")
-//                        .invalidateHttpSession(true)
-//                        .deleteCookies("JSESSIONID"));
-//        return http.build();
-
                 .csrf(csrf -> csrf.disable())
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // CHUYỂN SANG STATELESS (Không lưu session trên server nữa)

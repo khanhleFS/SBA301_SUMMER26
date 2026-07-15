@@ -12,6 +12,7 @@ DELETE FROM coin_transactions;
 DELETE FROM coin_packages;
 DELETE FROM payments;
 DELETE FROM orders;
+DELETE FROM coin_packages;
 DELETE FROM chapters;
 DELETE FROM novel_categories;
 DELETE FROM novels;
@@ -702,7 +703,7 @@ UNION ALL SELECT 'Revenues', COUNT(*) FROM revenues;
 
 INSERT INTO coin_packages (id, name, price_vnd, base_coins, first_time_bonus)
 VALUES 
-    -- Tên gói, Giá tiền (VND), Xu cơ bản, Thưởng nạp lần đầu
+    -- ID, Tên gói, Giá tiền (VND), Xu cơ bản, Thưởng nạp lần đầu
     (NEWID(), N'Gói Khởi Động', 20000, 100, 50),
     (NEWID(), N'Gói Cơ Bản', 50000, 260, 130),
     (NEWID(), N'Gói Tiêu Chuẩn', 100000, 550, 275),

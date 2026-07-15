@@ -88,6 +88,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(buildError(ec, ec.getMessage(), request.getRequestURI(), null));
     }
 
+    // Handle lỗi xác thực (Spring Security), trả 401 UNAUTHORIZED.
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAuthenticationException(AuthenticationException ex,
+                                                                             HttpServletRequest request) {
+        ErrorCode ec = CommonErrorCode.UNAUTHORIZED;
+        return ResponseEntity.status(ec.getStatus())
+                .body(buildError(ec, "Email hoặc mật khẩu không chính xác", request.getRequestURI(), null));
+    }
+
     // Handle mọi lỗi không lường trước, log stacktrace và trả 500 UNEXPECTED_ERROR.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleUnexpected(Exception ex, HttpServletRequest request) {
