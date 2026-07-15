@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowDownCircle, ReceiptText, Loader2, PackageOpen, ExternalLink } from 'lucide-react'
+import { ArrowDownCircle, ReceiptText, Loader2, PackageOpen, ExternalLink, CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { SectionTitle } from './section-title'
 import { surfaceCardClass } from './profile-styles'
@@ -8,10 +8,10 @@ import { getMyOrders, createMomoPayment } from '@/services/payment-service'
 import type { OrderResponseDTO } from '@/types'
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  PENDING:   { label: 'Chờ thanh toán', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
-  COMPLETED: { label: 'Thành công',  color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
-  FAILED:    { label: 'Thất bại',    color: 'bg-red-500/10 text-red-600 dark:text-red-400' },
-  CANCELLED: { label: 'Đã hủy',     color: 'bg-gray-500/10 text-gray-500' },
+  PENDING: { label: 'Chờ thanh toán', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+  COMPLETED: { label: 'Thành công', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
+  FAILED: { label: 'Thất bại', color: 'bg-red-500/10 text-red-600 dark:text-red-400' },
+  CANCELLED: { label: 'Đã hủy', color: 'bg-gray-500/10 text-gray-500' },
 }
 
 export function TransactionSection() {
@@ -62,47 +62,52 @@ export function TransactionSection() {
           </div>
         )}
 
-        {orders && orders.length > 0 && (
-          <div className="divide-y divide-outline/5">
-            {orders.map((order) => {
-              const statusMeta = STATUS_LABEL[order.status] ?? { label: order.status, color: 'bg-gray-500/10 text-gray-500' }
-              const dateStr = new Date(order.createdAt).toLocaleDateString('vi-VN', {
-                day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-              })
+        {(orders ?? []).map((order) => {
+          const statusMeta = STATUS_LABEL[order.status] ?? { label: order.status, color: 'bg-gray-500/10 text-gray-500' }
+          const dateStr = new Date(order.createdAt).toLocaleDateString('vi-VN', {
+            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+          })
 
-              return (
-                <button
-                  key={order.id}
-                  onClick={() => {
-                    setSelectedOrder(order)
-                    setIsPaying(false)
-                    setPayError(null)
-                  }}
-                  className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-container"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <ArrowDownCircle className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="truncate text-sm font-bold text-on-surface">{order.coinPackageName}</p>
-                      <span className="shrink-0 text-sm font-extrabold text-primary">+{order.coins.toLocaleString()} Coins</span>
-                    </div>
-                    <div className="mt-0.5 flex items-center gap-2">
-                      <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${statusMeta.color}`}>
-                        {statusMeta.label}
-                      </span>
-                      <span className="text-[11px] text-on-surface-variant/70">{dateStr}</span>
-                    </div>
-                  </div>
-                  <span className="shrink-0 text-xs font-semibold text-on-surface-variant">
-                    {order.amountVnd.toLocaleString()} đ
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        )}
+          const isCompleted = order.status === 'COMPLETED'
+          const isFailed = order.status === 'FAILED' || order.status === 'CANCELLED'
+
+          return (
+            <button
+              key={order.id}
+              onClick={() => {
+                setSelectedOrder(order)
+                setIsPaying(false)
+                setPayError(null)
+              }}
+              className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-container"
+            >
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${isCompleted
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                : isFailed
+                  ? 'bg-red-500/10 text-red-500'
+                  : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                }`}>
+                {isCompleted ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : isFailed ? (
+                  <XCircle className="h-5 w-5" />
+                ) : (
+                  <Clock className="h-5 w-5" />
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-on-surface">{order.coinPackageName}</p>
+                <p className="mt-0.5 text-[11px] text-on-surface-variant/70">{dateStr}</p>
+              </div>
+
+              <div className="shrink-0 text-right">
+                <p className="text-sm font-extrabold text-primary">+{order.coins.toLocaleString()}</p>
+                <p className="mt-0.5 text-[11px] text-on-surface-variant">{order.amountVnd.toLocaleString()} đ</p>
+              </div>
+            </button>
+          )
+        })}
       </div>
 
       {/* Modal chi tiết đơn hàng */}

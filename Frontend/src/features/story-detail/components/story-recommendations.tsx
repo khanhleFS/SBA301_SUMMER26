@@ -1,18 +1,29 @@
 import { Link } from 'react-router-dom'
-import { Eye } from 'lucide-react'
-import { MOCK_STORIES } from '@/services/mock-data'
+import { Eye, Loader2 } from 'lucide-react'
 import { useStoryDetailContext } from '../context/story-detail-context'
+import { useTopNovels } from '@/hooks/useTopNovels'
 
 const COVER_PLACEHOLDER = 'https://placehold.co/400x600/1a1a1a/ededed?text=Cover'
 
 export function StoryRecommendations() {
   const { storyInfo } = useStoryDetailContext()
+  const { data: topNovels = [], isLoading } = useTopNovels(10)
 
   if (!storyInfo) return null
 
   // Recommend other stories (excluding current story)
-  const recommendations = MOCK_STORIES.filter((s) => s.slug !== storyInfo.slug)
-  const displayList = recommendations.length > 0 ? recommendations : MOCK_STORIES.slice(0, 4)
+  const recommendations = topNovels.filter((s) => s.slug !== storyInfo.slug)
+  const displayList = recommendations.length > 0 ? recommendations.slice(0, 4) : topNovels.slice(0, 4)
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-10">
+         <Loader2 className="animate-spin text-primary w-6 h-6" />
+      </div>
+    )
+  }
+
+  if (displayList.length === 0) return null
 
   return (
     <>
@@ -20,23 +31,23 @@ export function StoryRecommendations() {
       <section className="hidden md:block space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="font-serif text-xl font-bold text-foreground">Truyện đề cử</h3>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-primary cursor-pointer">Xem thêm</span>
+          <Link to="/search" className="text-[10px] font-bold uppercase tracking-wider text-primary hover:underline">Xem thêm</Link>
         </div>
         <div className="grid grid-cols-2 gap-4">
           {displayList.map((rec) => (
             <Link key={rec.id} to={`/${rec.slug}`} className="group block space-y-3">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-1">
-                <img src={rec.imgUrl || COVER_PLACEHOLDER} alt={rec.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-1">
+                <img src={rec.coverImageUrl || COVER_PLACEHOLDER} alt={rec.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute top-3 right-3 bg-primary text-on-primary px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  {rec.genres[0]}
+                  {rec.categories?.[0] || 'Khác'}
                 </div>
               </div>
               <div className="space-y-1 text-center">
                 <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{rec.title}</h3>
                 <div className="flex items-center justify-center gap-1 text-[10px] font-bold">
                   <Eye className="h-3 w-3 text-primary" />
-                  <span className="text-primary">{rec.reads}</span>
+                  <span className="text-primary">{rec.viewCount?.toLocaleString() || 0}</span>
                 </div>
               </div>
             </Link>
@@ -48,23 +59,23 @@ export function StoryRecommendations() {
       <section className="md:hidden space-y-5 pb-8 border-t border-outline/10 pt-8">
         <div className="flex items-center justify-between">
           <h3 className="font-serif text-xl font-bold text-foreground">Có thể bạn sẽ thích</h3>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-primary cursor-pointer">Xem thêm</span>
+          <Link to="/search" className="text-[10px] font-bold uppercase tracking-wider text-primary hover:underline">Xem thêm</Link>
         </div>
         <div className="grid grid-cols-2 gap-4">
           {displayList.map((rec) => (
             <Link key={rec.id} to={`/${rec.slug}`} className="group block space-y-3">
               <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-1">
-                <img src={rec.imgUrl || COVER_PLACEHOLDER} alt={rec.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <img src={rec.coverImageUrl || COVER_PLACEHOLDER} alt={rec.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute top-3 right-3 bg-primary text-on-primary px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  {rec.genres[0]}
+                  {rec.categories?.[0] || 'Khác'}
                 </div>
               </div>
               <div className="space-y-1 text-center">
                 <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{rec.title}</h3>
                 <div className="flex items-center justify-center gap-1 text-[10px] font-bold">
                   <Eye className="h-3 w-3 text-primary" />
-                  <span className="text-primary">{rec.reads}</span>
+                  <span className="text-primary">{rec.viewCount?.toLocaleString() || 0}</span>
                 </div>
               </div>
             </Link>
