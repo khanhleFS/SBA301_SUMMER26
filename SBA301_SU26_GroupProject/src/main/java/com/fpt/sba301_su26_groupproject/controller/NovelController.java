@@ -17,6 +17,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
+import com.fpt.sba301_su26_groupproject.service.UploadService;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +32,7 @@ import java.util.UUID;
 public class NovelController {
 
     private final NovelService novelService;
+    private final UploadService uploadService;
 
     @Operation(
             summary = "Create novel",
@@ -151,6 +155,21 @@ public class NovelController {
                 .code(200)
                 .message("Lấy danh sách enums thành công")
                 .result(novelService.getEnums())
+                .build());
+    }
+
+    @Operation(
+            summary = "Upload image",
+            description = "Upload image file and return image URL",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PostMapping(value = "/author/novels/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<String>> uploadImage(
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .code(200)
+                .message("Tải ảnh lên thành công")
+                .result(uploadService.uploadImage(file))
                 .build());
     }
 }
