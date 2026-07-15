@@ -79,13 +79,13 @@ export function ChapterList({ novelId }: ChapterListProps) {
                   </td>
                   <td className="py-3.5 px-4 text-center">
                     <span className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase border ${
-                      chapter.status === 'PUBLISHED'
+                      chapter.status === 'FREE'
                         ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600'
-                        : chapter.status === 'DRAFT'
-                        ? 'border-gray-500/20 bg-gray-500/10 text-gray-600'
+                        : chapter.status === 'LOCKED'
+                        ? 'border-red-500/20 bg-red-500/10 text-red-600'
                         : 'border-blue-500/20 bg-blue-500/10 text-blue-600'
                     }`}>
-                      {chapter.status === 'PUBLISHED' ? 'Đã đăng' : chapter.status === 'DRAFT' ? 'Bản nháp' : chapter.status}
+                      {chapter.status === 'FREE' ? 'Miễn phí' : chapter.status === 'LOCKED' ? 'Khóa' : 'Mở khóa'}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-center">

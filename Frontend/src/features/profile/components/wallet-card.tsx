@@ -1,7 +1,6 @@
-import { Wallet, Plus, Coins } from 'lucide-react'
+import { Plus, Coins } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { surfaceCardClass } from './profile-styles'
-import { SectionTitle } from './section-title'
 import { useProfile } from '../context/profile.context'
 
 interface WalletCardProps {

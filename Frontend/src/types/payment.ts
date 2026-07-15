@@ -1,8 +1,9 @@
-export interface PaymentMomoCreateRequestDTO {
+export interface PaymentMomoCallbackDTO {
   orderId: string
-  amount: number
-  orderInfo: string
-  requestType?: MomoRequestType
+  requestId: string
+  resultCode: string
+  transId?: string
+  message?: string
 }
 
 export type MomoRequestType = 'captureWallet' | 'payWithATM' | 'payWithCC'
@@ -14,6 +15,9 @@ export interface PaymentMomoCreateResponseDTO {
 
 export interface OrderRequestDTO {
   coinPackageId: string
+  orderInfo?: string
+  requestType?: MomoRequestType
+  quantity?: number
 }
 
 export interface OrderResponseDTO {
@@ -26,5 +30,6 @@ export interface OrderResponseDTO {
   coins: number
   status: string
   createdAt: string
+  /** Link thanh toán MoMo — chỉ có khi vừa tạo order, null khi query lại */
+  payUrl?: string | null
 }
-

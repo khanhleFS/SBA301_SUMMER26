@@ -36,10 +36,10 @@ export function DashboardChartSection({ chartData, platformNet }: { chartData: n
       <div className="flex min-h-[6rem] flex-col items-start justify-center rounded-xl border border-primary bg-primary p-5 text-white shadow-sm lg:col-span-3">
         <div className="w-full">
           <div className="text-xs font-semibold uppercase tracking-[0.2em] text-on-primary">Thống kê quan trọng</div>
-          <div className="mt-4 text-4xl font-bold leading-none sm:text-5xl">{formatFullVND(Math.round(platformNet))}</div>
+          <div className="mt-4 text-4xl font-bold leading-none sm:text-5xl text-on-primary">{formatFullVND(Math.round(platformNet))}</div>
         </div>
       </div>
-    </section>
+    </section >
   )
 }
 
@@ -114,7 +114,7 @@ export function DashboardTransactionsSection({
           <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Giao dịch gần đây</div>
 
           <button
-            onClick={() => {}}
+            onClick={() => { }}
             className="inline-flex items-center gap-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-[11px] font-bold text-primary transition-colors hover:bg-surface-container"
           >
             Xem tất cả <ArrowRight className="h-3.5 w-3.5" />

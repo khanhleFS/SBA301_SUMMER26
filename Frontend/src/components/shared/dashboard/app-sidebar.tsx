@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useLocation } from 'react-router-dom'
-import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, TrophyIcon, WalletIcon, BookOpen, LogOut } from "lucide-react"
+import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, TrophyIcon, WalletIcon, BookOpen, LogOut, BarChart3Icon } from "lucide-react"
 
 import { NavMain } from "@/components/shared/dashboard/nav-main"
 import { TeamSwitcher } from "@/components/shared/dashboard/team-switcher"
@@ -93,20 +93,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     let items = [...data.navMain]
     if (isAuthorRoute) {
       items = [
-        { title: "Tổng quan", url: "/admin/dashboard", icon: <LayoutDashboardIcon /> },
-        { title: "Quản lý truyện", url: "/admin/novels", icon: <BookOpen /> },
-        { title: "Quản lý tài chính", url: "/admin/finance", icon: <WalletIcon /> },
-        { title: "Leader board", url: "/admin/leaderboard", icon: <TrophyIcon /> },
+        { title: "Quản lý truyện", url: "/author/novels", icon: <BookOpen /> },
+        { title: "Thống kê truyện", url: "/author/stats", icon: <BarChart3Icon /> },
       ]
-    }
-    return items.map((item) => {
-      const url = isAuthorRoute ? item.url.replace('/admin', '/author') : item.url
-      return {
+      return items.map((item) => ({
         ...item,
-        url,
-        isActive: location.pathname === url || (url !== '/author/dashboard' && location.pathname.startsWith(url)),
-      }
-    })
+        isActive: location.pathname === item.url || location.pathname.startsWith(item.url + '/'),
+      }))
+    }
+
+    return items.map((item) => ({
+      ...item,
+      isActive: location.pathname === item.url || location.pathname.startsWith(item.url + '/'),
+    }))
   }, [isAuthorRoute, location.pathname])
 
   const isDarkActive = themeMode === 'dark' || (themeMode === 'system' && resolvedTheme === 'dark')

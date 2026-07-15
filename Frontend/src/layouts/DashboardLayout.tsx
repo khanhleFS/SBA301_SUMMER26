@@ -37,9 +37,10 @@ export default function DashboardLayout() {
     if (path === '/admin/leaderboard' || path === '/author/leaderboard') {
       return 'Leader board'
     }
-    if (path === '/admin/dashboard-old') {
-      return 'Dashboard cũ'
+    if (path === '/author/stats') {
+      return 'Thống kê chương'
     }
+
     if (path.startsWith('/author/novels')) {
       if (path.includes('/chapters/new')) return 'Thêm chương mới'
       if (path.includes('/chapters/')) return 'Chỉnh sửa chương'
@@ -70,6 +71,9 @@ export default function DashboardLayout() {
     return <Navigate to="/" replace />
   }
 
+  // Xác định variant dựa trên route hiện tại
+  const sidebarVariant = isAdminRoute ? 'admin' : 'author'
+
   return (
     <SidebarProvider
       defaultOpen={true}
@@ -83,7 +87,8 @@ export default function DashboardLayout() {
         '--sidebar-ring': 'var(--primary)',
       } as React.CSSProperties}
     >
-      <AppSidebar />
+      {/* Truyền variant xuống AppSidebar */}
+      <AppSidebar variant={sidebarVariant} />
       <SidebarInset className="flex h-screen min-h-0 flex-col overflow-hidden bg-transparent">
         <div className="flex-1 min-h-0 py-4 pr-4">
           <div className="flex h-full min-h-0 w-full max-w-none">
@@ -103,7 +108,7 @@ export default function DashboardLayout() {
                   </BreadcrumbList>
                 </Breadcrumb>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 pr-3">
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 [scrollbar-gutter:stable]">
                 <Outlet />
               </div>
             </div>

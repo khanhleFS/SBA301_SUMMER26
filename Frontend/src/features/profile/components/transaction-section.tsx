@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { ArrowDownCircle, ReceiptText, Loader2, PackageOpen, ExternalLink, CheckCircle2, XCircle, Clock } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { ReceiptText, Loader2, PackageOpen, ExternalLink, CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { SectionTitle } from './section-title'
 import { surfaceCardClass } from './profile-styles'
 import { useQuery } from '@tanstack/react-query'
-import { getMyOrders, createMomoPayment } from '@/services/payment-service'
+import { getMyOrders, recreateMomoPayment } from '@/services/payment-service'
 import type { OrderResponseDTO } from '@/types'
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
@@ -23,6 +23,14 @@ export function TransactionSection() {
     queryKey: ['my-orders'],
     queryFn: getMyOrders,
   })
+
+  // Sắp xếp đơn hàng mới nhất lên đầu (Descending) bằng useMemo để tối ưu hiệu suất
+  const sortedOrders = useMemo(() => {
+    if (!orders) return []
+    return [...orders].sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+  }, [orders])
 
   const handleCloseModal = () => {
     setSelectedOrder(null)
@@ -49,7 +57,7 @@ export function TransactionSection() {
           </div>
         )}
 
-        {!isLoading && !error && (!orders || orders.length === 0) && (
+        {!isLoading && !error && sortedOrders.length === 0 && (
           <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
             <PackageOpen className="h-9 w-9 text-on-surface-variant/40" />
             <p className="text-sm font-semibold text-on-surface-variant">Chưa có giao dịch nào</p>
@@ -62,8 +70,8 @@ export function TransactionSection() {
           </div>
         )}
 
-        {(orders ?? []).map((order) => {
-          const statusMeta = STATUS_LABEL[order.status] ?? { label: order.status, color: 'bg-gray-500/10 text-gray-500' }
+        {/* Sử dụng mảng sortedOrders đã được sắp xếp */}
+        {sortedOrders.map((order) => {
           const dateStr = new Date(order.createdAt).toLocaleDateString('vi-VN', {
             day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
           })
@@ -158,12 +166,7 @@ export function TransactionSection() {
                     setPayError(null)
                     setIsPaying(true)
                     try {
-                      const res = await createMomoPayment({
-                        orderId: selectedOrder.id,
-                        amount: selectedOrder.amountVnd,
-                        orderInfo: `Nap ${selectedOrder.coins} Coins cho tai khoan ${selectedOrder.username}`,
-                        requestType: 'captureWallet',
-                      })
+                      const res = await recreateMomoPayment(selectedOrder.id, 'captureWallet')
                       if (res.payUrl) {
                         window.location.replace(res.payUrl)
                       } else {

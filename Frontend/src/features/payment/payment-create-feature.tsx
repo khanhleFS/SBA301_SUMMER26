@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Coins, CheckCircle2, Plus, Minus, X, Loader2, WalletCards, CreditCard, Smartphone } from 'lucide-react'
 import Container from '@/components/shared/site/container'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { getActiveCoinPackages } from '@/services/coin-package-service'
 import { fetchProfileData } from '@/features/profile/services/profile.service'
-import { createOrder, createMomoPayment } from '@/services/payment-service'
+import { createOrder } from '@/services/payment-service'
 import type { MomoRequestType } from '@/types'
 
 type MomoPaymentMethod = {
@@ -37,7 +36,6 @@ const MOMO_PAYMENT_METHODS: MomoPaymentMethod[] = [
 ]
 
 export default function PaymentCreateFeature() {
-  const navigate = useNavigate()
 
   // Fetch active coin packages
   const {
@@ -79,7 +77,6 @@ export default function PaymentCreateFeature() {
 
   const totalPrice = selectedPkg ? selectedPkg.priceVnd * quantity : 0
   const totalCoins = selectedPkg ? selectedPkg.baseCoins * quantity : 0
-  const finalBalance = currentBalance + totalCoins
 
   // Format currency
   const formatVND = (amount: number) => amount.toLocaleString('vi-VN') + ' VND'
@@ -89,13 +86,9 @@ export default function PaymentCreateFeature() {
     setQuantity(1)
   }
 
-  // Mutations
+  // Mutation — 1 bước duy nhất: tạo Order + Payment + nhận payUrl
   const createOrderMutation = useMutation({
     mutationFn: createOrder,
-  })
-
-  const createMomoMutation = useMutation({
-    mutationFn: createMomoPayment,
   })
 
   const handleProceedPayment = async () => {
@@ -103,22 +96,17 @@ export default function PaymentCreateFeature() {
     setErrorMsg(null)
 
     try {
-      // 1. Tạo order ở Backend
+      // Gọi 1 API duy nhất — backend tự tạo Payment PENDING và gọi MoMo
       const order = await createOrderMutation.mutateAsync({
         coinPackageId: selectedPkg.id,
-      })
-
-      // 2. Tạo MoMo payment từ order
-      const momoRes = await createMomoMutation.mutateAsync({
-        orderId: order.id,
-        amount: order.amountVnd * quantity, // Nếu backend tính total amount, ta gửi amount thích hợp. LƯU Ý: backend tạo 1 order cho 1 pkg. Nếu backend chỉ hỗ trợ 1 qty = 1, amount = order.amountVnd
-        orderInfo: `Nap ${order.coins * quantity} Coins cho tai khoan ${order.username}`,
+        orderInfo: `Nap ${selectedPkg.baseCoins * quantity} Coins cho tai khoan`,
         requestType: selectedMomoMethod,
+        quantity: quantity,
       })
 
-      // 3. Chuyển hướng tới trang thanh toán của MoMo
-      if (momoRes.payUrl) {
-        window.location.replace(momoRes.payUrl)
+      // Redirect tới trang thanh toán MoMo
+      if (order.payUrl) {
+        window.location.replace(order.payUrl)
       } else {
         throw new Error('Không nhận được link thanh toán từ cổng MoMo')
       }
@@ -385,7 +373,7 @@ export default function PaymentCreateFeature() {
                       className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-all ${isSelected
                         ? 'border-primary bg-primary/5 shadow-sm ring-2 ring-primary/20'
                         : 'border-outline/20 bg-surface-container-low hover:border-primary/40 hover:bg-surface-container'
-                      }`}
+                        }`}
                     >
                       <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${isSelected ? 'bg-primary text-white' : 'bg-surface-container text-on-surface'}`}>
                         <Icon className="h-5 w-5" />
@@ -426,10 +414,10 @@ export default function PaymentCreateFeature() {
 
             <button
               onClick={handleProceedPayment}
-              disabled={createOrderMutation.isPending || createMomoMutation.isPending}
+              disabled={createOrderMutation.isPending}
               className="btn-primary flex w-full items-center justify-center gap-2 py-4 text-lg rounded-xl shadow-md disabled:opacity-50"
             >
-              {createOrderMutation.isPending || createMomoMutation.isPending ? (
+              {createOrderMutation.isPending ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin text-on-primary" /> Đang tạo giao dịch...
                 </>
