@@ -46,9 +46,10 @@ public class User extends BaseEntity {
     @Builder.Default
     private Integer coinBalance = 0;
 
-    @NotNull
-    @ColumnDefault("0")
-    @Column(name = "is_author", nullable = false)
-    @Builder.Default
-    private Boolean isAuthor = false;
+        //add isAuthor field to User entity
+        @NotNull
+        @ColumnDefault("0")
+        @Column(name = "is_author", nullable = false)
+        @Builder.Default
+        private Boolean isAuthor = false;
 }
