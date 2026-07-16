@@ -144,6 +144,7 @@ public class ChapterServiceImpl implements ChapterService {
         }
         
         // Tăng view count của chương truyện
+        chapter.setViewCount(chapter.getViewCount() + 1);
         chapterRepository.save(chapter);
         
         // Cập nhật view count của truyện (Novel) nếu cần thiết (không yêu cầu nhưng là best practice)
