@@ -245,6 +245,7 @@ public class AuthenServiceImpl implements AuthenService {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .address(user.getAddress())
+                .coinBalance(user.getCoinBalance())
                 .build();
     }
 
