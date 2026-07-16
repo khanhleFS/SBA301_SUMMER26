@@ -9,26 +9,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-/**
- * Dedicated utility class for MoMo HMAC-SHA256 cryptographic operations.
- * Separated from business logic to follow Single Responsibility Principle.
- */
 @Slf4j
 public final class MomoCryptoUtil {
 
     private static final String HMAC_SHA256 = "HmacSHA256";
 
     private MomoCryptoUtil() {
-        // Utility class — no instantiation
     }
 
-    /**
-     * Tạo HMAC-SHA256 signature từ raw data và secret key.
-     *
-     * @param data      Chuỗi dữ liệu cần ký
-     * @param secretKey Secret Key của MoMo
-     * @return Hex string của signature
-     */
     public static String hmacSHA256(String data, String secretKey) {
         try {
             Mac mac = Mac.getInstance(HMAC_SHA256);
@@ -47,14 +35,6 @@ public final class MomoCryptoUtil {
         }
     }
 
-    /**
-     * Xác thực chữ ký của IPN callback từ MoMo.
-     * Ghép chuỗi theo đúng thứ tự tài liệu MoMo, sau đó so khớp với signature được gửi về.
-     *
-     * @param callback  DTO chứa dữ liệu callback từ MoMo
-     * @param secretKey Secret Key của MoMo (từ MomoConfig)
-     * @return true nếu signature hợp lệ, false nếu bị giả mạo
-     */
     public static boolean verifyCallbackSignature(PaymentMomoCallbackDTO callback, String secretKey, String accessKey) {
         String rawSignature = "accessKey=" + accessKey
                 + "&amount=" + callback.amount()

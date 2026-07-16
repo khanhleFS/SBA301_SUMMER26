@@ -12,32 +12,21 @@ import java.util.UUID;
 @UtilityClass
 public class SecurityUtils {
 
-    /**
-     * Lấy ID của người dùng hiện tại từ CustomUserDetails
-     */
     public static UUID getCurrentUserId() {
         User user = getCurrentUser();
         return (user != null) ? user.getId() : null;
     }
 
-    /**
-     * Lấy toàn bộ đối tượng User thực thể từ SecurityContext
-     */
     public static User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetail userDetails) {
-            // Vì CustomUserDetails của bạn có chứa private final User user;
             return userDetails.getUser();
         }
 
-        return null; // Hoặc throw exception tùy bạn muốn xử lý lỗi tập trung hay không
+        return null;
     }
 
-    /**
-     * Kiểm tra nhanh xem người dùng hiện tại có Role cụ thể không
-     * Ví dụ: SecurityUtils.hasRole("ADMIN")
-     */
     public static boolean hasRole(String roleName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) return false;

@@ -17,3 +17,6 @@ public class ChapterSummaryResponse {
     private List<String> main_events;
 
 }
+
+//TODO: record?
+//TODO: 

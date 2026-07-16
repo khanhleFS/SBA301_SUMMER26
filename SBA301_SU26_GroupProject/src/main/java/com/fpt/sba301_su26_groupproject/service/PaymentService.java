@@ -14,12 +14,6 @@ public interface PaymentService {
 
     List<EnumResponseDTO> getEnums();
 
-    /**
-     * Chủ động gọi MoMo Query Transaction Status API để đối soát trạng thái giao dịch.
-     * Dùng khi Webhook gặp sự cố mạng hoặc CS muốn kiểm tra thủ công.
-     *
-     * @param orderId ID của Order cần đối soát
-     */
     void syncPaymentStatus(UUID orderId);
 }
 

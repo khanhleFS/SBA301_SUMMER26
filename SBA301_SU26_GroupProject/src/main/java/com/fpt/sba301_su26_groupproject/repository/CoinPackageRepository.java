@@ -9,12 +9,9 @@ import java.util.UUID;
 
 @Repository
 public interface CoinPackageRepository extends JpaRepository<CoinPackage, UUID> {
-    // Lấy tất cả gói đang active, sắp xếp theo giá tăng dần
     List<CoinPackage> findByIsActiveTrueOrderByPriceVndAsc();
 
-    // Kiểm tra tên gói đã tồn tại chưa (tránh trùng)
     boolean existsByNameIgnoreCase(String name);
 
-    // Kiểm tra tên gói đã tồn tại nhưng loại trừ chính nó (dùng khi update)
     boolean existsByNameIgnoreCaseAndIdNot(String name, UUID id);
 }

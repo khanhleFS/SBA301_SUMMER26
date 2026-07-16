@@ -58,18 +58,15 @@ public class AuthenServiceImpl implements AuthenService {
     public LoginResponseDTO refreshToken(TokenRefreshRequestDTO request) {
         String refreshToken = request.refreshToken();
 
-        // 1. Giải mã/Xác thực chữ ký Refresh Token
         try {
             jwtService.extractUsername(refreshToken);
         } catch (Exception e) {
             throw new ApiException(CommonErrorCode.UNAUTHORIZED, "Refresh token không hợp lệ hoặc đã hết hạn");
         }
 
-        // 2. Tìm kiếm trong Redis xem Token còn tồn tại không
         RefreshTokenRedis tokenRedis = refreshTokenRepository.findById(refreshToken)
                 .orElseThrow(() -> new ApiException(CommonErrorCode.UNAUTHORIZED, "Refresh token không tồn tại hoặc đã hết hạn"));
 
-        // 3. Tìm User tương ứng từ Email đã lưu trong Redis
         User user = userRepository.findByEmail(tokenRedis.getEmail())
                 .orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy người dùng"));
 
@@ -77,18 +74,14 @@ public class AuthenServiceImpl implements AuthenService {
             throw new ApiException(CommonErrorCode.FORBIDDEN, "Tài khoản chưa được kích hoạt");
         }
 
-        // 4. Tạo UserDetails cho người dùng
         CustomUserDetail userDetail = new CustomUserDetail(user);
 
-        // 5. Tạo cặp Access Token và Refresh Token mới
         String newAccessToken = jwtService.generateAccessToken(userDetail);
         String newRefreshToken = jwtService.generateRefreshToken(userDetail);
 
-        // 6. Xóa Refresh Token cũ trong Redis
         refreshTokenRepository.delete(tokenRedis);
 
-        // 7. Lưu Refresh Token mới vào Redis
-        long expirationInSeconds = 7 * 24 * 60 * 60; // 7 ngày
+        long expirationInSeconds = 7 * 24 * 60 * 60;
         RefreshTokenRedis newTokenRedis = RefreshTokenRedis.builder()
                 .token(newRefreshToken)
                 .userId(user.getId())
@@ -108,23 +101,19 @@ public class AuthenServiceImpl implements AuthenService {
     }
 
     @Override
-    @Transactional // Override Transaction cho ghi đè DB
+    @Transactional
     public LoginResponseDTO login(LoginRequestDTO request) {
-        // Thực hiện authenticate thông qua authenticationManager
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
         CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
         User user = userDetail.getUser();
-        // Kiểm tra xem tài khoản đã được kích hoạt hay chưa
         if (!user.getIsActive()) {
             throw new ApiException(CommonErrorCode.FORBIDDEN, "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để xác nhận.");
         }
-        // Sinh JWT
         String accessToken = jwtService.generateAccessToken(userDetail);
         String refreshToken = jwtService.generateRefreshToken(userDetail);
-        // Lưu Refresh Token vào Redis
-        long expirationInSeconds = 7 * 24 * 60 * 60; // 7 ngày
+        long expirationInSeconds = 7 * 24 * 60 * 60;
         RefreshTokenRedis tokenRedis = RefreshTokenRedis.builder()
                 .token(refreshToken)
                 .userId(user.getId())
@@ -154,7 +143,6 @@ public class AuthenServiceImpl implements AuthenService {
                     tokenBlacklistService.blacklistToken(jwt, remainingTimeMs);
                 }
             } catch (Exception e) {
-                // Token đã hết hạn, không cần đưa vào blacklist nữa
             }
         }
     }
@@ -162,7 +150,6 @@ public class AuthenServiceImpl implements AuthenService {
     @Override
     @Transactional
     public void register(RegisterRequestDTO request) {
-        // Validate password trùng khớp
         if (!request.password().equals(request.confirmPassword())) {
             throw new ApiException(CommonErrorCode.INVALID_INPUT, "Mật khẩu và xác nhận mật khẩu không khớp.");
         }
@@ -172,7 +159,7 @@ public class AuthenServiceImpl implements AuthenService {
         if (userRepository.findByPhone(request.phone()).isPresent()) {
             throw new ApiException(CommonErrorCode.CONFLICT, "Số điện thoại đã tồn tại");
         }
-        // Cưỡng chế trạng thái ban đầu là FALSE để yêu cầu verify OTP
+
         User user = User.builder()
                 .username(request.fullName())
                 .email(request.email())
@@ -180,21 +167,18 @@ public class AuthenServiceImpl implements AuthenService {
                 .password(passwordEncoder.encode(request.password()))
                 .address(request.address() != null && !request.address().isBlank() ? request.address() : "Chưa cập nhật")
                 .role(UserRole.USER)
-                .isActive(false) // Mặc định là false
+                .isActive(false) 
                 .build();
         userRepository.save(user);
-        // Sinh OTP 6 số
+        
         String otpCode = String.format("%06d", new SecureRandom().nextInt(999999));
-        // Xóa các OTP cũ của email này trước
         otpRepository.deleteByEmail(request.email());
-        // Lưu OTP mới
         OTP otp = OTP.builder()
                 .email(request.email())
                 .otpCode(otpCode)
                 .expiryTime(Instant.now().plusSeconds(5 * 60))
                 .build();
         otpRepository.save(otp);
-        // Gửi mail
         try {
             Map<String, Object> variables = new HashMap<>();
             variables.put("fullName", request.fullName());
@@ -270,7 +254,6 @@ public class AuthenServiceImpl implements AuthenService {
         if (user == null) {
             throw new ApiException(CommonErrorCode.INVALID_INPUT, "Người dùng không tồn tại");
         }
-        // Check if email or phone is already taken by another user
         userRepository.findByEmail(profile.email()).ifPresent(existingUser -> {
             if (!existingUser.getId().equals(id)) {
                 throw new ApiException(CommonErrorCode.CONFLICT, "Email đã tồn tại");
@@ -281,7 +264,6 @@ public class AuthenServiceImpl implements AuthenService {
                 throw new ApiException(CommonErrorCode.CONFLICT, "Số điện thoại đã tồn tại");
             }
         });
-        // Update user profile
         user.setUsername(profile.fullName());
         user.setEmail(profile.email());
         user.setPhone(profile.phone());
@@ -302,12 +284,10 @@ public class AuthenServiceImpl implements AuthenService {
         if (otp.getExpiryTime().isBefore(Instant.now())) {
             throw new ApiException(CommonErrorCode.INVALID_INPUT, "Mã OTP đã hết hạn");
         }
-        // Kích hoạt User
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy người dùng"));
         user.setIsActive(true);
         userRepository.save(user);
-        // Xóa OTP sau khi dùng thành công
         otpRepository.deleteByEmail(email);
         return true;
     }

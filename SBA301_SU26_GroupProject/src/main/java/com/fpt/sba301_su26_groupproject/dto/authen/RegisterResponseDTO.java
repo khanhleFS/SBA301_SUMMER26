@@ -10,7 +10,7 @@ public record RegisterResponseDTO(
         @Schema(example = "user@example.com")
         String email,
         @Schema(example = "Đăng ký thành công. Vui lòng kiểm tra OTP trong email.")
-        String message, // "Đăng ký thành công. Vui lòng kiểm tra OTP trong email."
+        String message,
         @Schema(example = "true")
         boolean requiresOtpVerification
 ) {}

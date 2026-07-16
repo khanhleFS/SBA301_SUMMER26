@@ -23,11 +23,11 @@ public record ChapterRequestDTO(
 
         @NotNull(message = "số thứ tự chương không được để trống.")
         @Schema(example = "1")
-        Integer chapterNumber, // Optional: Nếu client muốn tự chỉ định số chương, nhưng sẽ có logic kiểm tra trùng lặp trong service
+        Integer chapterNumber,
 
         @NotNull(message = "Vui lòng chọn chương miễn phí hay trả phí.")
         @Min(value = 0, message = "Giá coin không được là số âm.")
-         @Schema(example = "0")
-         Integer coinPrice
+        @Schema(example = "0")
+        Integer coinPrice
 ) {
 }

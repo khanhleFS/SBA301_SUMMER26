@@ -12,22 +12,16 @@ import java.util.UUID;
 public interface ChapterService {
     ChapterResponseDTO createChapter(UUID novelId, ChapterRequestDTO requestDTO, String authorEmail);
 
-    // Lấy danh sách chương (mục lục)
     List<ChapterResponseDTO> getChaptersByNovel(UUID novelId);
 
-    // Xem chi tiết chương truyện
     ChapterResponseDTO getChapterDetails(UUID novelId, Integer chapterNumber, String userEmail);
 
-    // Cập nhật chương truyện
     ChapterResponseDTO updateChapter(UUID chapterId, ChapterRequestDTO requestDTO, String authorEmail);
 
-    // Xóa chương truyện
     void deleteChapter(UUID chapterId, String authorEmail);
 
-    // Tạo audio từ nội dung chương bằng Google TTS → upload Cloudinary → lưu URL
     ChapterResponseDTO generateChapterAudio(UUID novelId, Integer chapterNumber);
 
-    // Mở khóa chương truyện bằng coin của user
     ChapterUnlockResponseDTO unlockChapter(UUID novelId, Integer chapterNumber, String userEmail);
 
     List<EnumResponseDTO> getEnums();

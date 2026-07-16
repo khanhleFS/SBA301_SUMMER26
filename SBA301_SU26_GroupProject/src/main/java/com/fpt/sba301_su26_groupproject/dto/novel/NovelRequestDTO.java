@@ -29,8 +29,7 @@ public record NovelRequestDTO(
         @NotNull(message = "Trạng thái truyện không được để trống.")
         @Enumerated(EnumType.STRING)
         @Schema(example = "ONGOING")
-        NovelStatus status, // Enum: ONGOING, COMPLETED, v.v.
-        // Danh sách ID thể loại đi kèm
+        NovelStatus status,
         @Schema(example = "[\"550e8400-e29b-41d4-a716-446655440000\"]")
         List<UUID> categoryIds
 ) {}

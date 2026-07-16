@@ -36,7 +36,6 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // CHUYỂN SANG STATELESS (Không lưu session trên server nữa)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -46,7 +45,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/author/**").hasRole("AUTHOR")
                         .anyRequest().authenticated()
                 )
-                // THÊM JWT FILTER VÀO TRƯỚC UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {

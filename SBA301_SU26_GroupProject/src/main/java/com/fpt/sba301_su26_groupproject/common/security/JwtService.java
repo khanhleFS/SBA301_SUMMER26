@@ -21,8 +21,6 @@ public class JwtService {
 
     private final JwtProperties jwtProperties;
 
-    // ========== GENERATE TOKEN ==========
-
     public String generateAccessToken(UserDetails userDetails) {
         return generateAccessToken(new HashMap<>(), userDetails);
     }
@@ -37,15 +35,13 @@ public class JwtService {
 
     private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
         return Jwts.builder()
-                .claims(extraClaims)                                          // 0.12.x: thay setClaims()
-                .subject(userDetails.getUsername())                           // 0.12.x: thay setSubject()
-                .issuedAt(new Date(System.currentTimeMillis()))               // 0.12.x: thay setIssuedAt()
-                .expiration(new Date(System.currentTimeMillis() + expiration))// 0.12.x: thay setExpiration()
-                .signWith(getSignKey())                                        // 0.12.x: không cần truyền algorithm
+                .claims(extraClaims)                                          
+                .subject(userDetails.getUsername())                           
+                .issuedAt(new Date(System.currentTimeMillis()))               
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSignKey())                                       
                 .compact();
     }
-
-    // ========== VALIDATE TOKEN ==========
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
@@ -55,8 +51,6 @@ public class JwtService {
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
-
-    // ========== EXTRACT CLAIMS ==========
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -73,11 +67,11 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         try {
-            return Jwts.parser()                          // 0.12.x: thay parserBuilder()
-                    .verifyWith(getSignKey())              // 0.12.x: thay setSigningKey()
+            return Jwts.parser()
+                    .verifyWith(getSignKey())
                     .build()
-                    .parseSignedClaims(token)             // 0.12.x: thay parseClaimsJws()
-                    .getPayload();                        // 0.12.x: thay getBody()
+                    .parseSignedClaims(token)
+                    .getPayload();
         } catch (ExpiredJwtException e) {
             log.error("JWT expired: {}", e.getMessage());
             throw e;
@@ -96,10 +90,8 @@ public class JwtService {
         }
     }
 
-    // ========== SIGN KEY ==========
-
     private SecretKey getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecret()); // secret phải là Base64
+        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecret());
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

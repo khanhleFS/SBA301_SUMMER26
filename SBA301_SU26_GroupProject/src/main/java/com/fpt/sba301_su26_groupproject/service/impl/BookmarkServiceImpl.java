@@ -34,8 +34,6 @@ public class BookmarkServiceImpl implements BookmarkService {
     private final NovelRepository novelRepository;
     private final ChapterRepository chapterRepository;
 
-    // ─── Upsert ─────────────────────────────────────────────────────────────
-
     @Override
     @Transactional
     public BookmarkResponseDTO upsertBookmark(BookmarkRequestDTO request, String userEmail) {
@@ -47,7 +45,6 @@ public class BookmarkServiceImpl implements BookmarkService {
                 .orElseThrow(() -> new ApiException(BookmarkErrorCode.BOOKMARK_NOVEL_NOT_FOUND,
                         "Không tìm thấy truyện với ID: " + request.novelId()));
 
-        // Tìm chapter nếu có
         Chapter lastChapter = null;
         if (request.lastChapterId() != null) {
             lastChapter = chapterRepository.findById(request.lastChapterId())
@@ -55,7 +52,6 @@ public class BookmarkServiceImpl implements BookmarkService {
                             "Không tìm thấy chương với ID: " + request.lastChapterId()));
         }
 
-        // Tìm bookmark hiện tại hoặc tạo mới
         Optional<Bookmark> existing = bookmarkRepository.findByUserIdAndNovelId(user.getId(), novel.getId());
         Bookmark bookmark = existing.orElseGet(() -> {
             Bookmark b = new Bookmark();
@@ -67,7 +63,6 @@ public class BookmarkServiceImpl implements BookmarkService {
             return b;
         });
 
-        // Cập nhật các fields được cung cấp
         if (request.isFavorite() != null) {
             bookmark.setIsFavorite(request.isFavorite());
         }
@@ -89,8 +84,6 @@ public class BookmarkServiceImpl implements BookmarkService {
         return mapToResponseDTO(saved);
     }
 
-    // ─── Remove ──────────────────────────────────────────────────────────────
-
     @Override
     @Transactional
     public void removeBookmark(UUID novelId, String userEmail) {
@@ -110,8 +103,6 @@ public class BookmarkServiceImpl implements BookmarkService {
         }
     }
 
-    // ─── Get single ──────────────────────────────────────────────────────────
-
     @Override
     @Transactional(readOnly = true)
     public BookmarkResponseDTO getBookmark(UUID novelId, String userEmail) {
@@ -123,8 +114,6 @@ public class BookmarkServiceImpl implements BookmarkService {
                 .map(this::mapToResponseDTO)
                 .orElse(null);
     }
-
-    // ─── Get all ─────────────────────────────────────────────────────────────
 
     @Override
     @Transactional(readOnly = true)
@@ -139,13 +128,10 @@ public class BookmarkServiceImpl implements BookmarkService {
                 .collect(Collectors.toList());
     }
 
-    // ─── Mapper ──────────────────────────────────────────────────────────────
-
     private BookmarkResponseDTO mapToResponseDTO(Bookmark bookmark) {
         Novel novel = bookmark.getNovel();
         Chapter lastChapter = bookmark.getLastChapter();
 
-        // Tính tổng số chương của novel
         Integer totalChapters = 0;
         try {
             totalChapters = chapterRepository.findMaxChapterNumberByNovelId(novel.getId());

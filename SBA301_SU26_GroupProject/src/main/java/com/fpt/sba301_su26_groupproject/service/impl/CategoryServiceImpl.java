@@ -88,7 +88,6 @@ public class CategoryServiceImpl implements CategoryService {
             throw new ApiException(CategoryErrorCode.CATEGORY_NOT_FOUND, "Thể loại không tồn tại.");
         }
 
-        // 2. Xóa quan hệ với novel trước
         try {
             novelCategoryRepository.deleteByCategoryId(id);
         } catch (Exception e) {
@@ -96,7 +95,6 @@ public class CategoryServiceImpl implements CategoryService {
                     "Không thể xóa thể loại vì có truyện liên quan.");
         }
 
-        // 3. Xóa category
         try {
             categoryRepository.deleteById(id);
         } catch (Exception e) {
@@ -139,7 +137,7 @@ public class CategoryServiceImpl implements CategoryService {
                     "Tên thể loại không được vượt quá 50 ký tự.");
         }
 
-        if (!name.matches("^[\\p{L}\\s]+$")) { // Chỉ cho phép chữ cái và khoảng trắng
+        if (!name.matches("^[\\p{L}\\s]+$")) {
             throw new ApiException(CategoryErrorCode.CATEGORY_NAME_INVALID,
                     "Tên thể loại chỉ được chứa chữ cái và khoảng trắng.");
         }

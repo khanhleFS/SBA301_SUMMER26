@@ -28,7 +28,6 @@ public record CoinCreateRequestDTO(
         @Schema(example = "true")
         Boolean isActive
 ) {
-    // Constructor phụ giúp tự động gán isActive = true nếu client không gửi lên
     public CoinCreateRequestDTO {
         if (isActive == null) {
             isActive = true;

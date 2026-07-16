@@ -37,3 +37,4 @@ public interface NovelRepository extends JpaRepository<Novel, UUID>, JpaSpecific
     );
 }
 
+//TODO: can we not use @query? 

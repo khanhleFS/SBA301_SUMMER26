@@ -37,7 +37,7 @@ public class MailServiceImpl implements MailService {
         MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
         helper.setTo(to);
         helper.setSubject(subject);
-        helper.setText(htmlBody, true); // true means this is HTML
+        helper.setText(htmlBody, true);
         mailSender.send(message);
     }
 

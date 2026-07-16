@@ -11,7 +11,7 @@ public record CoinPurchaseResponseDTO(
         @Schema(example = "550e8400-e29b-41d4-a716-446655440000")
         UUID paymentId,
         @Schema(example = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html")
-        String paymentUrl,         // Link redirect sang cổng thanh toán VNPay/MoMo
+        String paymentUrl,
         @Schema(example = "Starter Pack")
         String packageName,
         @Schema(example = "50000")
@@ -21,7 +21,7 @@ public record CoinPurchaseResponseDTO(
         @Schema(example = "10")
         Integer firstTimeBonus,
         @Schema(example = "60")
-        Integer totalCoins,        // Tổng coin thực nhận
+        Integer totalCoins,
         @Schema(example = "true")
-        boolean isFirstTimeTopUp   // Sử dụng dạng boolean nguyên thủy (primitive) cho record
+        boolean isFirstTimeTopUp
 ) {}

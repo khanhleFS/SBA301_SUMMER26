@@ -66,9 +66,6 @@ public class OrderController {
                 .build());
     }
 
-    /**
-     * IPN Callback từ MoMo (server-to-server).
-     */
     @Operation(summary = "MoMo IPN callback (webhook)")
     @PostMapping("/momo/callback")
     public ResponseEntity<ApiResponse<Void>> momoCallback(@RequestBody PaymentMomoCallbackDTO callback) {
@@ -80,9 +77,6 @@ public class OrderController {
                 .build());
     }
 
-    /**
-     * API Đối soát (Query DR)
-     */
     @Operation(summary = "Sync payment status with MoMo (Query DR)")
     @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("/{orderId}/sync")

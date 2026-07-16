@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Pattern;
 
 import java.util.UUID;
 
-// DTO user gửi lên khi muốn mua gói coin
 public record CoinPurchaseRequestDTO(
         @NotNull(message = "Vui lòng chọn gói coin cần mua.")
         @Schema(example = "550e8400-e29b-41d4-a716-446655440000")

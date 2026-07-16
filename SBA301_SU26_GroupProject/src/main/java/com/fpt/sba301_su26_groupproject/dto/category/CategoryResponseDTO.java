@@ -11,5 +11,5 @@ public record CategoryResponseDTO(
         @Schema(example = "Fantasy")
         String name,
         @Schema(example = "fantasy")
-        String slug //phiên bản rút gọn, không dấu và được chuẩn hóa của Tên thể loại để đưa lên thanh địa chỉ URL.
+        String slug
 ) {}

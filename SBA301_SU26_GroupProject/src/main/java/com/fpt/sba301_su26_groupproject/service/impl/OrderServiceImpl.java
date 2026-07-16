@@ -50,13 +50,10 @@ public class OrderServiceImpl implements OrderService {
             throw new ApiException(CommonErrorCode.BAD_REQUEST, "Gói coin hiện không hoạt động");
         }
 
-        // Kiểm tra nạp lần đầu để tính bonus
         boolean isFirstTime = !orderRepository.existsByUserIdAndStatus(user.getId(), OrderStatus.COMPLETED);
         int qty = request.quantity() == null || request.quantity() < 1 ? 1 : request.quantity();
         
-        // Bonus chỉ áp dụng cho lần nạp đầu tiên của user (cho gói đầu tiên trong lô)
         Integer singlePackCoins = coinPackage.getTotalCoins(isFirstTime);
-        // Các gói còn lại tính theo baseCoins bình thường
         Integer totalCoins = singlePackCoins + (qty - 1) * coinPackage.getBaseCoins();
         Integer totalVnd = coinPackage.getPriceVnd() * qty;
 
@@ -71,7 +68,6 @@ public class OrderServiceImpl implements OrderService {
 
         Order saved = orderRepository.save(order);
 
-        // Gọi PaymentService để tạo payment & lấy URL thanh toán
         String orderInfo = request.orderInfo() == null || request.orderInfo().isBlank()
                 ? "Nap " + totalCoins + " Coins cho tai khoan"
                 : request.orderInfo();

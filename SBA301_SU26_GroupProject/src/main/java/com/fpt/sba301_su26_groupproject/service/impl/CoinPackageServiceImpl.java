@@ -36,9 +36,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
     private final CoinTransactionRepository coinTransactionRepository;
     private final UserRepository userRepository;
 
-    // -----------------------------------------------------------------------
-    // HELPER: map Entity → Response
-    // -----------------------------------------------------------------------
     private CoinCreateResponseDTO toResponse(CoinPackage pkg) {
         return CoinCreateResponseDTO.builder()
                 .id(pkg.getId())
@@ -52,9 +49,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
                 .build();
     }
 
-    // -----------------------------------------------------------------------
-    // USER: Lấy danh sách gói active
-    // -----------------------------------------------------------------------
     @Override
     public List<CoinCreateResponseDTO> getActivePackages() {
         return coinPackageRepository.findByIsActiveTrueOrderByPriceVndAsc()
@@ -93,9 +87,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
                 });
     }
 
-    // -----------------------------------------------------------------------
-    // ADMIN: Lấy tất cả gói kể cả inactive
-    // -----------------------------------------------------------------------
     @Override
     public List<CoinCreateResponseDTO> getAllPackages() {
         return coinPackageRepository.findAll()
@@ -104,9 +95,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
                 .collect(Collectors.toList());
     }
 
-    // -----------------------------------------------------------------------
-    // ADMIN: Tạo gói mới
-    // -----------------------------------------------------------------------
     @Override
     @Transactional
     public CoinCreateResponseDTO createPackage(CoinCreateRequestDTO request) {
@@ -129,9 +117,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
         return toResponse(coinPackageRepository.save(pkg));
     }
 
-    // -----------------------------------------------------------------------
-    // ADMIN: Cập nhật gói
-    // -----------------------------------------------------------------------
     @Override
     @Transactional
     public CoinCreateResponseDTO updatePackage(UUID id, CoinCreateRequestDTO request) {
@@ -159,9 +144,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
         return toResponse(updatedPkg);
     }
 
-    // -----------------------------------------------------------------------
-    // ADMIN: Bật/tắt gói
-    // -----------------------------------------------------------------------
     @Override
     @Transactional
     public CoinCreateResponseDTO togglePackageStatus(UUID id) {
@@ -172,9 +154,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
         return toResponse(coinPackageRepository.save(pkg));
     }
 
-    // -----------------------------------------------------------------------
-    // ADMIN: Xóa gói
-    // -----------------------------------------------------------------------
     @Override
     @Transactional
     public void deletePackage(UUID id) {

@@ -10,10 +10,6 @@ public class WebUtils {
     private WebUtils() {
     }
 
-    /**
-     *
-     * chuyển param thành map (key, value)
-     */
     public static Map<String, String> extractQueryParams(HttpServletRequest request) {
         Map<String, String> params = new HashMap<>();
         request.getParameterMap().forEach((key, values) -> {
@@ -24,9 +20,6 @@ public class WebUtils {
         return params;
     }
 
-    /**
-     * Lấy IP thực của client
-     */
     public static String getClientIp(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {

@@ -54,7 +54,6 @@ public class PaymentCleanupScheduler {
             payment.setStatus(PaymentStatus.EXPIRED);
             paymentRepository.save(payment);
 
-            // Đồng thời cập nhật Order tương ứng sang CANCELLED
             if (payment.getOrder() != null
                     && payment.getOrder().getStatus() == OrderStatus.PENDING) {
                 payment.getOrder().setStatus(OrderStatus.CANCELLED);

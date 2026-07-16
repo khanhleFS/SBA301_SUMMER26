@@ -22,10 +22,9 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 
-@Slf4j // tự động log lỗi
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-    // Handle lỗi nghiệp vụ ở phía hệ thống throw ra
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiResponse<Object>> handleApiException(ApiException ex, HttpServletRequest request) {
         ErrorCode errorCode = ex.getErrorCode();
@@ -34,8 +33,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     }
 
-    // Handle cho lỗi ở phía input param/path/query, (ConstraintViolationException),
-    // trả 400 + map field -> message.
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiResponse<Object>> handleConstraintViolationException(ConstraintViolationException ex,
                                                                                   HttpServletRequest request) {
@@ -47,8 +44,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(buildError(ec, "Validation failed", request.getRequestURI(), errors));
     }
 
-    // Handle cho lỗi ở phía input field trong @RequestBody, gom field và trả về 400
-    // + errors
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
@@ -66,7 +61,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, ec.getStatus());
     }
 
-    // Handler JSON body sai format / không parse được
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex,
@@ -79,7 +73,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(body, ec.getStatus());
     }
 
-    // Handle lỗi không đủ quyền (Spring Security), trả 403 FORBIDDEN.
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Object>> handleAccessDenied(AccessDeniedException ex,
                                                                   HttpServletRequest request) {
@@ -88,7 +81,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(buildError(ec, ec.getMessage(), request.getRequestURI(), null));
     }
 
-    // Handle lỗi xác thực (Spring Security), trả 401 UNAUTHORIZED.
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponse<Object>> handleAuthenticationException(AuthenticationException ex,
                                                                              HttpServletRequest request) {
@@ -97,7 +89,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(buildError(ec, "Email hoặc mật khẩu không chính xác", request.getRequestURI(), null));
     }
 
-    // Handle mọi lỗi không lường trước, log stacktrace và trả 500 UNEXPECTED_ERROR.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleUnexpected(Exception ex, HttpServletRequest request) {
         log.error("Unexpected error:", ex);
@@ -106,7 +97,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(buildError(ec, ec.getMessage(), request.getRequestURI(), null));
     }
 
-    // Helper dùng để dựng ApiRes lỗi
     private ApiResponse<Object> buildError(ErrorCode errorCode, String message, String path,
                                            Map<String, String> errors) {
         return ApiResponse.builder()
@@ -120,35 +110,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
     }
 
-    // Helper lấy path từ WebRequest (format "uri=/...") cho các override method.
     private String extractPath(WebRequest request) {
         String desc = request.getDescription(false);
         return desc.startsWith("uri=") ? desc.substring(4) : desc;
     }
-
-//     private ErrorCode mapErrorCode(HttpStatus status) {
-//     int s = status.value();
-//
-//     switch (s) {
-//     case 400:
-//     return CommonErrorCode.REQUEST_FAILED;
-//     case 401:
-//     return CommonErrorCode.UNAUTHENTICATED;
-//     case 403:
-//     return ErrorCode.FORBIDDEN_ACTION;
-//     case 404:
-//     return ErrorCode.RESOURCE_NOT_FOUND;
-//     case 415:
-//     return ErrorCode.UNSUPPORTED_MEDIA_TYPE;
-//     case 429:
-//     return ErrorCode.TOO_MANY_REQUESTS;
-//     default:
-//     if (status.is4xxClientError()) {
-//     return ErrorCode.REQUEST_FAILED;
-//     }
-//     return ErrorCode.UNEXPECTED_ERROR;
-//     }
-//     }
 
 }
 

@@ -59,14 +59,9 @@ public class PaymentServiceImpl implements PaymentService {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
-    // =========================================================================
-    // CREATE PAYMENT
-    // =========================================================================
-
     @Override
     @Transactional
     public PaymentMomoCreateResponseDTO createMomoPayment(PaymentMomoCreateRequestDTO request) {
-        // 1. Lấy Order từ DB để validate và lấy thông tin User
         Order order = orderRepository.findById(UUID.fromString(request.orderId()))
                 .orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy đơn hàng"));
 
@@ -80,8 +75,6 @@ public class PaymentServiceImpl implements PaymentService {
                 ? "Thanh toan don hang " + request.orderId()
                 : request.orderInfo();
 
-        // 2. Ghi nhận Payment record PENDING xuống DB TRƯỚC khi gọi sang MoMo.
-        //    Đây là "safety net" — nếu mạng lag hoặc user tắt tab, ta vẫn có dấu vết giao dịch.
         Payment pendingPayment = new Payment();
         pendingPayment.setUser(order.getUser());
         pendingPayment.setOrder(order);
@@ -95,7 +88,6 @@ public class PaymentServiceImpl implements PaymentService {
 
         log.info("[Payment] Persisted PENDING payment: transactionRef={}, orderId={}", requestId, request.orderId());
 
-        // 3. Gọi sang MoMo gateway
         String requestType = request.requestType() != null ? request.requestType() : "captureWallet";
         String signature = MomoCryptoUtil.hmacSHA256(buildCreateSignatureRaw(
                 requestId, requestId, request.amount(), orderInfo, requestType), momoConfig.getSecretKey());
@@ -129,27 +121,19 @@ public class PaymentServiceImpl implements PaymentService {
         return new PaymentMomoCreateResponseDTO(payUrl, request.orderId());
     }
 
-    // =========================================================================
-    // WEBHOOK / IPN CALLBACK (P0 Security + Idempotency + Pessimistic Lock)
-    // =========================================================================
-
     @Override
     @Transactional
     public void handleMomoCallback(PaymentMomoCallbackDTO callback) {
         log.info("[MoMo IPN] Received callback: orderId={}, resultCode={}, transId={}",
                 callback.orderId(), callback.resultCode(), callback.transId());
 
-        // BƯỚC 1: Xác thực chữ ký — nếu sai, từ chối ngay lập tức
         if (!MomoCryptoUtil.verifyCallbackSignature(callback, momoConfig.getSecretKey(), momoConfig.getAccessKey())) {
             log.warn("[MoMo IPN] INVALID SIGNATURE — Possible fake request! orderId={}", callback.orderId());
             throw new ApiException(CommonErrorCode.BAD_REQUEST, "Invalid MoMo callback signature");
         }
 
-        // BƯỚC 2: Lấy Payment và lock row lại (Pessimistic Write Lock)
-        //         Đảm bảo chỉ 1 trong 2 concurrent request được xử lý, cái còn lại block tại đây.
         Payment payment = paymentRepository.findByTransactionRefForUpdate(callback.requestId())
                 .orElseGet(() -> {
-                    // Fallback: thử tìm bằng orderId nếu requestId không khớp
                     log.warn("[MoMo IPN] No payment found by requestId={}, orderId={}",
                             callback.requestId(), callback.orderId());
                     return null;
@@ -157,36 +141,28 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (payment == null) {
             log.error("[MoMo IPN] Cannot find Payment record for requestId={}", callback.requestId());
-            return; // Không throw để MoMo không retry vô hạn
+            return;
         }
 
-        // BƯỚC 3: Kiểm tra Idempotency — nếu đã xử lý rồi thì bỏ qua
         if (payment.getStatus() != PaymentStatus.PENDING) {
             log.info("[MoMo IPN] Payment already processed (status={}), skipping. orderId={}",
                     payment.getStatus(), callback.orderId());
-            return; // Trả về thành công nhưng không làm gì — idempotent
+            return;
         }
 
         Order order = payment.getOrder();
 
-        // BƯỚC 4: Xử lý theo resultCode
         if ("0".equals(callback.resultCode())) {
-            // --- THANH TOÁN THÀNH CÔNG ---
             payment.setStatus(PaymentStatus.SUCCESS);
             payment.setPaidAt(Instant.now());
             paymentRepository.save(payment);
-
-            // Cập nhật Order → COMPLETED
             order.setStatus(OrderStatus.COMPLETED);
             orderRepository.save(order);
 
-            // Cộng coin vào User
             User user = payment.getUser();
             int newBalance = user.getCoinBalance() + payment.getCoinsReceived();
             user.setCoinBalance(newBalance);
             userRepository.save(user);
-
-            // Ghi CoinTransaction log
             CoinTransaction tx = new CoinTransaction();
             tx.setUser(user);
             tx.setType(CoinTransactionType.TOPUP);
@@ -201,7 +177,6 @@ public class PaymentServiceImpl implements PaymentService {
                     order.getId(), payment.getCoinsReceived(), newBalance);
 
         } else {
-            // --- THANH TOÁN THẤT BẠI ---
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
 
@@ -213,19 +188,13 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    // =========================================================================
-    // QUERY DR — Đối soát chủ động với MoMo
-    // =========================================================================
-
     @Override
     @Transactional
     public void syncPaymentStatus(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy đơn hàng"));
 
-        // Tìm Payment gần nhất của Order
         Payment payment = paymentRepository.findByTransactionRef(
-                // Lấy transactionRef từ Payment liên kết với Order
                 paymentRepository.findAll().stream()
                         .filter(p -> p.getOrder() != null && p.getOrder().getId().equals(orderId))
                         .findFirst()
@@ -237,7 +206,6 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("[QueryDR] Syncing payment status for orderId={}, transactionRef={}",
                 orderId, payment.getTransactionRef());
 
-        // Gọi MoMo Query Transaction Status API
         String requestId = UUID.randomUUID().toString();
         String rawSignature = "accessKey=" + momoConfig.getAccessKey()
                 + "&orderId=" + payment.getTransactionRef()
@@ -259,7 +227,6 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("[QueryDR] MoMo query result: orderId={}, resultCode={}", orderId, resultCode);
 
         if ("0".equals(resultCode) && payment.getStatus() == PaymentStatus.PENDING) {
-            // MoMo báo thành công nhưng DB vẫn PENDING → tự động credit
             payment.setStatus(PaymentStatus.SUCCESS);
             payment.setPaidAt(Instant.now());
             paymentRepository.save(payment);
@@ -293,10 +260,6 @@ public class PaymentServiceImpl implements PaymentService {
             log.info("[QueryDR] No state change needed for orderId={}, current status={}", orderId, payment.getStatus());
         }
     }
-
-    // =========================================================================
-    // PRIVATE HELPERS
-    // =========================================================================
 
     private String buildCreateSignatureRaw(String requestId, String orderId, int amount,
                                            String orderInfo, String requestType) {
@@ -342,7 +305,6 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private String normalizeQueryEndpoint(String endpoint) {
-        // MoMo query endpoint: /v2/gateway/api/query
         String base = endpoint.replaceAll("/create$", "");
         return base.endsWith("/query") ? base : base + "/query";
     }

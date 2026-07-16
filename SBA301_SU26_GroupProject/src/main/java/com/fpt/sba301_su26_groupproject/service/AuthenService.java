@@ -9,9 +9,7 @@ import java.util.UUID;
 public interface AuthenService {
     LoginResponseDTO login(LoginRequestDTO request);
 
-    // Chuyển logic logout xuống Service
     void logout(String authHeader);
-    // Sửa thành void, ném Exception trực tiếp nếu lỗi (Theo chuẩn Error Handling)
     void register(RegisterRequestDTO request);
 
     ForgotPasswordResponseDTO forgotPassword(String email);

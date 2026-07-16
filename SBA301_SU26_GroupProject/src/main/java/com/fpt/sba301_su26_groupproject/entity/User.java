@@ -22,10 +22,10 @@ public class User extends BaseEntity {
     private UserRole role;
 
     @Column(name = "username", unique = true, nullable = false, length = 255)
-    private String username; //fullname
+    private String username;
 
     @Column(name = "email", unique = true, nullable = false)
-    private String email; //login with this
+    private String email;
 
     @Column(name = "password", nullable = false)
     private String password;

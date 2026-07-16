@@ -52,13 +52,12 @@ public class AuthController {
             @Valid @RequestBody LoginRequestDTO loginRequestDTO) {
         LoginResponseDTO loginResponse = authenService.login(loginRequestDTO);
         
-        // Đóng gói Refresh Token vào HttpOnly Cookie
         ResponseCookie cookie = ResponseCookie.from("refreshToken", loginResponse.refreshToken())
                 .httpOnly(true)
-                .secure(true) // Chỉ truyền qua HTTPS (hoặc localhost)
+                .secure(true)
                 .sameSite("Strict")
-                .path("/api/auth/refresh") // Chỉ gửi cookie này đến endpoint refresh
-                .maxAge(7 * 24 * 60 * 60) // Hạn 7 ngày trùng khớp với TTL Redis
+                .path("/api/auth/refresh")
+                .maxAge(7 * 24 * 60 * 60)
                 .build();
 
         return ResponseEntity.ok()
@@ -132,7 +131,6 @@ public class AuthController {
     )
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<ProfileDTO>> getProfile() {
-        // Lấy thông tin user hiện tại từ SecurityContext
         CustomUserDetail userDetail = (CustomUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         ProfileDTO profile = authenService.getProfile(userDetail.getUser().getId());
         return ResponseEntity.ok(ApiResponse.<ProfileDTO>builder()
@@ -190,7 +188,6 @@ public class AuthController {
 
         LoginResponseDTO refreshResponse = authenService.refreshToken(new TokenRefreshRequestDTO(tokenToUse));
 
-        // Tiếp tục xoay vòng Cookie (Rotate Refresh Token)
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshResponse.refreshToken())
                 .httpOnly(true)
                 .secure(true)

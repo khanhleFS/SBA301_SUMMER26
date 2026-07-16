@@ -48,13 +48,12 @@ public class NovelServiceImpl implements NovelService {
         validateRequest(requestDTO, null);
 
         Novel novel = new Novel();
-        novel.setTitle(requestDTO.title()); // Thay đổi: .getTitle() -> .title()
-        novel.setSlug(generateSlug(requestDTO.title())); // Thay đổi: .getTitle() -> .title()
-        novel.setDescription(requestDTO.description()); // Thay đổi: .getDescription() -> .description()
-        novel.setCoverImageUrl(requestDTO.coverImageUrl()); // Thay đổi: .getCoverImageUrl() -> .coverImageUrl()
+        novel.setTitle(requestDTO.title());
+        novel.setSlug(generateSlug(requestDTO.title()));
+        novel.setDescription(requestDTO.description());
+        novel.setCoverImageUrl(requestDTO.coverImageUrl());
 
-        // Thay đổi: status bây giờ là Enum NovelStatus, cần lưu dạng string lowercase xuống DB
-        novel.setStatus(requestDTO.status() );
+        novel.setStatus(requestDTO.status());
 
         novel.setViewCount(0);
         novel.setCreatedAt(Instant.now());
@@ -63,7 +62,6 @@ public class NovelServiceImpl implements NovelService {
 
         Novel savedNovel = novelRepository.save(novel);
 
-        // Assign Categories
         if (requestDTO.categoryIds() != null && !requestDTO.categoryIds().isEmpty()) {
             assignCategoriesToNovel(savedNovel, requestDTO.categoryIds()); // Thay đổi: .getCategoryIds() -> .categoryIds()
         }
@@ -91,7 +89,6 @@ public class NovelServiceImpl implements NovelService {
         novel.setStatus(requestDTO.status());
         novel.setUpdatedAt(Instant.now());
 
-        // 7. Save novel
         Novel updatedNovel;
         try {
             updatedNovel = novelRepository.save(novel);
@@ -99,18 +96,14 @@ public class NovelServiceImpl implements NovelService {
             throw new ApiException(NovelErrorCode.NOVEL_UPDATE_FAILED);
         }
 
-        // 8. Update categories (nếu có)
         if (requestDTO.categoryIds() != null) {
-            // Xóa categories cũ
             try {
                 novelCategoryRepository.deleteByNovelId(updatedNovel.getId());
             } catch (Exception e) {
                 throw new ApiException(NovelErrorCode.NOVEL_CATEGORY_NOT_ASSIGNED);
             }
 
-            // Gán categories mới
             if (!requestDTO.categoryIds().isEmpty()) {
-                // Validate categories tồn tại
                 List<Category> categories = categoryRepository.findAllById(requestDTO.categoryIds());
                 if (categories.size() != requestDTO.categoryIds().size()) {
                     throw new ApiException(NovelErrorCode.NOVEL_CATEGORY_NOT_FOUND);
@@ -131,14 +124,12 @@ public class NovelServiceImpl implements NovelService {
             throw new ApiException(NovelErrorCode.NOVEL_UNAUTHORIZED, "Bạn không có quyền xóa truyện này");
         }
 
-        // 3. Xóa categories liên quan trước
         try {
             novelCategoryRepository.deleteByNovelId(novelId);
         } catch (Exception e) {
             throw new ApiException(NovelErrorCode.NOVEL_CATEGORY_NOT_ASSIGNED);
         }
 
-        // 4. Xóa novel
         try {
             novelRepository.delete(novel);
         } catch (Exception e) {
@@ -167,13 +158,11 @@ public class NovelServiceImpl implements NovelService {
     private void assignCategoriesToNovel(Novel novel, List<UUID> categoryIds) {
         List<Category> categories = categoryRepository.findAllById(categoryIds);
 
-        // Kiểm tra tất cả category đều tồn tại
         if (categories.size() != categoryIds.size()) {
             throw new ApiException(NovelErrorCode.NOVEL_CATEGORY_NOT_FOUND);
         }
 
         for (Category category : categories) {
-            // Kiểm tra category đã được gán chưa
             boolean alreadyAssigned = novelCategoryRepository.existsByNovelIdAndCategoryId(
                     novel.getId(), category.getId()
             );
@@ -210,7 +199,6 @@ public class NovelServiceImpl implements NovelService {
                         .collect(Collectors.toList());
             }
         } catch (Exception e) {
-            // Nếu lỗi khi lấy categories, vẫn trả về response với categories rỗng
             categoryNames = List.of();
         }
 
@@ -248,12 +236,10 @@ public class NovelServiceImpl implements NovelService {
     }
 
     private void validateRequest(NovelRequestDTO requestDTO, UUID novelId) {
-        // 2. Validate title không được null hoặc rỗng
         if (requestDTO.title() == null || requestDTO.title().trim().isEmpty()) {
             throw new ApiException(NovelErrorCode.NOVEL_INVALID);
         }
 
-        // 3. Kiểm tra title đã tồn tại chưa
         boolean titleExists = novelId == null 
                 ? novelRepository.existsByTitle(requestDTO.title())
                 : novelRepository.existsByTitleAndIdNot(requestDTO.title(), novelId);
@@ -261,12 +247,10 @@ public class NovelServiceImpl implements NovelService {
             throw new ApiException(NovelErrorCode.NOVEL_ALREADY_EXISTS);
         }
 
-        // 4. Validate status
         if (requestDTO.status() == null) {
             throw new ApiException(NovelErrorCode.NOVEL_STATUS_INVALID);
         }
 
-        // 5. Validate categories (nếu có)
         if (requestDTO.categoryIds() != null && !requestDTO.categoryIds().isEmpty()) {
             List<Category> categories = categoryRepository.findAllById(requestDTO.categoryIds());
             if (categories.size() != requestDTO.categoryIds().size()) {
@@ -287,14 +271,12 @@ public class NovelServiceImpl implements NovelService {
             try {
                 novelStatus = NovelStatus.valueOf(status.trim().toUpperCase());
             } catch (IllegalArgumentException ignored) {
-                // invalid status → treat as no status filter
             }
         }
 
         String titleParam = (title != null && !title.isBlank()) ? title.trim() : null;
         String categoryParam = (categoryName != null && !categoryName.isBlank()) ? categoryName.trim() : null;
 
-        // Sort by createdAt DESC to match previous JPQL order
         Pageable pageable = PageRequest.of(page, size, org.springframework.data.domain.Sort.by("createdAt").descending());
         
         org.springframework.data.jpa.domain.Specification<Novel> spec = 

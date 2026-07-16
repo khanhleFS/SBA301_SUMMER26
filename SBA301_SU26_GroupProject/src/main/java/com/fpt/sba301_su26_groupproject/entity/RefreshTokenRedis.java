@@ -14,16 +14,16 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@RedisHash("RefreshToken") // Tên Hash trong Redis
+@RedisHash("RefreshToken")
 public class RefreshTokenRedis {
 
     @Id
-    private String token; // Khóa chính lưu trên Redis
+    private String token;
 
     private UUID userId;
 
     private String email;
 
     @TimeToLive
-    private long ttlInSeconds; // Redis tự động xóa bản ghi này sau khoảng thời gian này
+    private long ttlInSeconds;
 }

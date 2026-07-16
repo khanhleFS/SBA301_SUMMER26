@@ -63,4 +63,4 @@ public class Payment {
 
     @Column(name = "paid_at")
     private Instant paidAt;
-}
+}

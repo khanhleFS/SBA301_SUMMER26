@@ -4,11 +4,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-/**
- * Error codes for the Bookmark domain.
- *
- * Error Code Range: 50xx
- */
 @Getter
 @RequiredArgsConstructor
 public enum BookmarkErrorCode implements ErrorCode {

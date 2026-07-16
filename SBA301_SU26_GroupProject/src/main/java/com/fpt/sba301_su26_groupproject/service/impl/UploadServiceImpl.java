@@ -44,7 +44,6 @@ public class UploadServiceImpl implements UploadService {
             throw new ApiException(CommonErrorCode.BAD_REQUEST, "Dữ liệu audio không được để trống");
         }
         try {
-            // Cloudinary lưu audio dưới dạng resource_type "video"
             Map<?, ?> uploadResult = cloudinary.uploader().upload(
                     audioBytes,
                     Map.of(

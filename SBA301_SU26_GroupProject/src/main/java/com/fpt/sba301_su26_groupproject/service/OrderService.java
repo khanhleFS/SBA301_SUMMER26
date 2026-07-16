@@ -10,16 +10,11 @@ import java.util.UUID;
 
 public interface OrderService {
 
-    // --- Order ---
     OrderResponseDTO createOrder(OrderRequestDTO request, String userEmail);
     OrderResponseDTO getOrderById(UUID id);
     List<OrderResponseDTO> getOrdersByUser(String userEmail);
-
-    // --- Payment (delegate sang PaymentService) ---
     void handleMomoCallback(PaymentMomoCallbackDTO callback);
     void syncPaymentStatus(UUID orderId);
     List<EnumResponseDTO> getPaymentEnums();
-    
-    /** Tạo lại/lấy lại link thanh toán MoMo cho một đơn hàng PENDING đã có sẵn */
     OrderResponseDTO recreatePayment(UUID orderId, String requestType);
 }

@@ -17,11 +17,11 @@ public record CoinTransactionResponseDTO(
         @Schema(example = "50000")
         Integer amount,
         @Schema(example = "TOP_UP")
-        String transactionType, // "TOP_UP" (Nạp coin) hoặc "UNLOCK_CHAPTER" (Mở khóa truyện)
+        String transactionType,
         @Schema(example = "VNPAY")
-        String paymentMethod,   // "VNPAY", "MOMO", hoặc "COIN_WALLET"
+        String paymentMethod,
         @Schema(example = "SUCCESS")
-        String status,          // "PENDING", "SUCCESS", "FAILED"
+        String status,
         @Schema(example = "2026-06-09T08:30:00Z")
         Instant createdAt
 ) {}

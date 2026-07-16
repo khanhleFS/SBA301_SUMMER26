@@ -36,7 +36,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
-        // Bỏ qua nếu không có Authorization Header hoặc không có tiền tố Bearer
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -44,7 +43,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         jwt = authHeader.substring(7);
 
-        // Kiểm tra xem token này đã bị đưa vào danh sách đen do logout chưa
         if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
@@ -56,11 +54,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             userEmail = jwtService.extractUsername(jwt);
 
-            // Trong hàm doFilterInternal (dòng 59-71):
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailService.loadUserByUsername(userEmail);
 
-                // Thêm điều kiện: userDetails.isEnabled() để kiểm tra isActive
                 if (jwtService.isTokenValid(jwt, userDetails) && userDetails.isEnabled()) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
@@ -70,7 +66,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 } else if (!userDetails.isEnabled()) {
-                    // Tài khoản đã bị vô hiệu hóa sau khi đăng nhập
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");

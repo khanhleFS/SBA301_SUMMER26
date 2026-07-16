@@ -5,9 +5,6 @@ import lombok.Builder;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Response DTO trả về thông tin bookmark kèm thông tin truyện.
- */
 @Builder
 public record BookmarkResponseDTO(
         UUID id,

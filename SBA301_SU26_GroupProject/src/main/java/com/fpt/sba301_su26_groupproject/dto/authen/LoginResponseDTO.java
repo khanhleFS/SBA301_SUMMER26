@@ -17,6 +17,6 @@ public record LoginResponseDTO(
         @Schema(example = "user@example.com")
         String email,
         @Schema(example = "USER")
-        UserRole role // USER, AUTHOR, ADMIN (giúp FE hiển thị menu tương ứng ngay lập tức)
+        UserRole role
 ) {}
 

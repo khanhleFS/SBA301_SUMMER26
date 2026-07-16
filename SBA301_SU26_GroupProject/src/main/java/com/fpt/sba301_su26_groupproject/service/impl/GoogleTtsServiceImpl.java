@@ -17,24 +17,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-/**
- * Implementation of TtsService using Google Cloud Text-to-Speech REST API.
- *
- * Flow:
- *  1. Strip HTML tags from chapter content
- *  2. Split text into chunks ≤ 5000 characters (Google TTS limit)
- *  3. Call Google TTS API for each chunk → receive base64-encoded MP3
- *  4. Decode and concatenate all MP3 chunks into a single byte[]
- */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
 public class GoogleTtsServiceImpl implements TtsService {
 
+    //TODO: move this to properties
     private static final String GOOGLE_TTS_URL =
             "https://texttospeech.googleapis.com/v1/text:synthesize";
 
-    // Google TTS character limit per request
     private static final int MAX_CHUNK_SIZE = 5000;
 
     private static final Pattern HTML_TAG_PATTERN = Pattern.compile("<[^>]+>");
@@ -56,24 +47,21 @@ public class GoogleTtsServiceImpl implements TtsService {
 
     public GoogleTtsServiceImpl() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(15_000); // 15 seconds
-        factory.setReadTimeout(30_000);    // 30 seconds
+        factory.setConnectTimeout(15_000);
+        factory.setReadTimeout(30_000);
         this.restTemplate = new RestTemplate(factory);
     }
 
     @Override
     public byte[] synthesizeSpeech(String text) {
-        // 1. Clean HTML
         String plainText = stripHtml(text);
         if (plainText == null || plainText.isBlank()) {
             throw new ApiException(CommonErrorCode.BAD_REQUEST, "Nội dung chương trống, không thể tạo audio.");
         }
 
-        // 2. Split into chunks
         List<String> chunks = splitIntoChunks(plainText, MAX_CHUNK_SIZE);
         log.info("[GoogleTTS] Synthesizing {} chunk(s) from {} characters of text", chunks.size(), plainText.length());
 
-        // 3. Call API for each chunk and collect audio bytes
         List<byte[]> audioParts = new ArrayList<>();
         for (int i = 0; i < chunks.size(); i++) {
             log.info("[GoogleTTS] Processing chunk {}/{} ({} chars)", i + 1, chunks.size(), chunks.get(i).length());
@@ -81,17 +69,10 @@ public class GoogleTtsServiceImpl implements TtsService {
             audioParts.add(part);
         }
 
-        // 4. Concatenate all parts
         return concatenateBytes(audioParts);
     }
 
-    // -----------------------------------------------------------------------
-    // Private helpers
-    // -----------------------------------------------------------------------
 
-    /**
-     * Calls Google Cloud TTS REST API and returns the decoded MP3 bytes.
-     */
     @SuppressWarnings("unchecked")
     private byte[] callGoogleTtsApi(String text) {
         String url = GOOGLE_TTS_URL + "?key=" + apiKey;
@@ -137,18 +118,12 @@ public class GoogleTtsServiceImpl implements TtsService {
         }
     }
 
-    /**
-     * Strips HTML tags and normalizes whitespace.
-     */
     private String stripHtml(String html) {
         if (html == null) return "";
         String noHtml = HTML_TAG_PATTERN.matcher(html).replaceAll(" ");
         return WHITESPACE_PATTERN.matcher(noHtml).replaceAll(" ").trim();
     }
 
-    /**
-     * Splits text into chunks, breaking at sentence boundaries ('. ') when possible.
-     */
     private List<String> splitIntoChunks(String text, int maxSize) {
         List<String> chunks = new ArrayList<>();
         if (text.length() <= maxSize) {
@@ -160,11 +135,10 @@ public class GoogleTtsServiceImpl implements TtsService {
         while (start < text.length()) {
             int end = Math.min(start + maxSize, text.length());
 
-            // Try to break at a sentence boundary
             if (end < text.length()) {
                 int lastPeriod = text.lastIndexOf(". ", end);
                 if (lastPeriod > start) {
-                    end = lastPeriod + 2; // include ". "
+                    end = lastPeriod + 2;
                 }
             }
 
@@ -174,9 +148,6 @@ public class GoogleTtsServiceImpl implements TtsService {
         return chunks;
     }
 
-    /**
-     * Concatenates multiple byte arrays into one.
-     */
     private byte[] concatenateBytes(List<byte[]> parts) {
         int totalLength = parts.stream().mapToInt(b -> b.length).sum();
         byte[] result = new byte[totalLength];

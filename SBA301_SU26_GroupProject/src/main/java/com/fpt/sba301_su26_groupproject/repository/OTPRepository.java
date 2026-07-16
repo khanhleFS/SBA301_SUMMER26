@@ -9,9 +9,7 @@ import java.util.UUID;
 public interface OTPRepository extends JpaRepository<OTP, UUID> {
     Optional<OTP> findByEmailAndOtpCode(String email, String otpCode);
 
-    // Xóa toàn bộ OTP cũ của Email này
     void deleteByEmail(String email);
 
-    // Xóa đúng cặp OTP đã dùng
     void deleteByEmailAndOtpCode(String email, String otpCode);
 }

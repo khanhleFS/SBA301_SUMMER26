@@ -20,9 +20,9 @@ public record CoinCreateResponseDTO(
         @Schema(example = "10")
         Integer firstTimeBonus,
         @Schema(example = "60")
-        Integer totalCoinsIfFirst, // Tổng coin thực nhận = baseCoins + firstTimeBonus
+        Integer totalCoinsIfFirst,
         @Schema(example = "50")
-        Integer totalCoinsNormal,  // Chỉ nhận baseCoins
+        Integer totalCoinsNormal,
         @Schema(example = "true")
         Boolean isActive,
         @Schema(example = "2026-06-09T08:30:00Z")
