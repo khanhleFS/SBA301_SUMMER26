@@ -2,8 +2,14 @@ package com.fpt.sba301_su26_groupproject.repository;
 
 import com.fpt.sba301_su26_groupproject.entity.ChapterUnlock;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.util.List;
 import java.util.UUID;
 
 public interface ChapterUnlockRepository extends JpaRepository<ChapterUnlock, UUID> {
     boolean existsByUserIdAndChapterId(UUID userId, UUID chapterId);
+
+    @Query("SELECT c.id, COALESCE(SUM(cu.coinsSpent), 0) FROM ChapterUnlock cu JOIN cu.chapter c WHERE c.novel.id = :novelId GROUP BY c.id")
+    List<Object[]> findRevenueByChapterGroupId(@Param("novelId") UUID novelId);
 }

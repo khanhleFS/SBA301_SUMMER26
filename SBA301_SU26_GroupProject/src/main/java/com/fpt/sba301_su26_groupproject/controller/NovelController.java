@@ -4,6 +4,7 @@ import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelPageResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelResponseDTO;
+import com.fpt.sba301_su26_groupproject.dto.novel.NovelStatsResponseDTO;
 import com.fpt.sba301_su26_groupproject.service.NovelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -155,6 +156,22 @@ public class NovelController {
                 .code(200)
                 .message("Lấy danh sách enums thành công")
                 .result(novelService.getEnums())
+                .build());
+    }
+
+    @Operation(
+            summary = "Get novel statistics (Dashboard & Charts)",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @GetMapping("/author/novels/{id}/stats")
+    public ResponseEntity<ApiResponse<NovelStatsResponseDTO>> getNovelStats(
+            @PathVariable UUID id,
+            Authentication authentication) {
+        NovelStatsResponseDTO result = novelService.getNovelStats(id, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.<NovelStatsResponseDTO>builder()
+                .code(200)
+                .message("Lấy thống kê chi tiết bộ truyện thành công")
+                .result(result)
                 .build());
     }
 
