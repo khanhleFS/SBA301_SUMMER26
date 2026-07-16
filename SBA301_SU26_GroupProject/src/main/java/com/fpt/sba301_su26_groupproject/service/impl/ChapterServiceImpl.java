@@ -60,6 +60,13 @@ public class ChapterServiceImpl implements ChapterService {
         if (!novel.getAuthor().getEmail().equals(authorEmail)) {
             throw new ApiException(NovelErrorCode.NOVEL_UNAUTHORIZED, "Bạn không có quyền đăng chương cho bộ truyện này.");
         }
+        
+        // 2b. Kiểm tra xem tài khoản có quyền tác giả hay không
+        User author = userRepository.findByEmail(authorEmail)
+                .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Người dùng không tồn tại."));
+        if (!Boolean.TRUE.equals(author.getIsAuthor())) {
+            throw new ApiException(com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode.FORBIDDEN, "Tài khoản của bạn không có quyền đăng chương truyện.");
+        }
 
         validateChapterRequest(requestDTO);
 

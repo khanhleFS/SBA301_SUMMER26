@@ -50,6 +50,10 @@ public class NovelServiceImpl implements NovelService {
         User author = userRepository.findByEmail(authorEmail)
                 .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_AUTHOR_NOT_FOUND, "Bạn không có quyền đăng truyện"));
 
+        if (!Boolean.TRUE.equals(author.getIsAuthor())) {
+            throw new ApiException(com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode.FORBIDDEN, "Tài khoản của bạn chưa được đăng ký làm tác giả.");
+        }
+
         validateRequest(requestDTO, null);
 
         Novel novel = new Novel();
@@ -153,6 +157,10 @@ public class NovelServiceImpl implements NovelService {
     public List<NovelResponseDTO> getAllNovelsByAuthor(String authorEmail) {
         User author = userRepository.findByEmail(authorEmail)
                 .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_AUTHOR_NOT_FOUND, "Author not found"));
+
+        if (!Boolean.TRUE.equals(author.getIsAuthor())) {
+            throw new ApiException(com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode.FORBIDDEN, "Tài khoản của bạn không phải là tác giả.");
+        }
 
         return novelRepository.findByAuthorId(author.getId())
                 .stream()
