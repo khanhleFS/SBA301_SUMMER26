@@ -118,9 +118,37 @@ public class ChapterServiceImpl implements ChapterService {
                 throw new ApiException(ChapterErrorCode.CHAPTER_LOCKED, "Chương này yêu cầu trả phí để đọc.");
             }
         }
+        return mapToResponseDTO(chapter);
+    }
+
+    @Override
+    @Transactional
+    public ChapterResponseDTO readChapter(UUID novelId, Integer chapterNumber, String userEmail) {
+        Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
+                .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện tương ứng."));
+        // Kiểm tra phí nếu là chương trả phí (VIP)
+        if (!chapter.getStatus().equals(ChapterStatus.FREE)) {
+            if (userEmail == null) {
+                throw new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Bạn cần đăng nhập để đọc chương này.");
+            }
+            User user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Người dùng không tồn tại."));
+
+            boolean isAuthor = chapter.getNovel().getAuthor().getEmail().equals(userEmail);
+            boolean isAdmin = user.getRole() == UserRole.ADMIN;
+            boolean isUnlocked = chapterUnlockRepository.existsByUserIdAndChapterId(user.getId(), chapter.getId());
+
+            if (!isAuthor && !isAdmin && !isUnlocked) {
+                throw new ApiException(ChapterErrorCode.CHAPTER_LOCKED, "Chương này yêu cầu trả phí để đọc.");
+            }
+        }
+        
         // Tăng view count của chương truyện
-        chapter.setViewCount(chapter.getViewCount() + 1);
         chapterRepository.save(chapter);
+        
+        // Cập nhật view count của truyện (Novel) nếu cần thiết (không yêu cầu nhưng là best practice)
+        // Hiện tại chỉ tăng chapter view.
+        
         return mapToResponseDTO(chapter);
     }
 

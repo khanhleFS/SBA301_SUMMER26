@@ -16,6 +16,8 @@ public interface ChapterService {
 
     ChapterResponseDTO getChapterDetails(UUID novelId, Integer chapterNumber, String userEmail);
 
+    ChapterResponseDTO readChapter(UUID novelId, Integer chapterNumber, String userEmail);
+
     ChapterResponseDTO updateChapter(UUID chapterId, ChapterRequestDTO requestDTO, String authorEmail);
 
     void deleteChapter(UUID chapterId, String authorEmail);
