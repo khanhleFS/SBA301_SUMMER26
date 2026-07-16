@@ -26,11 +26,11 @@ DROP TABLE IF EXISTS users;
 -- ---------------------------------------------------------------
 -- 1. users
 --    Entity: User (own id, Instant createdAt/updatedAt)
---    role     → UserRole  : ADMIN | AUTHOR | USER
+--    role     → UserRole  : ADMIN | USER
 -- ---------------------------------------------------------------
 CREATE TABLE users (
     id           UUID         NOT NULL DEFAULT RANDOM_UUID() PRIMARY KEY,
-    role         VARCHAR(20)  NOT NULL CHECK (role IN ('ADMIN','AUTHOR','USER')),
+    role         VARCHAR(20)  NOT NULL CHECK (role IN ('ADMIN','USER')),
     username     VARCHAR(255) NOT NULL UNIQUE,
     email        VARCHAR(255) NOT NULL UNIQUE,
     password     VARCHAR(255) NOT NULL,
@@ -38,6 +38,7 @@ CREATE TABLE users (
     address      VARCHAR(255),
     is_active    BOOLEAN      NOT NULL DEFAULT TRUE,
     coin_balance INT          NOT NULL DEFAULT 0,
+    is_author    BOOLEAN      NOT NULL DEFAULT FALSE,
     created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

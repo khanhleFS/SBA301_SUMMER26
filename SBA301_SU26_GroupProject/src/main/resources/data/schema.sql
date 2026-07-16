@@ -23,7 +23,7 @@ IF OBJECT_ID('users', 'U') IS NOT NULL DROP TABLE users;
 -- =========================================================================
 CREATE TABLE users (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    role NVARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'AUTHOR', 'USER')),
+    role NVARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'USER')),
     username NVARCHAR(255) NOT NULL UNIQUE,
     email NVARCHAR(255) NOT NULL UNIQUE,
     password NVARCHAR(255) NOT NULL,
@@ -31,6 +31,7 @@ CREATE TABLE users (
     address NVARCHAR(500),
     is_active BIT NOT NULL DEFAULT 1,
     coin_balance INT NOT NULL DEFAULT 0 CHECK (coin_balance >= 0),
+    is_author BIT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NOT NULL DEFAULT GETDATE(),
     CONSTRAINT idx_users_email UNIQUE (email),
@@ -236,7 +237,7 @@ CREATE INDEX idx_revenues_calculated_at ON revenues(calculated_at);
 -- =========================================================================
 -- Summary of Tables Created
 -- =========================================================================
--- 1. users                    - User accounts with roles (ADMIN, AUTHOR, USER)
+-- 1. users                    - User accounts with roles (ADMIN, USER)
 -- 2. otps                     - One-time passwords for 2FA/verification
 -- 3. categories               - Book categories/genres
 -- 4. novels                   - Novel entries with author, status, view count

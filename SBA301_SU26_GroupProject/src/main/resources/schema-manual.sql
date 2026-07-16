@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS users;
 -- =========================================================================
 CREATE TABLE users (
                        id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
-                       role VARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'AUTHOR', 'USER')),
+                        role VARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'USER')),
                        username VARCHAR(255) NOT NULL UNIQUE,
                        email VARCHAR(255) NOT NULL UNIQUE,
                        password VARCHAR(255) NOT NULL,
@@ -31,6 +31,7 @@ CREATE TABLE users (
                        address VARCHAR(500),
                        is_active BOOLEAN NOT NULL DEFAULT TRUE,
                        coin_balance INT NOT NULL DEFAULT 0 CHECK (coin_balance >= 0),
+                       is_author BOOLEAN NOT NULL DEFAULT FALSE,
                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -234,7 +235,7 @@ CREATE INDEX idx_revenues_calculated_at ON revenues(calculated_at);
 -- =========================================================================
 -- Summary of Tables Created
 -- =========================================================================
--- 1. users                    - User accounts with roles (ADMIN, AUTHOR, USER)
+-- 1. users                    - User accounts with roles (ADMIN, USER)
 -- 2. otps                     - One-time passwords for 2FA/verification
 -- 3. categories               - Book categories/genres
 -- 4. novels                   - Novel entries with author, status, view count
