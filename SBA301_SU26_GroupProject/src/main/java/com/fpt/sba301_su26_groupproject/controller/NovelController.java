@@ -267,7 +267,7 @@ public class NovelController {
         return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
                 .code(200)
                 .message("Cập nhật chương truyện thành công")
-                .result(chapterService.updateChapter(chapterId, request, authentication.getName()))
+                .result(chapterService.updateChapter(novelId, chapterId, request, authentication.getName()))
                 .build());
     }
 
@@ -280,7 +280,7 @@ public class NovelController {
             @PathVariable Long novelId,
             @PathVariable Long chapterId,
             Authentication authentication) {
-        chapterService.deleteChapter(chapterId, authentication.getName());
+        chapterService.deleteChapter(novelId, chapterId, authentication.getName());
 
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .code(200)

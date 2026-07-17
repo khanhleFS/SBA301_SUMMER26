@@ -18,9 +18,9 @@ public interface ChapterService {
 
     ChapterResponseDTO readChapter(Long novelId, Integer chapterNumber, String userEmail);
 
-    ChapterResponseDTO updateChapter(Long chapterId, ChapterRequestDTO requestDTO, String authorEmail);
+    ChapterResponseDTO updateChapter(Long novelId, Long chapterId, ChapterRequestDTO requestDTO, String authorEmail);
 
-    void deleteChapter(Long chapterId, String authorEmail);
+    void deleteChapter(Long novelId, Long chapterId, String authorEmail);
 
     ChapterResponseDTO generateChapterAudio(Long novelId, Integer chapterNumber);
 

@@ -162,9 +162,14 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterResponseDTO updateChapter(Long chapterId, ChapterRequestDTO requestDTO, String authorEmail) {
+    public ChapterResponseDTO updateChapter(Long novelId, Long chapterId, ChapterRequestDTO requestDTO, String authorEmail) {
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện cần sửa."));
+        
+        if (!chapter.getNovel().getId().equals(novelId)) {
+            throw new ApiException(com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode.BAD_REQUEST, "Chương truyện không thuộc về bộ truyện này");
+        }
+
         if (!chapter.getNovel().getAuthor().getEmail().equals(authorEmail)) {
             throw new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Bạn không có quyền chỉnh sửa chương này.");
         }
@@ -193,9 +198,14 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public void deleteChapter(Long chapterId, String authorEmail) {
+    public void deleteChapter(Long novelId, Long chapterId, String authorEmail) {
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện cần xóa."));
+        
+        if (!chapter.getNovel().getId().equals(novelId)) {
+            throw new ApiException(com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode.BAD_REQUEST, "Chương truyện không thuộc về bộ truyện này");
+        }
+
         if (!chapter.getNovel().getAuthor().getEmail().equals(authorEmail)) {
             throw new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Bạn không có quyền xóa chương này.");
         }
