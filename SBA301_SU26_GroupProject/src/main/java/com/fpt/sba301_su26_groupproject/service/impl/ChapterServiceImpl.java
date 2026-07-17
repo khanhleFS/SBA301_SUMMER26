@@ -52,7 +52,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterResponseDTO createChapter(UUID novelId, ChapterRequestDTO requestDTO, String authorEmail) {
+    public ChapterResponseDTO createChapter(Long novelId, ChapterRequestDTO requestDTO, String authorEmail) {
         // 1. Kiểm tra sự tồn tại của truyện
         Novel novel = novelRepository.findById(novelId)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOVEL_NOT_FOUND, "Không tìm thấy truyện tương ứng."));
@@ -94,7 +94,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ChapterResponseDTO> getChaptersByNovel(UUID novelId) {
+    public List<ChapterResponseDTO> getChaptersByNovel(Long novelId) {
         if (!novelRepository.existsById(novelId)) {
             throw new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Không tìm thấy truyện tương ứng.");
         }
@@ -106,7 +106,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterResponseDTO getChapterDetails(UUID novelId, Integer chapterNumber, String userEmail) {
+    public ChapterResponseDTO getChapterDetails(Long novelId, Integer chapterNumber, String userEmail) {
         Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện tương ứng."));
         // Kiểm tra phí nếu là chương trả phí (VIP)
@@ -130,7 +130,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterResponseDTO readChapter(UUID novelId, Integer chapterNumber, String userEmail) {
+    public ChapterResponseDTO readChapter(Long novelId, Integer chapterNumber, String userEmail) {
         Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện tương ứng."));
         // Kiểm tra phí nếu là chương trả phí (VIP)
@@ -162,7 +162,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterResponseDTO updateChapter(UUID chapterId, ChapterRequestDTO requestDTO, String authorEmail) {
+    public ChapterResponseDTO updateChapter(Long chapterId, ChapterRequestDTO requestDTO, String authorEmail) {
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện cần sửa."));
         if (!chapter.getNovel().getAuthor().getEmail().equals(authorEmail)) {
@@ -193,7 +193,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public void deleteChapter(UUID chapterId, String authorEmail) {
+    public void deleteChapter(Long chapterId, String authorEmail) {
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện cần xóa."));
         if (!chapter.getNovel().getAuthor().getEmail().equals(authorEmail)) {
@@ -204,7 +204,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterResponseDTO generateChapterAudio(UUID novelId, Integer chapterNumber) {
+    public ChapterResponseDTO generateChapterAudio(Long novelId, Integer chapterNumber) {
         // 1. Tìm chapter
         Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND,
@@ -230,7 +230,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterUnlockResponseDTO unlockChapter(UUID novelId, Integer chapterNumber, String userEmail) {
+    public ChapterUnlockResponseDTO unlockChapter(Long novelId, Integer chapterNumber, String userEmail) {
         if (userEmail == null) {
             throw new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Bạn cần đăng nhập để mở khóa chương này.");
         }

@@ -34,7 +34,7 @@ public class ChapterController {
     )
     @PostMapping("/author/novels/{novelId}/chapters")
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> createChapter(
-            @PathVariable UUID novelId,
+            @PathVariable Long novelId,
             @Valid @RequestBody ChapterRequestDTO request,
             Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.<ChapterResponseDTO>builder()
@@ -47,7 +47,7 @@ public class ChapterController {
     @Operation(summary = "Get chapters by novel")
     @GetMapping("/novels/{novelId}/chapters")
     public ResponseEntity<ApiResponse<List<ChapterResponseDTO>>> getChaptersByNovel(
-            @PathVariable UUID novelId) {
+            @PathVariable Long novelId) {
         return ResponseEntity.ok(ApiResponse.<List<ChapterResponseDTO>>builder()
                 .code(200)
                 .message("Lấy danh sách chương truyện thành công")
@@ -58,7 +58,7 @@ public class ChapterController {
     @Operation(summary = "Get chapter details")
     @GetMapping("/novels/{novelId}/chapters/{chapterNumber}")
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> getChapterDetails(
-            @PathVariable UUID novelId,
+            @PathVariable Long novelId,
             @PathVariable Integer chapterNumber,
             Authentication authentication) {
         String userEmail = authentication == null ? null : authentication.getName();
@@ -73,7 +73,7 @@ public class ChapterController {
     @Operation(summary = "User reads a chapter (Increments view, saves history etc.)")
     @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/read")
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> readChapter(
-            @PathVariable UUID novelId,
+            @PathVariable Long novelId,
             @PathVariable Integer chapterNumber,
             Authentication authentication) {
         String userEmail = authentication == null ? null : authentication.getName();
@@ -91,7 +91,7 @@ public class ChapterController {
     )
     @PutMapping("/author/chapters/{chapterId}")
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> updateChapter(
-            @PathVariable UUID chapterId,
+            @PathVariable Long chapterId,
             @Valid @RequestBody ChapterRequestDTO request,
             Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
@@ -107,7 +107,7 @@ public class ChapterController {
     )
     @DeleteMapping("/author/chapters/{chapterId}")
     public ResponseEntity<ApiResponse<Void>> deleteChapter(
-            @PathVariable UUID chapterId,
+            @PathVariable Long chapterId,
             Authentication authentication) {
         chapterService.deleteChapter(chapterId, authentication.getName());
 
@@ -120,7 +120,7 @@ public class ChapterController {
     @Operation(summary = "Generate chapter audio")
     @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/audio")
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> generateChapterAudio(
-            @PathVariable UUID novelId,
+            @PathVariable Long novelId,
             @PathVariable Integer chapterNumber) {
         return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
                 .code(200)
@@ -135,7 +135,7 @@ public class ChapterController {
     )
     @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/unlock")
     public ResponseEntity<ApiResponse<ChapterUnlockResponseDTO>> unlockChapter(
-            @PathVariable UUID novelId,
+            @PathVariable Long novelId,
             @PathVariable Integer chapterNumber,
             Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.<ChapterUnlockResponseDTO>builder()

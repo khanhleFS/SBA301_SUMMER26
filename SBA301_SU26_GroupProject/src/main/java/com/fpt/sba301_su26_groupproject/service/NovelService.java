@@ -10,12 +10,12 @@ import java.util.UUID;
 
 public interface NovelService {
     NovelResponseDTO createNovel(NovelRequestDTO requestDTO, String authorEmail);
-    NovelResponseDTO updateNovel(UUID novelId, NovelRequestDTO requestDTO, String authorEmail);
-    void deleteNovel(UUID novelId, String authorEmail);
-    NovelResponseDTO getNovelById(UUID novelId);
+    NovelResponseDTO updateNovel(Long novelId, NovelRequestDTO requestDTO, String authorEmail);
+    void deleteNovel(Long novelId, String authorEmail);
+    NovelResponseDTO getNovelById(Long novelId);
     List<NovelResponseDTO> getAllNovelsByAuthor(String authorEmail);
     List<EnumResponseDTO> getEnums();
     NovelPageResponseDTO searchNovels(String title, String status, String categoryName, Integer minChapters, int page, int size);
-    com.fpt.sba301_su26_groupproject.dto.novel.NovelStatsResponseDTO getNovelStats(UUID novelId, String authorEmail);
+    com.fpt.sba301_su26_groupproject.dto.novel.NovelStatsResponseDTO getNovelStats(Long novelId, String authorEmail);
 }
 

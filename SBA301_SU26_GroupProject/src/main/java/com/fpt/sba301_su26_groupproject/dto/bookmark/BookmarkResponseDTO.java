@@ -8,12 +8,12 @@ import java.util.UUID;
 @Builder
 public record BookmarkResponseDTO(
         UUID id,
-        UUID novelId,
+        Long novelId,
         String novelTitle,
         String novelSlug,
         String coverImageUrl,
         String authorName,
-        UUID lastChapterId,
+        Long lastChapterId,
         Integer lastChapterNumber,
         String lastChapterTitle,
         String lastChapterSlug,

@@ -10,21 +10,21 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChapterService {
-    ChapterResponseDTO createChapter(UUID novelId, ChapterRequestDTO requestDTO, String authorEmail);
+    ChapterResponseDTO createChapter(Long novelId, ChapterRequestDTO requestDTO, String authorEmail);
 
-    List<ChapterResponseDTO> getChaptersByNovel(UUID novelId);
+    List<ChapterResponseDTO> getChaptersByNovel(Long novelId);
 
-    ChapterResponseDTO getChapterDetails(UUID novelId, Integer chapterNumber, String userEmail);
+    ChapterResponseDTO getChapterDetails(Long novelId, Integer chapterNumber, String userEmail);
 
-    ChapterResponseDTO readChapter(UUID novelId, Integer chapterNumber, String userEmail);
+    ChapterResponseDTO readChapter(Long novelId, Integer chapterNumber, String userEmail);
 
-    ChapterResponseDTO updateChapter(UUID chapterId, ChapterRequestDTO requestDTO, String authorEmail);
+    ChapterResponseDTO updateChapter(Long chapterId, ChapterRequestDTO requestDTO, String authorEmail);
 
-    void deleteChapter(UUID chapterId, String authorEmail);
+    void deleteChapter(Long chapterId, String authorEmail);
 
-    ChapterResponseDTO generateChapterAudio(UUID novelId, Integer chapterNumber);
+    ChapterResponseDTO generateChapterAudio(Long novelId, Integer chapterNumber);
 
-    ChapterUnlockResponseDTO unlockChapter(UUID novelId, Integer chapterNumber, String userEmail);
+    ChapterUnlockResponseDTO unlockChapter(Long novelId, Integer chapterNumber, String userEmail);
 
     List<EnumResponseDTO> getEnums();
 }

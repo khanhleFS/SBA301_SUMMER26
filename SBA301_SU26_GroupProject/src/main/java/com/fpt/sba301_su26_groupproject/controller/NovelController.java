@@ -71,7 +71,7 @@ public class NovelController {
     )
     @GetMapping("/author/novels/{id}")
     public ResponseEntity<ApiResponse<NovelResponseDTO>> getNovelById(
-            @PathVariable UUID id) {
+            @PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.<NovelResponseDTO>builder()
                 .code(200)
                 .message("Lấy thông tin bộ truyện thành công")
@@ -99,7 +99,7 @@ public class NovelController {
     @Operation(summary = "Get novel by ID (Guest/Reader)")
     @GetMapping("/novels/{id}")
     public ResponseEntity<ApiResponse<NovelResponseDTO>> getPublicNovelById(
-            @PathVariable UUID id) {
+            @PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.<NovelResponseDTO>builder()
                 .code(200)
                 .message("Lấy thông tin bộ truyện thành công")
@@ -123,7 +123,7 @@ public class NovelController {
     )
     @PutMapping("/author/novels/{id}")
     public ResponseEntity<ApiResponse<NovelResponseDTO>> updateNovel(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody NovelRequestDTO request,
             Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.<NovelResponseDTO>builder()
@@ -139,7 +139,7 @@ public class NovelController {
     )
     @DeleteMapping("/author/novels/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteNovel(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             Authentication authentication) {
         novelService.deleteNovel(id, authentication.getName());
 
@@ -165,7 +165,7 @@ public class NovelController {
     )
     @GetMapping("/author/novels/{id}/stats")
     public ResponseEntity<ApiResponse<NovelStatsResponseDTO>> getNovelStats(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             Authentication authentication) {
         NovelStatsResponseDTO result = novelService.getNovelStats(id, authentication.getName());
         return ResponseEntity.ok(ApiResponse.<NovelStatsResponseDTO>builder()

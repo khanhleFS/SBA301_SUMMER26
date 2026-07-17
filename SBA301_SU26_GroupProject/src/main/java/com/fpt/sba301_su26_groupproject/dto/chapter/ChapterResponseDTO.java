@@ -5,14 +5,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Builder
 public record ChapterResponseDTO(
-         @Schema(example = "550e8400-e29b-41d4-a716-446655440000")
-         UUID id,
-         @Schema(example = "111e8400-e29b-41d4-a716-446655440000")
-         UUID novelId,
+         @Schema(example = "1")
+         Long id,
+         @Schema(example = "1")
+         Long novelId,
          @Schema(example = "1")
          Integer chapterNumber,
          @Schema(example = "Chapter 1: The Beginning")

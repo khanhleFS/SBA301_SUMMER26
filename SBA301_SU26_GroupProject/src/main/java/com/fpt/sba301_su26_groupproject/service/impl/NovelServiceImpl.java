@@ -81,7 +81,7 @@ public class NovelServiceImpl implements NovelService {
 
     @Override
     @Transactional
-    public NovelResponseDTO updateNovel(UUID novelId, NovelRequestDTO requestDTO, String authorEmail) {
+    public NovelResponseDTO updateNovel(Long novelId, NovelRequestDTO requestDTO, String authorEmail) {
         Novel novel = novelRepository.findById(novelId)
                 .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Không tìm thấy truyện tương ứng"));
 
@@ -125,7 +125,7 @@ public class NovelServiceImpl implements NovelService {
 
     @Override
     @Transactional
-    public void deleteNovel(UUID novelId, String authorEmail) {
+    public void deleteNovel(Long novelId, String authorEmail) {
         Novel novel = novelRepository.findById(novelId)
                 .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Truyện không tồn tại"));
 
@@ -147,7 +147,7 @@ public class NovelServiceImpl implements NovelService {
     }
 
     @Override
-    public NovelResponseDTO getNovelById(UUID novelId) {
+    public NovelResponseDTO getNovelById(Long novelId) {
         Novel novel = novelRepository.findById(novelId)
                 .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Novel not found"));
         return mapToResponseDTO(novel);
@@ -248,7 +248,7 @@ public class NovelServiceImpl implements NovelService {
         return title.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
     }
 
-    private void validateRequest(NovelRequestDTO requestDTO, UUID novelId) {
+    private void validateRequest(NovelRequestDTO requestDTO, Long novelId) {
         if (requestDTO.title() == null || requestDTO.title().trim().isEmpty()) {
             throw new ApiException(NovelErrorCode.NOVEL_INVALID);
         }
@@ -314,7 +314,7 @@ public class NovelServiceImpl implements NovelService {
     }
 
     @Override
-    public NovelStatsResponseDTO getNovelStats(UUID novelId, String authorEmail) {
+    public NovelStatsResponseDTO getNovelStats(Long novelId, String authorEmail) {
         Novel novel = novelRepository.findById(novelId)
                 .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Không tìm thấy truyện tương ứng"));
 
@@ -325,15 +325,15 @@ public class NovelServiceImpl implements NovelService {
         List<Chapter> chapters = chapterRepository.findByNovelIdOrderByChapterNumberAsc(novelId);
         List<Object[]> revenueData = chapterUnlockRepository.findRevenueByChapterGroupId(novelId);
         
-        java.util.Map<UUID, Long> revenueMap = new java.util.HashMap<>();
+        java.util.Map<Long, Long> revenueMap = new java.util.HashMap<>();
         for (Object[] row : revenueData) {
-            UUID chapterId = null;
-            if (row[0] instanceof UUID) {
-                chapterId = (UUID) row[0];
-            } else if (row[0] instanceof String) {
-                chapterId = UUID.fromString((String) row[0]);
+            Long chapterId = null;
+            if (row[0] instanceof Long) {
+                chapterId = (Long) row[0];
+            } else if (row[0] instanceof Number) {
+                chapterId = ((Number) row[0]).longValue();
             } else if (row[0] != null) {
-                chapterId = UUID.fromString(row[0].toString());
+                chapterId = Long.parseLong(row[0].toString());
             }
 
             if (chapterId != null) {

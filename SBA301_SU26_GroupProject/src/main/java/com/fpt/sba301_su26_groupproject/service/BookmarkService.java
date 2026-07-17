@@ -10,9 +10,9 @@ public interface BookmarkService {
 
     BookmarkResponseDTO upsertBookmark(BookmarkRequestDTO request, String userEmail);
 
-    void removeBookmark(UUID novelId, String userEmail);
+    void removeBookmark(Long novelId, String userEmail);
 
-    BookmarkResponseDTO getBookmark(UUID novelId, String userEmail);
+    BookmarkResponseDTO getBookmark(Long novelId, String userEmail);
 
     List<BookmarkResponseDTO> getMyBookmarks(String userEmail);
 }

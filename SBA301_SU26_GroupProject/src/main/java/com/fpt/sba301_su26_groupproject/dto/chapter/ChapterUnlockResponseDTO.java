@@ -6,8 +6,8 @@ import java.util.UUID;
 
 @Builder
 public record ChapterUnlockResponseDTO(
-        UUID chapterId,
-        UUID novelId,
+        Long chapterId,
+        Long novelId,
         Integer chapterNumber,
         String title,
         Integer coinsSpent,
