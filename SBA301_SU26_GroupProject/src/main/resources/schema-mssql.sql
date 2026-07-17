@@ -76,7 +76,6 @@ CREATE TABLE coin_packages (
     name             NVARCHAR(100)    NOT NULL,
     price_vnd        INT              NOT NULL,
     base_coins       INT              NOT NULL,
-    first_time_bonus INT              NOT NULL DEFAULT 0,
     is_active        BIT              NOT NULL DEFAULT 1,
     created_at       DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
     updated_at       DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME()

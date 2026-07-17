@@ -20,10 +20,6 @@ public record CoinCreateRequestDTO(
         @Min(value = 1, message = "Số lượng coin tối thiểu là 1.")
         @Schema(example = "50")
         Integer baseCoins,
-        @NotNull(message = "Coin tặng lần đầu không được để trống.")
-        @Min(value = 0, message = "Coin khuyến mãi lần đầu không được nhỏ hơn 0.")
-        @Schema(example = "10")
-        Integer firstTimeBonus,
         @NotNull(message = "Vui lòng chỉ định trạng thái kích hoạt của gói.")
         @Schema(example = "true")
         Boolean isActive

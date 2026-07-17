@@ -17,11 +17,5 @@ public record CoinPurchaseResponseDTO(
         @Schema(example = "50000")
         Integer priceVnd,
         @Schema(example = "50")
-        Integer baseCoins,
-        @Schema(example = "10")
-        Integer firstTimeBonus,
-        @Schema(example = "60")
-        Integer totalCoins,
-        @Schema(example = "true")
-        boolean isFirstTimeTopUp
+        Integer baseCoins
 ) {}

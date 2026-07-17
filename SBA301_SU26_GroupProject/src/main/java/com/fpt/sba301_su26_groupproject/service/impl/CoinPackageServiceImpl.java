@@ -42,7 +42,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
                 .name(pkg.getName())
                 .priceVnd(pkg.getPriceVnd())
                 .baseCoins(pkg.getBaseCoins())
-                .firstTimeBonus(pkg.getFirstTimeBonus())
                 .isActive(pkg.getIsActive())
                 .createdAt(pkg.getCreatedAt())
                 .updatedAt(pkg.getUpdatedAt())
@@ -108,7 +107,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
                 .name(request.name())
                 .priceVnd(request.priceVnd())
                 .baseCoins(request.baseCoins())
-                .firstTimeBonus(request.firstTimeBonus())
                 .isActive(request.isActive() != null ? request.isActive() : true)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
@@ -132,7 +130,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
         }
         pkg.setPriceVnd(request.priceVnd());
         pkg.setBaseCoins(request.baseCoins());
-        pkg.setFirstTimeBonus(request.firstTimeBonus());
         pkg.setIsActive(request.isActive());
 
         CoinPackage updatedPkg;
@@ -174,9 +171,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
         }
         if (request.baseCoins() <= 0) {
             throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_INVALID, "Số lượng coin gốc phải lớn hơn 0");
-        }
-        if (request.firstTimeBonus() < 0) {
-            throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_INVALID, "Số lượng coin khuyến mãi lần đầu phải lớn hơn hoặc bằng 0");
         }
         if(request.isActive() == false) {
             throw new ApiException(CoinPackageErrorCode.COIN_PACKAGE_INVALID, "Gói mới phải được kích hoạt");

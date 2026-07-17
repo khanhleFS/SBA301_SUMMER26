@@ -15,9 +15,6 @@ public record CoinUpdateRequestDTO(
         @Min(value = 1, message = "Số lượng coin cập nhật tối thiểu là 1.")
         @Schema(example = "120")
         Integer baseCoins,
-        @Min(value = 0, message = "Coin khuyến mãi lần đầu không được phép âm.")
-        @Schema(example = "20")
-        Integer firstTimeBonus,
         @Schema(example = "true")
         Boolean isActive
 ) {}

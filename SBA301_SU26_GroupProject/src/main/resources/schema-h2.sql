@@ -77,7 +77,6 @@ CREATE TABLE coin_packages (
     name             VARCHAR(100) NOT NULL,
     price_vnd        INT          NOT NULL,
     base_coins       INT          NOT NULL,
-    first_time_bonus INT          NOT NULL DEFAULT 0,
     is_active        BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP

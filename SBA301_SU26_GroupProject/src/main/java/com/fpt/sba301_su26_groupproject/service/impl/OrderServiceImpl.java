@@ -50,11 +50,9 @@ public class OrderServiceImpl implements OrderService {
             throw new ApiException(CommonErrorCode.BAD_REQUEST, "Gói coin hiện không hoạt động");
         }
 
-        boolean isFirstTime = !orderRepository.existsByUserIdAndStatus(user.getId(), OrderStatus.COMPLETED);
         int qty = request.quantity() == null || request.quantity() < 1 ? 1 : request.quantity();
-        
-        Integer singlePackCoins = coinPackage.getTotalCoins(isFirstTime);
-        Integer totalCoins = singlePackCoins + (qty - 1) * coinPackage.getBaseCoins();
+
+        Integer totalCoins = coinPackage.getBaseCoins() * qty;
         Integer totalVnd = coinPackage.getPriceVnd() * qty;
 
         Order order = Order.builder()
