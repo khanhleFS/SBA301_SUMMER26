@@ -42,12 +42,6 @@ export default function KpiCard({ data }: { data: KpiData }) {
 
       <div className="mt-6 flex items-center gap-3">
         <span className="truncate text-3xl font-bold tracking-tight" title={amount}>{amount}</span>
-        <div className={`flex items-center rounded-full px-2 py-1 text-xs font-bold ${badgeClass}`}>
-          {growth}
-          <svg className="ml-0.5 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-          </svg>
-        </div>
       </div>
     </div>
   )

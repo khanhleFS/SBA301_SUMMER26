@@ -88,6 +88,7 @@ export interface PackageTier {
 export interface FinanceData {
   kpiData: KpiData[]
   cashFlow: CashFlowItem[]
+  cashFlowMonth: CashFlowItem[]
   recentDeposits: DepositItem[]
   packageTiers: PackageTier[]
 }
@@ -362,6 +363,12 @@ export const MOCK_FINANCE_DATA: FinanceData = {
     { label: 'T7', value: 2800000 },
     { label: 'CN', value: 1900000 },
   ],
+  cashFlowMonth: [
+    { label: 'Tuần 1', value: 15400000 },
+    { label: 'Tuần 2', value: 18200000 },
+    { label: 'Tuần 3', value: 22800000 },
+    { label: 'Tuần 4', value: 19100000 },
+  ],
   recentDeposits: [
     { user: '@docgia_01', method: 'Bank transfer', amount: 100000, status: 'success', time: 'Vừa xong' },
     { user: '@nguyenvanA', method: 'MoMo', amount: 50000, status: 'success', time: '3 phút trước' },
@@ -374,6 +381,63 @@ export const MOCK_FINANCE_DATA: FinanceData = {
     { id: 3, name: 'Gói Đam Mê', price: 100, coin: 1000, bonus: 150, isPopular: true },
     { id: 4, name: 'Gói Tích Lũy', price: 200, coin: 2000, bonus: 400 },
     { id: 5, name: 'Gói Tiên Tôn', price: 500, coin: 5000, bonus: 1200 },
+  ],
+}
+
+export type UserRole = 'USER' | 'AUTHOR' | 'ADMIN'
+export type UserStatus = 'active' | 'banned' | 'pending'
+
+export interface UserItem {
+  id: string
+  username: string
+  fullName: string
+  email: string
+  role: UserRole
+  status: UserStatus
+  joinedAt: string
+  avatarUrl: string
+  novelCount: number
+  totalReads: number
+  walletBalance: number
+}
+
+export interface UserManagementData {
+  stats: {
+    totalUsers: number
+    activeUsers: number
+    bannedUsers: number
+    newThisMonth: number
+    totalAuthors: number
+    pendingRequests: number
+  }
+  users: UserItem[]
+}
+
+export const MOCK_USER_DATA: UserManagementData = {
+  stats: {
+    totalUsers: 1284,
+    activeUsers: 1145,
+    bannedUsers: 23,
+    newThisMonth: 128,
+    totalAuthors: 98,
+    pendingRequests: 18,
+  },
+  users: [
+    { id: 'u01', username: 'elaris_thorne', fullName: 'Elaris Thorne', email: 'elaris.t@luminovels.com', role: 'USER', status: 'active', joinedAt: '2023-10-12', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 0, totalReads: 0, walletBalance: 500 },
+    { id: 'u02', username: 'jaxon_vance', fullName: 'Jaxon Vance', email: 'jaxon.v@luminovels.com', role: 'AUTHOR', status: 'active', joinedAt: '2023-08-01', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 5, totalReads: 128000, walletBalance: 12400 },
+    { id: 'u03', username: 'lyra_thorn', fullName: 'Lyra Thorn', email: 'lyra.t@luminovels.com', role: 'AUTHOR', status: 'active', joinedAt: '2023-09-15', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 2, totalReads: 42000, walletBalance: 4300 },
+    { id: 'u04', username: 'nguyenvanA', fullName: 'Nguyễn Văn A', email: 'nguyenvana@gmail.com', role: 'USER', status: 'active', joinedAt: '2024-01-20', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 0, totalReads: 0, walletBalance: 150 },
+    { id: 'u05', username: 'docgia_01', fullName: 'Trần Thị Bình', email: 'docgia01@gmail.com', role: 'USER', status: 'active', joinedAt: '2024-02-05', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 0, totalReads: 0, walletBalance: 320 },
+    { id: 'u06', username: 'bookworm99', fullName: 'Lê Minh Khoa', email: 'bookworm99@outlook.com', role: 'USER', status: 'banned', joinedAt: '2023-12-10', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 0, totalReads: 0, walletBalance: 0 },
+    { id: 'u07', username: 'julian_thorne', fullName: 'Julian Thorne', email: 'julian.thorne@author.com', role: 'AUTHOR', status: 'active', joinedAt: '2023-06-18', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 12, totalReads: 2400000, walletBalance: 89000 },
+    { id: 'u08', username: 'elena_sterling', fullName: 'Elena Sterling', email: 'elena.sterling@author.com', role: 'AUTHOR', status: 'active', joinedAt: '2023-07-22', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 8, totalReads: 1200000, walletBalance: 54000 },
+    { id: 'u09', username: 'hannahreads', fullName: 'Hannah Nguyen', email: 'hannah.reads@gmail.com', role: 'USER', status: 'active', joinedAt: '2024-03-01', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 0, totalReads: 0, walletBalance: 75 },
+    { id: 'u10', username: 'sj_moon', fullName: 'S. J. Moon', email: 'sj.moon@author.com', role: 'AUTHOR', status: 'active', joinedAt: '2023-11-05', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 6, totalReads: 980000, walletBalance: 38000 },
+    { id: 'u11', username: 'vk_vance', fullName: 'V. K. Vance', email: 'vk.vance@author.com', role: 'AUTHOR', status: 'active', joinedAt: '2023-05-30', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 12, totalReads: 850000, walletBalance: 29000 },
+    { id: 'u12', username: 'pham_reader', fullName: 'Phạm Đức Anh', email: 'phamduc@gmail.com', role: 'USER', status: 'pending', joinedAt: '2024-07-10', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 0, totalReads: 0, walletBalance: 200 },
+    { id: 'u13', username: 'tran_author', fullName: 'Trần Văn Long', email: 'tranvanlong@gmail.com', role: 'USER', status: 'pending', joinedAt: '2024-07-08', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 0, totalReads: 0, walletBalance: 100 },
+    { id: 'u14', username: 'isabella_night', fullName: 'Isabella Night', email: 'isabella.night@author.com', role: 'AUTHOR', status: 'active', joinedAt: '2023-10-01', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 8, totalReads: 720000, walletBalance: 22000 },
+    { id: 'u15', username: 'marcus_pen', fullName: 'Marcus Pen', email: 'marcus.pen@author.com', role: 'AUTHOR', status: 'banned', joinedAt: '2023-04-15', avatarUrl: PLACEHOLDER_AVATAR, novelCount: 15, totalReads: 695000, walletBalance: 0 },
   ],
 }
 

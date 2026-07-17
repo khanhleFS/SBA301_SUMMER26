@@ -1,4 +1,13 @@
-import { Activity, ArrowRight, CreditCard, UserPlus } from 'lucide-react'
+import {
+  ResponsiveContainer,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Bar,
+} from 'recharts'
+import { Users, ArrowRight, CreditCard, UserPlus, BookOpen, CheckCircle2, Clock } from 'lucide-react'
 import type { PackageTier } from '../services/dashboard.service'
 
 function formatFullVND(value: number) {
@@ -14,22 +23,47 @@ function formatShortVND(value: number) {
 }
 
 export function DashboardChartSection({ chartData, platformNet }: { chartData: number[]; platformNet: number }) {
+  // Chuyển mảng number[] thành mảng object để Recharts có thể đọc
+  const formattedChartData = chartData.map((val, idx) => ({
+    name: `Tháng ${idx + 1}`,
+    value: val,
+  }))
+
   return (
     <section className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-12">
-      <div className="rounded-xl border border-gray-300 bg-white p-4 shadow-sm lg:col-span-9 sm:p-5">
-        <div className="flex items-center justify-between gap-3 border-b border-gray-200 pb-3">
+      <div className="rounded-lg border border-gray-300 bg-surface p-4 shadow-sm lg:col-span-9 sm:p-5">
+        <div className="flex items-center justify-between gap-3 border-b border-gray-200 dark:border-zinc-800 pb-3">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Biểu đồ</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Biểu đồ gì đó?</div>
           </div>
         </div>
 
-        <div className="mt-4 flex h-28 items-end gap-2 sm:h-24">
-          {chartData.map((value, index) => (
-            <div key={`${value}-${index}`} className="flex flex-1 flex-col items-center justify-end gap-2">
-              <div className="w-full rounded-t-md bg-primary" style={{ height: `${value}%`, minHeight: '0.75rem' }} />
-              <div className="text-[10px] text-gray-500">{index + 1}</div>
-            </div>
-          ))}
+        <div className="mt-4 h-[120px] w-full min-h-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={formattedChartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.06)" />
+              <XAxis
+                dataKey="name"
+                tickLine={false}
+                tickFormatter={(v) => v.replace('Tháng ', '')}
+                style={{ fontSize: 10, fontWeight: 500, fill: 'var(--muted-foreground)' }}
+              />
+              <YAxis
+                tickLine={false}
+                style={{ fontSize: 9, fontWeight: 500, fill: 'var(--muted-foreground)' }}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: 'var(--surface-container-lowest, #fff)',
+                  border: '1px solid var(--outline-variant, #e5e7eb)',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                }}
+                formatter={(value: any) => [`${value}%`, 'Chỉ số']}
+              />
+              <Bar dataKey="value" name="Chỉ số" fill="var(--primary)" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -44,15 +78,13 @@ export function DashboardChartSection({ chartData, platformNet }: { chartData: n
 }
 
 export function DashboardUserPulseSection({
-  readersOnline,
-  newSignupsToday,
-  totalNovels,
-  totalCategories,
+  totalUsers,
+  totalAuthors,
+  pendingRequests,
 }: {
-  readersOnline: number
-  newSignupsToday: number
-  totalNovels: number
-  totalCategories: number
+  totalUsers: number
+  totalAuthors: number
+  pendingRequests: number
 }) {
   return (
     <section className="flex flex-col justify-between rounded-xl border border-outline-variant bg-surface-container-low p-4 shadow-sm lg:col-span-5 sm:p-5">
@@ -61,36 +93,33 @@ export function DashboardUserPulseSection({
           <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Tình hình người dùng</div>
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <PulseCard label="Đang online" value={readersOnline} icon={<Activity className="h-5 w-5 text-green-600" />} iconBg="bg-green-500/10" />
-          <PulseCard label="Đăng ký mới" value={newSignupsToday} icon={<UserPlus className="h-5 w-5 text-blue-600" />} iconBg="bg-blue-500/10" />
-        </div>
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Thẻ chính: Chiếm 2 cột trên màn hình sm trở lên */}
+          <div className="sm:col-span-2">
+            <PulseCard
+              label="Tổng user"
+              value={totalUsers}
+              icon={<Users className="h-5 w-5 text-primary" />}
+              iconBg="bg-primary/10"
+            />
+          </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <PulseCard label="Tổng số truyện" value={totalNovels} icon={<Activity className="h-5 w-5 text-purple-600" />} iconBg="bg-purple-500/10" />
-          <PulseCard label="Thể loại truyện" value={totalCategories} icon={<UserPlus className="h-5 w-5 text-amber-600" />} iconBg="bg-amber-500/10" />
+          {/* Các thẻ thứ cấp */}
+          <PulseCard
+            label="Tác giả"
+            value={totalAuthors}
+            icon={<BookOpen className="h-5 w-5 text-violet-600" />}
+            iconBg="bg-violet-500/10"
+          />
+          <PulseCard
+            label="Chờ duyệt"
+            value={pendingRequests}
+            icon={<UserPlus className="h-5 w-5 text-amber-600" />}
+            iconBg="bg-amber-500/10"
+          />
         </div>
       </div>
 
-      <div className="mt-4 space-y-2 border-t border-outline-variant pt-3.5">
-        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Hoạt động gần đây</div>
-
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-green-500" />
-            <p className="truncate text-foreground">Người dùng <span className="font-medium">@hoangnv</span> vừa đăng ký</p>
-          </div>
-          <span className="ml-2 shrink-0 text-[10px] text-muted-foreground">2 phút trước</span>
-        </div>
-
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-            <p className="truncate text-foreground">Sách <span className="font-medium">"Lumina Scroll"</span> có thêm 12 readers</p>
-          </div>
-          <span className="ml-2 shrink-0 text-[10px] text-muted-foreground">5 phút trước</span>
-        </div>
-      </div>
     </section>
   )
 }
@@ -110,6 +139,7 @@ export function DashboardTransactionsSection({
   return (
     <aside className="flex h-full w-full flex-col justify-between rounded-xl border border-outline-variant bg-surface-container-low p-4 shadow-sm lg:col-span-7 sm:p-5">
       <div>
+        {/* HEADER: Giữ nguyên y hệt của bạn */}
         <div className="flex h-[40px] items-center justify-between gap-3 border-b border-outline-variant pb-3">
           <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Giao dịch gần đây</div>
 
@@ -121,35 +151,49 @@ export function DashboardTransactionsSection({
           </button>
         </div>
 
-        <div className="mt-1 space-y-2.5">
-          {recentTransactions.map((transaction) => (
-            <div
-              key={transaction.id}
-              className="grid grid-cols-[1fr_auto] items-center gap-4 rounded-md border border-outline-variant/40 bg-surface-container-lowest p-3 transition-colors hover:bg-surface-container"
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-bold text-foreground">{transaction.user}</p>
-                  <span className="rounded border border-green-500/20 bg-green-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-green-600">
-                    {transaction.status === 'success' ? 'Thành công' : 'Đang xử lý'}
-                  </span>
+        {/* DANH SÁCH: Đã ốp style icon bo tròn và flex layout của TransactionSection */}
+        <div className="mt-2 flex flex-col">
+          {recentTransactions.map((transaction) => {
+            const isCompleted = transaction.status === 'success'
+
+            return (
+              <div
+                key={transaction.id}
+                className="group flex w-full items-center gap-3 rounded-md px-2 py-3 text-left transition-colors hover:bg-surface-container-lowest"
+              >
+                {/* ICON BÊN TRÁI */}
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${isCompleted
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                  }`}>
+                  {isCompleted ? (
+                    <CheckCircle2 className="h-5 w-5" />
+                  ) : (
+                    <Clock className="h-5 w-5" />
+                  )}
                 </div>
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                  {transaction.method} • <span className="font-mono text-[11px]">{transaction.time}</span>
-                </p>
-              </div>
 
-              <div className="whitespace-nowrap text-right">
-                <div className="text-sm font-black text-green-600">+{formatFullVND(Math.round(transaction.amount))}</div>
-                <div className="mt-0.5 text-[10px] font-medium text-muted-foreground">{formatShortVND(Math.round(transaction.amount))}</div>
+                {/* THÔNG TIN CHÍNH */}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-foreground">{transaction.user}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    <span className="font-mono">{transaction.time}</span>
+                  </p>
+                </div>
+
+                {/* SỐ TIỀN BÊN PHẢI (Giữ nguyên hàm format của bạn) */}
+                <div className="shrink-0 text-right">
+                  <p className="text-sm font-black text-green-600">
+                    +{formatFullVND(Math.round(transaction.amount))}
+                  </p>
+                  <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
+                    {formatShortVND(Math.round(transaction.amount))}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
-      </div>
-
-      <div className="mt-4 rounded-lg border border-dashed border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-xs text-muted-foreground">
-        Gợi ý: nên thêm bộ lọc theo ngày, phương thức thanh toán và trạng thái xử lý ở phần này.
       </div>
     </aside>
   )

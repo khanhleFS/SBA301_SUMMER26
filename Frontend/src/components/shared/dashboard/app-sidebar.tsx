@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useLocation } from 'react-router-dom'
-import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, TrophyIcon, WalletIcon, BookOpen, LogOut, BarChart3Icon } from "lucide-react"
+import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, WalletIcon, BookOpen, LogOut, BarChart3Icon, Users, Coins } from "lucide-react"
 
 import { NavMain } from "@/components/shared/dashboard/nav-main"
 import { TeamSwitcher } from "@/components/shared/dashboard/team-switcher"
@@ -32,14 +32,15 @@ const THEME_BUTTONS: { mode: ThemeMode; icon: React.ElementType; label: string }
 
 const data = {
   teams: [
-    { name: "Acme Inc", logo: <GalleryVerticalEndIcon />, plan: "Enterprise" },
+    { name: "Storya", logo: <GalleryVerticalEndIcon />, plan: "" },
     { name: "Acme Corp.", logo: <AudioLinesIcon />, plan: "Startup" },
     { name: "Evil Corp.", logo: <TerminalIcon />, plan: "Free" },
   ],
   navMain: [
     { title: "Tổng quan", url: "/admin/dashboard", icon: <LayoutDashboardIcon /> },
+    { title: "Quản lý người dùng", url: "/admin/users", icon: <Users /> },
     { title: "Quản lý tài chính", url: "/admin/finance", icon: <WalletIcon /> },
-    { title: "Leader board", url: "/admin/leaderboard", icon: <TrophyIcon /> },
+    { title: "Quản lý gói nạp", url: "/admin/packages", icon: <Coins /> },
   ],
 }
 

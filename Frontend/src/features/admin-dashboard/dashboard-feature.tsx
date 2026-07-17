@@ -2,7 +2,6 @@ import { useDashboard } from './context/dashboard.context'
 import { DashboardSkeleton } from './components/dashboard-skeleton'
 import {
   DashboardChartSection,
-  DashboardPackagesSection,
   DashboardTransactionsSection,
   DashboardUserPulseSection,
 } from './components/dashboard-sections'
@@ -14,7 +13,7 @@ function DashboardContent() {
     return <DashboardSkeleton />
   }
 
-  const { chartData, platformNet, userPulse, recentTransactions, packageTiers } = data
+  const { chartData, platformNet, userPulse, recentTransactions } = data
 
   return (
     <div className="w-full space-y-4 sm:space-y-6">
@@ -28,7 +27,6 @@ function DashboardContent() {
         />
         <DashboardTransactionsSection recentTransactions={recentTransactions} />
       </section>
-      <DashboardPackagesSection packageTiers={packageTiers} />
     </div>
   )
 }

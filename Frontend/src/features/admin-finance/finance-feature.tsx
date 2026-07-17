@@ -3,7 +3,7 @@ import { FinanceSkeleton } from './components/finance-skeleton'
 import {
   FinanceChartsAndDepositsSection,
   FinanceKpiSection,
-  FinancePackagesSection,
+  FinanceTransactionTable,
 } from './components/finance-sections'
 
 function FinanceContent() {
@@ -13,13 +13,17 @@ function FinanceContent() {
     return <FinanceSkeleton />
   }
 
-  const { kpiData, cashFlow, recentDeposits, packageTiers } = data
+  const { kpiData, cashFlow, cashFlowMonth, recentDeposits } = data
 
   return (
     <div className="space-y-6">
       <FinanceKpiSection kpiData={kpiData} />
-      <FinanceChartsAndDepositsSection cashFlow={cashFlow} recentDeposits={recentDeposits} />
-      <FinancePackagesSection packageTiers={packageTiers} />
+      <FinanceChartsAndDepositsSection
+        cashFlow={cashFlow}
+        cashFlowMonth={cashFlowMonth}
+        recentDeposits={recentDeposits}
+      />
+      <FinanceTransactionTable />
     </div>
   )
 }

@@ -5,13 +5,9 @@ import {
   Eye,
   Coins,
   Percent,
-  TrendingUp,
-  ArrowRightLeft,
   ChevronDown
 } from 'lucide-react'
 import {
-  AreaChart,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,

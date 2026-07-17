@@ -3,7 +3,8 @@ import { Navigate } from 'react-router-dom'
 import DashboardLayout from '@/layouts/DashboardLayout'
 import Dashboard from '@/features/admin-dashboard/dashboard-feature'
 import FinancePage from '@/features/admin-finance/finance-feature'
-import LeaderboardPage from '@/features/admin-leaderboard/leaderboard-feature'
+import UserManagementPage from '@/features/admin-user/user-feature'
+import PackagesPage from '@/features/admin-packages/packages-feature'
 
 export const adminRoutes: RouteObject[] = [
 	{
@@ -14,7 +15,9 @@ export const adminRoutes: RouteObject[] = [
 			{ path: 'dashboard-old', element: <Dashboard /> },
 			{ path: 'dashboard', element: <Dashboard /> },
 			{ path: 'finance', element: <FinancePage /> },
-			{ path: 'leaderboard', element: <LeaderboardPage /> },
+			{ path: 'users', element: <UserManagementPage /> },
+			{ path: 'packages', element: <PackagesPage /> },
 		],
 	},
 ]
+

@@ -34,8 +34,11 @@ export default function DashboardLayout() {
     if (path === '/admin/finance' || path === '/author/finance') {
       return 'Quản lý tài chính'
     }
-    if (path === '/admin/leaderboard' || path === '/author/leaderboard') {
-      return 'Leader board'
+    if (path === '/admin/packages') {
+      return 'Quản lý gói nạp'
+    }
+    if (path === '/admin/users') {
+      return 'Quản lý người dùng'
     }
     if (path === '/author/stats') {
       return 'Thống kê chương'
