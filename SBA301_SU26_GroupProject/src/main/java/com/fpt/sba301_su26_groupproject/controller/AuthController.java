@@ -30,13 +30,17 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -213,6 +217,23 @@ public class AuthController {
                 .code(200)
                 .message("Lấy danh sách enums thành công")
                 .result(authenService.getEnums())
+                .build());
+    }
+
+    @Operation(
+            summary = "Change author status",
+            description = "Admin cấp/thu hồi quyền tác giả cho một user",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/users/{userId}/author-status")
+    public ResponseEntity<ApiResponse<Void>> changeAuthorStatus(
+            @PathVariable UUID userId,
+            @RequestParam boolean isAuthor) {
+        authenService.changeAuthorStatus(userId, isAuthor);
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .code(200)
+                .message(isAuthor ? "Cấp quyền tác giả thành công" : "Thu hồi quyền tác giả thành công")
                 .build());
     }
 }

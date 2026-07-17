@@ -42,11 +42,11 @@ DECLARE @BookmarkChapterId UNIQUEIDENTIFIER = NULL;
 -- -------------------------------------------------------------------------
 -- 2. Insert Users (roles follow UserRole enum: ADMIN, AUTHOR, USER)
 -- -------------------------------------------------------------------------
-INSERT INTO users (id, role, username, email, password, phone, address, is_active, coin_balance, created_at, updated_at)
+INSERT INTO users (id, role, username, email, password, phone, address, is_active, coin_balance, is_author, created_at, updated_at)
 VALUES
-(@AdminId, 'ADMIN', N'System Administrator', 'admin@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0901234567', N'123 Admin Street, Hanoi', 1, 0, GETDATE(), GETDATE()),
-(@AuthorId, 'AUTHOR', N'Nguyen Nhat Anh', 'author@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0912345678', N'456 Author Boulevard, HCM City', 1, 1500, GETDATE(), GETDATE()),
-(@UserId, 'USER', N'Tran Binh Minh', 'user@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0987654321', N'789 Reader Lane, Da Nang', 1, 350, GETDATE(), GETDATE());
+(@AdminId, 'ADMIN', N'System Administrator', 'admin@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0901234567', N'123 Admin Street, Hanoi', 1, 0, 0, GETDATE(), GETDATE()),
+(@AuthorId, 'USER', N'Nguyen Nhat Anh', 'author@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0912345678', N'456 Author Boulevard, HCM City', 1, 1500, 1, GETDATE(), GETDATE()),
+(@UserId, 'USER', N'Tran Binh Minh', 'user@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0987654321', N'789 Reader Lane, Da Nang', 1, 350, 0, GETDATE(), GETDATE());
 
 -- -------------------------------------------------------------------------
 -- 3. Insert Categories

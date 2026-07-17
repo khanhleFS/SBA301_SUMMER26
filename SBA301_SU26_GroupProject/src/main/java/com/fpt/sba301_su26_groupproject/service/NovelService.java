@@ -16,5 +16,6 @@ public interface NovelService {
     List<NovelResponseDTO> getAllNovelsByAuthor(String authorEmail);
     List<EnumResponseDTO> getEnums();
     NovelPageResponseDTO searchNovels(String title, String status, String categoryName, Integer minChapters, int page, int size);
+    com.fpt.sba301_su26_groupproject.dto.novel.NovelStatsResponseDTO getNovelStats(UUID novelId, String authorEmail);
 }
 

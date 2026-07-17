@@ -27,7 +27,7 @@ IF OBJECT_ID('users','U')            IS NOT NULL DROP TABLE users;
 -- ---------------------------------------------------------------
 CREATE TABLE users (
     id           UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
-    role         NVARCHAR(20)     NOT NULL CHECK (role IN ('ADMIN','AUTHOR','USER')),
+    role         NVARCHAR(20)     NOT NULL CHECK (role IN ('ADMIN','USER')),
     username     NVARCHAR(255)    NOT NULL,
     email        NVARCHAR(255)    NOT NULL,
     password     NVARCHAR(255)    NOT NULL,
@@ -35,6 +35,7 @@ CREATE TABLE users (
     address      NVARCHAR(255)    NULL,
     is_active    BIT              NOT NULL DEFAULT 1,
     coin_balance INT              NOT NULL DEFAULT 0,
+    is_author    BIT              NOT NULL DEFAULT 0,
     created_at   DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
     updated_at   DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
     CONSTRAINT uq_users_username UNIQUE (username),
@@ -263,3 +264,14 @@ CREATE INDEX idx_revenues_calculated_at ON revenues(calculated_at);
 ALTER TABLE payments ADD order_id UNIQUEIDENTIFIER NULL;
 ALTER TABLE payments ADD paid_at DATETIME2 NULL;
 ALTER TABLE payments ADD CONSTRAINT FK_payments_orders FOREIGN KEY (order_id) REFERENCES orders(id);
+
+-- =============================================================================
+-- Migration: isAuthor (xóa role AUTHOR, thêm cột is_author)
+-- =============================================================================
+
+-- Nếu DB đã tồn tại và cần migration (không chạy lại schema từ đầu):
+-- ALTER TABLE users ADD is_author BIT NOT NULL DEFAULT 0;
+-- UPDATE users SET role = 'USER', is_author = 1 WHERE role = 'AUTHOR';
+
+-- Cập nhật tài khoản tác giả cũ (chạy trực tiếp trên DB hiện tại):
+UPDATE users SET role = 'USER', is_author = 1 WHERE email = 'author@sba.com';

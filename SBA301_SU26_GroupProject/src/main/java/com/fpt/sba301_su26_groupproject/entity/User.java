@@ -45,4 +45,11 @@ public class User extends BaseEntity {
     @Column(name = "coin_balance", nullable = false)
     @Builder.Default
     private Integer coinBalance = 0;
+
+        //add isAuthor field to User entity
+        @NotNull
+        @ColumnDefault("0")
+        @Column(name = "is_author", nullable = false)
+        @Builder.Default
+        private Boolean isAuthor = false;
 }

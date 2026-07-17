@@ -96,7 +96,8 @@ public class AuthenServiceImpl implements AuthenService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.getIsAuthor()
         );
     }
 
@@ -127,7 +128,8 @@ public class AuthenServiceImpl implements AuthenService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.getIsAuthor()
         );
     }
 
@@ -309,5 +311,14 @@ public class AuthenServiceImpl implements AuthenService {
     @Override
     public List<EnumResponseDTO> getEnums() {
         return enumRepository.getAuthEnums();
+    }
+
+    @Override
+    @Transactional
+    public void changeAuthorStatus(UUID userId, boolean isAuthor) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy người dùng"));
+        user.setIsAuthor(isAuthor);
+        userRepository.save(user);
     }
 }

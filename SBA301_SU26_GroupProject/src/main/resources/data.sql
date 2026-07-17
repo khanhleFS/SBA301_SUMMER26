@@ -20,10 +20,10 @@ DELETE FROM users;
 -- -------------------------------------------------------------------------
 -- 1. Users
 -- -------------------------------------------------------------------------
-INSERT INTO users (id, role, username, email, password, phone, address, is_active, coin_balance, created_at, updated_at) VALUES
-                                                                                                                             ('0befe623-b3a2-5045-8ec9-e6cb48b43cec', 'ADMIN', 'System Administrator', 'admin@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0901234567', '123 Admin Street, Hanoi', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                                                                             ('70eb648d-5444-5a43-bde1-06f8dab7d62a', 'AUTHOR', 'Nguyen Nhat Anh', 'author@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0912345678', '456 Author Boulevard, HCM City', 1, 1500, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                                                                             ('98bc5d00-38e0-54b1-8499-03ec52fb016a', 'USER', 'Tran Binh Minh', 'user@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0987654321', '789 Reader Lane, Da Nang', 1, 350, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO users (id, role, username, email, password, phone, address, is_active, coin_balance, is_author, created_at, updated_at) VALUES
+                                                                                                                             ('0befe623-b3a2-5045-8ec9-e6cb48b43cec', 'ADMIN', 'System Administrator', 'admin@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0901234567', '123 Admin Street, Hanoi', 1, 0, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                                                                                                                             ('70eb648d-5444-5a43-bde1-06f8dab7d62a', 'USER', 'Nguyen Nhat Anh', 'author@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0912345678', '456 Author Boulevard, HCM City', 1, 1500, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                                                                                                                             ('98bc5d00-38e0-54b1-8499-03ec52fb016a', 'USER', 'Tran Binh Minh', 'user@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0987654321', '789 Reader Lane, Da Nang', 1, 350, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- -------------------------------------------------------------------------
 -- 2. Categories

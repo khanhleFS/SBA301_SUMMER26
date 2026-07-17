@@ -70,6 +70,21 @@ public class ChapterController {
                 .build());
     }
 
+    @Operation(summary = "User reads a chapter (Increments view, saves history etc.)")
+    @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/read")
+    public ResponseEntity<ApiResponse<ChapterResponseDTO>> readChapter(
+            @PathVariable UUID novelId,
+            @PathVariable Integer chapterNumber,
+            Authentication authentication) {
+        String userEmail = authentication == null ? null : authentication.getName();
+
+        return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
+                .code(200)
+                .message("Đọc chương truyện thành công")
+                .result(chapterService.readChapter(novelId, chapterNumber, userEmail))
+                .build());
+    }
+
     @Operation(
             summary = "Update chapter",
             security = @SecurityRequirement(name = "Bearer Authentication")

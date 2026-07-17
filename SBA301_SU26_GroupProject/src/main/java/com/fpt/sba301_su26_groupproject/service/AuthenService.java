@@ -27,4 +27,6 @@ public interface AuthenService {
     LoginResponseDTO refreshToken(TokenRefreshRequestDTO request);
 
     List<EnumResponseDTO> getEnums();
+
+    void changeAuthorStatus(UUID userId, boolean isAuthor);
 }

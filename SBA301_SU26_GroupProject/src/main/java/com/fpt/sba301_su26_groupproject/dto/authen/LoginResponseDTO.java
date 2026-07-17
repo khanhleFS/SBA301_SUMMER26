@@ -17,6 +17,8 @@ public record LoginResponseDTO(
         @Schema(example = "user@example.com")
         String email,
         @Schema(example = "USER")
-        UserRole role
+        UserRole role,
+        @Schema(example = "false")
+        Boolean isAuthor
 ) {}
 

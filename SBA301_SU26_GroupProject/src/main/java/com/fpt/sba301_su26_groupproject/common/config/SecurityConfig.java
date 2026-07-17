@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/forgot-password", "/reset-password").permitAll()
                         .requestMatchers(SecurityConstants.PUBLIC_MATCHERS).permitAll()
-                        .requestMatchers("/api/author/**").hasRole("AUTHOR")
+                        .requestMatchers("/api/author/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
