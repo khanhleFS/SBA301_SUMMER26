@@ -258,8 +258,9 @@ public class NovelController {
             summary = "Update chapter",
             security = @SecurityRequirement(name = "Bearer Authentication")
     )
-    @PutMapping("/author/chapters/{chapterId}")
+    @PutMapping("/author/novels/{novelId}/chapters/{chapterId}")
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> updateChapter(
+            @PathVariable Long novelId,
             @PathVariable Long chapterId,
             @Valid @RequestBody ChapterRequestDTO request,
             Authentication authentication) {
@@ -274,8 +275,9 @@ public class NovelController {
             summary = "Delete chapter",
             security = @SecurityRequirement(name = "Bearer Authentication")
     )
-    @DeleteMapping("/author/chapters/{chapterId}")
+    @DeleteMapping("/author/novels/{novelId}/chapters/{chapterId}")
     public ResponseEntity<ApiResponse<Void>> deleteChapter(
+            @PathVariable Long novelId,
             @PathVariable Long chapterId,
             Authentication authentication) {
         chapterService.deleteChapter(chapterId, authentication.getName());
