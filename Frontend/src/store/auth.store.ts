@@ -1,11 +1,10 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { queryClient } from '@/lib/query-client'
 import { logoutUser, getUserProfile } from '@/services/auth-service'
 import type { User } from '@/types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
 
 interface AuthState {
   /** Authenticated user, or null when logged out */
@@ -74,10 +73,10 @@ export const useAuthStore = create<AuthState>()(
             const tokenToUse = consent === 'denied' ? (stateRefreshToken || '') : ''
             const refreshRes = await refreshToken({ refreshToken: tokenToUse })
             if (refreshRes && refreshRes.accessToken) {
-              set({ 
-                token: refreshRes.accessToken, 
+              set({
+                token: refreshRes.accessToken,
                 refreshToken: consent === 'denied' ? refreshRes.refreshToken : null,
-                isAuthenticated: true 
+                isAuthenticated: true
               })
               try {
                 const profile = await getUserProfile() as any
@@ -133,10 +132,17 @@ export const useAuthStore = create<AuthState>()(
     }),
 
     {
-      name: 'auth', // localStorage key
-      // Chỉ lưu trữ thông tin user ở localStorage, KHÔNG lưu bất kỳ token nào
-      partialize: (state) => ({ user: state.user }),
+      name: 'auth',
+      // Dùng sessionStorage thay vì localStorage:
+      //   ✅ Sống qua F5 (khác RAM/Zustand thuần)
+      //   ✅ Tự xóa khi đóng tab/trình duyệt (an toàn hơn localStorage với token nhạy cảm)
+      //   ✅ Không bị chia sẻ giữa các tab khác nhau
+      storage: createJSONStorage(() => sessionStorage),
+      // Persist user + refreshToken. accessToken vẫn chỉ sống trong RAM (không persist).
+      partialize: (state) => ({
+        user: state.user,
+        refreshToken: state.refreshToken,
+      }),
     }
   )
 )
-

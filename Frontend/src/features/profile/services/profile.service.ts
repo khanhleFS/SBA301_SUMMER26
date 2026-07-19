@@ -73,7 +73,7 @@ export async function fetchProfileData(): Promise<ProfileData> {
         isVerified: true,
       },
       wallet: {
-        balance: profile.balance || 0,
+        balance: profile.coinBalance || 0,
         currency: 'Lumi Coins',
       },
       transactions: [],

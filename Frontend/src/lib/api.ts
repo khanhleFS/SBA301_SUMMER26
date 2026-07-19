@@ -14,6 +14,7 @@ export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true', // Bỏ qua trang cảnh báo của Ngrok để tránh lỗi CORS
   },
   withCredentials: true, // Đính kèm Cookie (refresh token) vào mọi request
 })
@@ -53,11 +54,18 @@ api.interceptors.response.use(
   async (error: AxiosError<ApiResponse>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-    // Chỉ xử lý 401 và không retry request refresh chính nó (tránh vòng lặp vô tận)
+    // Chỉ xử lý 401 và không auto-refresh cho các API auth cơ bản (tránh vòng lặp vô tận)
     const isUnauthorized = error.response?.status === 401
-    const isRefreshEndpoint = originalRequest?.url?.includes('/auth/refresh')
+    const isAuthBypassEndpoint =
+      originalRequest?.url?.includes('/auth/login') ||
+      originalRequest?.url?.includes('/auth/refresh') ||
+      originalRequest?.url?.includes('/auth/logout') ||
+      originalRequest?.url?.includes('/auth/register') ||
+      originalRequest?.url?.includes('/auth/verify-register-otp') ||
+      originalRequest?.url?.includes('/auth/forgot-password') ||
+      originalRequest?.url?.includes('/auth/reset-password')
 
-    if (isUnauthorized && !originalRequest?._retry && !isRefreshEndpoint) {
+    if (isUnauthorized && !originalRequest?._retry && !isAuthBypassEndpoint) {
       if (isRefreshing) {
         // Nếu đang trong quá trình refresh, xếp request vào hàng đợi
         return new Promise((resolve, reject) => {
@@ -77,16 +85,16 @@ api.interceptors.response.use(
 
         // Gọi refresh — nếu denied thì truyền refreshToken từ RAM, ngược lại rỗng (Cookie)
         const { refreshToken } = await import('@/services/auth-service')
-        const refreshRes = await refreshToken({ 
-          refreshToken: consent === 'denied' ? (stateRefreshToken || '') : '' 
+        const refreshRes = await refreshToken({
+          refreshToken: consent === 'denied' ? (stateRefreshToken || '') : ''
         })
         const newToken = refreshRes.accessToken
 
         // Cập nhật Access Token và Refresh Token mới vào RAM
-        useAuthStore.setState({ 
-          token: newToken, 
+        useAuthStore.setState({
+          token: newToken,
           refreshToken: consent === 'denied' ? refreshRes.refreshToken : null,
-          isAuthenticated: true 
+          isAuthenticated: true
         })
 
         // Giải phóng hàng đợi với token mới
@@ -116,4 +124,3 @@ api.interceptors.response.use(
     })
   }
 )
-

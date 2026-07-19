@@ -60,6 +60,7 @@ export interface ProfileDTO {
   email: string
   phone: string
   address: string
+  coinBalance?: number
 }
 
 export interface ResetPasswordRequestDTO {

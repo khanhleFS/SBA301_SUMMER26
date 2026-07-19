@@ -406,3 +406,7 @@ html.lenis {
   animation-delay: 5s;
   animation-duration: 20s;
 }
+
+html {
+  scrollbar-gutter: stable;
+}

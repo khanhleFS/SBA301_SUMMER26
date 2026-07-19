@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link, useParams } from 'react-router-dom'
-import { motion, AnimatePresence, useScroll } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import {
   Settings,
   Bookmark,
@@ -31,6 +31,58 @@ import { ReaderSkeleton } from './reader-skeleton'
 import { useReaderContext, type ThemeType, type FontType, type LineHeightType } from '../context/reader-context'
 import { generateChapterAudio } from '@/services/chapter-service'
 
+interface ArticleProgressBarProps {
+  targetRef: React.RefObject<HTMLElement | null>
+}
+
+function ArticleProgressBar({ targetRef }: ArticleProgressBarProps) {
+  const [element, setElement] = useState<HTMLElement | null>(null)
+
+  useEffect(() => {
+    setElement(targetRef.current)
+  }, [targetRef])
+
+  const { scrollY } = useScroll()
+
+  // Manually map the window scrollY to the article bounds to avoid
+  // Framer Motion element-offset inversion bugs and static position warnings.
+  const progress = useTransform(scrollY, (latestScrollY) => {
+    if (!element) return 0
+    const rect = element.getBoundingClientRect()
+    // get absolute top relative to the document
+    const elementTop = rect.top + latestScrollY
+    const elementHeight = rect.height
+    const viewportHeight = window.innerHeight
+
+    // Start tracking when the top of the article hits the top of the viewport (offset by header)
+    const startScroll = elementTop - 80
+    // Finish tracking when the bottom of the article hits the bottom of the viewport
+    const endScroll = elementTop + elementHeight - viewportHeight
+
+    if (endScroll <= startScroll) {
+      // Content is shorter than the viewport
+      return latestScrollY > startScroll ? 1 : 0
+    }
+
+    const currentProgress = (latestScrollY - startScroll) / (endScroll - startScroll)
+    return Math.max(0, Math.min(1, currentProgress))
+  })
+
+  if (!element) return null
+
+  return (
+    <motion.div
+      className="progress_bar fixed top-0 left-0 right-0 h-1 bg-primary z-[60] shadow-[0_1px_6px_rgba(79,55,138,0.5)]"
+      style={{
+        scaleX: progress,
+        scaleY: 1,
+        transformOrigin: '0% 0% 0px',
+        willChange: 'transform',
+      }}
+    />
+  )
+}
+
 function ReaderContent() {
   const navigate = useNavigate()
   const { novelSlugWithId } = useParams<{ novelSlugWithId: string }>()
@@ -51,8 +103,6 @@ function ReaderContent() {
     setLineHeight,
     fullFrame,
     setFullFrame,
-    brightness,
-    setBrightness
   } = useReaderContext()
 
   useEffect(() => {
@@ -71,6 +121,7 @@ function ReaderContent() {
 
   // ── Audio Player State ──
   const [isAudioOpen, setIsAudioOpen] = useState(false)
+  const [volume, setVolume] = useState(80)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [duration, setDuration] = useState(0)
@@ -87,11 +138,21 @@ function ReaderContent() {
     setIsPlaying(false)
     setCurrentTime(0)
     setDuration(0)
-    
+
     if (activeChap) {
       setCurrentAudioUrl(activeChap.audioUrl)
     }
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100
+    }
   }, [activeChap])
+
+  // Sync volume slider → audio element
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100
+    }
+  }, [volume])
 
   // Sync audio play state
   const handlePlayPause = () => {
@@ -185,7 +246,7 @@ function ReaderContent() {
   }, [])
 
   const readingContainerRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll()
+  const articleContentRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const updateScrollState = () => {
@@ -365,10 +426,7 @@ function ReaderContent() {
         />
       )}
 
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-primary z-[60] origin-left shadow-[0_1px_6px_rgba(79,55,138,0.5)]"
-        style={{ scaleX: scrollYProgress }}
-      />
+      <ArticleProgressBar targetRef={articleContentRef} />
 
       <div className="w-full h-full">
         <div
@@ -404,127 +462,7 @@ function ReaderContent() {
               <span>{activeChap.words}</span>
             </div>
 
-            {/* Audio Toggle Button in Header */}
-            <button
-              onClick={() => setIsAudioOpen(prev => !prev)}
-              className="mt-4 flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 active:scale-95 transition-all text-xs font-bold cursor-pointer"
-            >
-              <Headphones className="w-4 h-4" />
-              {isAudioOpen ? 'Ẩn trình nghe' : 'Nghe giọng đọc AI'}
-            </button>
           </div>
-
-          {/* Collapsible Audio Player Block */}
-          <AnimatePresence>
-            {isAudioOpen && (
-              <motion.div
-                initial={{ height: 0, opacity: 0, marginBottom: 0 }}
-                animate={{ height: 'auto', opacity: 1, marginBottom: 24 }}
-                exit={{ height: 0, opacity: 0, marginBottom: 0 }}
-                className="overflow-hidden w-full"
-              >
-                <div className="p-4 sm:p-5 rounded-2xl bg-current/[0.04] border border-current/10 flex flex-col gap-4 text-left select-none">
-                  {currentAudioUrl ? (
-                    <>
-                      {/* Audio exists panel */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className={`w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary ${isPlaying ? 'animate-pulse' : ''}`}>
-                            <Headphones className="w-5 h-5" />
-                          </div>
-                          <div className="min-w-0">
-                            <h4 className="text-sm font-bold truncate">{activeChap.title}</h4>
-                            <p className="text-[10px] opacity-75 font-semibold">{activeChap.chapterNum}</p>
-                          </div>
-                        </div>
-
-                        {/* Player Controls */}
-                        <div className="flex items-center gap-4 self-center">
-                          <button
-                            onClick={() => skipTime(-10)}
-                            className="p-2 hover:bg-current/[0.05] rounded-full text-foreground/80 hover:text-foreground cursor-pointer transition-colors"
-                            title="Lùi 10 giây"
-                          >
-                            <RotateCcw className="w-4 h-4" />
-                          </button>
-                          
-                          <button
-                            onClick={handlePlayPause}
-                            className="w-10 h-10 rounded-full bg-primary text-on-primary hover:brightness-105 flex items-center justify-center cursor-pointer shadow active:scale-95 transition-all"
-                            title={isPlaying ? 'Tạm dừng' : 'Phát'}
-                          >
-                            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-current ml-0.5" />}
-                          </button>
-
-                          <button
-                            onClick={() => skipTime(10)}
-                            className="p-2 hover:bg-current/[0.05] rounded-full text-foreground/80 hover:text-foreground cursor-pointer transition-colors"
-                            title="Tiến 10 giây"
-                          >
-                            <RotateCw className="w-4 h-4" />
-                          </button>
-
-                          <button
-                            onClick={handleMuteToggle}
-                            className="p-2 hover:bg-current/[0.05] rounded-full text-foreground/80 hover:text-foreground cursor-pointer transition-colors ml-2"
-                            title={isMuted ? 'Bật âm' : 'Tắt âm'}
-                          >
-                            {isMuted ? <VolumeX className="w-4 h-4 text-destructive" /> : <Volume2 className="w-4 h-4" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Progress Bar slider */}
-                      <div className="space-y-1">
-                        <input
-                          type="range"
-                          min="0"
-                          max={duration || 0}
-                          value={currentTime}
-                          onChange={handleAudioSeek}
-                          className="w-full accent-primary h-1 bg-current/15 rounded-full appearance-none cursor-pointer"
-                        />
-                        <div className="flex justify-between text-[10px] font-bold opacity-60">
-                          <span>{formatTime(currentTime)}</span>
-                          <span>{formatTime(duration)}</span>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    /* Audio generation panel */
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                          <Sparkles className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-bold">Chưa có giọng đọc AI cho chương này</h4>
-                          <p className="text-[11px] opacity-75 font-medium mt-0.5">Sinh giọng đọc AI chất lượng cao để nghe Audio ngay lập tức.</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={handleGenerateAudio}
-                        disabled={isGenerating}
-                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center justify-center gap-2 hover:brightness-105 active:scale-95 disabled:opacity-50 transition-all cursor-pointer shrink-0"
-                      >
-                        {isGenerating ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Đang sinh audio...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-4 h-4" />
-                            Sinh giọng đọc AI (Mỹ)
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <div className="h-[1px] w-full bg-current opacity-10 my-6" />
 
@@ -544,6 +482,7 @@ function ReaderContent() {
 
           <main className="mx-auto cursor-pointer space-y-8 my-8" onClick={handleCanvasClick}>
             <article
+              ref={articleContentRef}
               className={`text-justify hyphens-auto select-text space-y-6 md:space-y-8 ${fontFamily === 'serif' ? 'font-serif' :
                 fontFamily === 'sans' ? 'font-sans' : 'font-mono'
                 }`}
@@ -630,7 +569,57 @@ function ReaderContent() {
               className="fixed bottom-6 left-0 right-0 flex justify-center z-[100] pointer-events-none"
             >
               <div className="pointer-events-auto">
-                <Dock items={dockItems} position="bottom" />
+                <Dock items={dockItems} position="bottom">
+                  {/* TTS Player inside dock */}
+                  <AnimatePresence>
+                    {isAudioOpen && (
+                      <motion.div
+                        initial={{ width: 0, opacity: 0 }}
+                        animate={{ width: 'auto', opacity: 1 }}
+                        exit={{ width: 0, opacity: 0 }}
+                        className="flex items-center overflow-hidden"
+                      >
+                        <div className="w-[1px] h-8 bg-current opacity-10 mx-2 shrink-0" />
+                        <div className="flex items-center gap-3 shrink-0">
+                          {currentAudioUrl ? (
+                            <>
+                              <button
+                                onClick={handlePlayPause}
+                                className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shadow-sm shrink-0"
+                              >
+                                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                              </button>
+                              
+                              <div className="w-24 sm:w-32 flex flex-col justify-center">
+                                <input
+                                  type="range" min="0" max={duration || 0} value={currentTime}
+                                  onChange={handleAudioSeek}
+                                  className="w-full h-1 accent-primary bg-current/15 rounded-full appearance-none cursor-pointer"
+                                />
+                              </div>
+
+                              <button
+                                onClick={handleMuteToggle}
+                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-current/5 transition-all shrink-0"
+                              >
+                                {isMuted ? <VolumeX className="w-4 h-4 text-destructive" /> : <Volume2 className="w-4 h-4 opacity-70" />}
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={handleGenerateAudio}
+                              disabled={isGenerating}
+                              className="px-3 py-1.5 rounded-full bg-primary text-on-primary text-[11px] font-bold flex items-center gap-1.5 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 shrink-0"
+                            >
+                              {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                              {isGenerating ? 'Đang sinh...' : 'Sinh giọng đọc'}
+                            </button>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Dock>
               </div>
             </motion.div>
           )
@@ -676,18 +665,12 @@ function ReaderContent() {
               >
                 <div className="space-y-5">
                   <ReaderConfigMenu
-                    theme={theme}
-                    setTheme={setTheme}
-                    fontSize={fontSize}
-                    setFontSize={setFontSize}
-                    fontFamily={fontFamily}
-                    setFontFamily={setFontFamily}
-                    lineHeight={lineHeight}
-                    setLineHeight={setLineHeight}
-                    brightness={brightness}
-                    setBrightness={setBrightness}
-                    fullFrame={fullFrame}
-                    setFullFrame={setFullFrame}
+                    theme={theme} setTheme={setTheme}
+                    fontSize={fontSize} setFontSize={setFontSize}
+                    fontFamily={fontFamily} setFontFamily={setFontFamily}
+                    lineHeight={lineHeight} setLineHeight={setLineHeight}
+                    fullFrame={fullFrame} setFullFrame={setFullFrame}
+                    volume={volume} setVolume={setVolume}
                   />
                 </div>
               </motion.div>
@@ -732,16 +715,11 @@ function ReaderContent() {
 
                 <div className="space-y-5">
                   <ReaderConfigMenu
-                    theme={theme}
-                    setTheme={setTheme}
-                    fontSize={fontSize}
-                    setFontSize={setFontSize}
-                    fontFamily={fontFamily}
-                    setFontFamily={setFontFamily}
-                    lineHeight={lineHeight}
-                    setLineHeight={setLineHeight}
-                    brightness={brightness}
-                    setBrightness={setBrightness}
+                    theme={theme} setTheme={setTheme}
+                    fontSize={fontSize} setFontSize={setFontSize}
+                    fontFamily={fontFamily} setFontFamily={setFontFamily}
+                    lineHeight={lineHeight} setLineHeight={setLineHeight}
+                    volume={volume} setVolume={setVolume}
                   />
                 </div>
               </motion.div>
@@ -779,7 +757,7 @@ function ReaderContent() {
               <span>{Math.round(scrollProgress)}%</span>
             </div>
             <div className="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
-              <motion.div className="h-full bg-primary origin-left" style={{ scaleX: scrollYProgress }} />
+              <motion.div className="h-full bg-primary origin-left" style={{ scaleX: scrollProgress / 100 }} />
             </div>
           </div>
 
@@ -806,14 +784,14 @@ function ReaderContent() {
 
               <div className="bg-surface-container-low p-2.5 rounded-xl border border-outline/5 space-y-2">
                 <span className="text-[10px] uppercase font-bold text-on-surface-variant flex items-center gap-1">
-                  <Sun className="h-3 w-3" /> Độ sáng
+                  <Volume2 className="h-3 w-3" /> Âm lượng
                 </span>
                 <input
                   type="range"
-                  min="40"
+                  min="0"
                   max="100"
-                  value={brightness}
-                  onChange={(e) => setBrightness(Number(e.target.value))}
+                  value={volume}
+                  onChange={(e) => setVolume(Number(e.target.value))}
                   className="w-full accent-primary h-1 bg-surface-container rounded-full appearance-none cursor-pointer"
                 />
               </div>

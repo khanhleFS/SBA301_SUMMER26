@@ -1,17 +1,20 @@
-import { useQuery } from '@tanstack/react-query'
-import { searchNovels } from '@/services/novel-service'
-import type { NovelResponseDTO } from '@/types'
+import { useEffect } from 'react'
+import { useNovelStore } from '@/store/novel.store'
 
 /**
- * Fetches the top N novels (sorted by viewCount desc) for use in home page sections.
+ * Fetches the top N novels (sorted by viewCount desc) for use in any component.
+ * Data is cached in the Zustand store for 5 minutes — multiple components can
+ * call this hook without triggering duplicate API requests.
  */
 export function useTopNovels(count = 8) {
-  return useQuery<NovelResponseDTO[]>({
-    queryKey: ['topNovels', count],
-    queryFn: async () => {
-      const result = await searchNovels({ page: 0, size: count })
-      return result.content
-    },
-    staleTime: 5 * 60 * 1000, // cache 5 min
-  })
+  const { topNovels, isLoading, fetchTopNovels } = useNovelStore()
+
+  useEffect(() => {
+    fetchTopNovels(count)
+  }, [count, fetchTopNovels])
+
+  return {
+    data: topNovels.slice(0, count),
+    isLoading,
+  }
 }

@@ -5,6 +5,8 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // Báo cho Vite biết: "Hãy lùi ra ngoài 1 thư mục để tìm và đọc file .env"
+  envDir: '../',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

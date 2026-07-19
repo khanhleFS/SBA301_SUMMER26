@@ -1,10 +1,11 @@
-import { Sun } from 'lucide-react'
+import { Volume, Volume2, Headphones, Play, Pause, Sparkles, Loader2, RotateCcw, RotateCw } from 'lucide-react'
 
 type ThemeType = 'nocturne' | 'charcoal' | 'sepia' | 'ivory' | 'day'
 type FontType = 'serif' | 'sans' | 'mono'
 type LineHeightType = 'tight' | 'normal' | 'loose'
 
 interface ReaderConfigMenuProps {
+  // --- Appearance ---
   theme: ThemeType
   setTheme: (t: ThemeType) => void
   fontSize: number
@@ -15,23 +16,15 @@ interface ReaderConfigMenuProps {
   setLineHeight: (l: LineHeightType) => void
   fullFrame?: boolean
   setFullFrame?: (val: any) => void
-  brightness: number
-  setBrightness: (b: number) => void
 }
 
 export default function ReaderConfigMenu({
-  theme,
-  setTheme,
-  fontSize,
-  setFontSize,
-  fontFamily,
-  setFontFamily,
-  lineHeight,
-  setLineHeight,
-  fullFrame,
-  setFullFrame,
-  brightness,
-  setBrightness
+  theme, setTheme,
+  fontSize, setFontSize,
+  fontFamily, setFontFamily,
+  lineHeight, setLineHeight,
+  fullFrame, setFullFrame,
+  volume, setVolume
 }: ReaderConfigMenuProps) {
   const glassControlClass =
     'bg-white/[0.14] dark:bg-white/[0.10] backdrop-blur-sm border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_14px_rgba(0,0,0,0.10)] [contain:paint]'
@@ -47,21 +40,20 @@ export default function ReaderConfigMenu({
               key={t}
               onClick={() => setTheme(t)}
               title={t.toUpperCase()}
-              className={`h-7 w-7 rounded-full border-2 transition-all cursor-pointer flex items-center justify-center ${theme === t ? 'border-primary scale-110 shadow' : 'border-outline/10 hover:scale-105 active:scale-95'
-                }`}
+              className={`h-7 w-7 rounded-full border-2 transition-all cursor-pointer flex items-center justify-center ${theme === t ? 'border-primary scale-110 shadow' : 'border-outline/10 hover:scale-105 active:scale-95'}`}
               style={{
                 backgroundColor:
                   t === 'nocturne' ? '#151419' :
-                    t === 'charcoal' ? '#1e1e24' :
-                      t === 'sepia' ? '#f4ebd4' :
-                        t === 'ivory' ? '#FAF5E6' : '#ffffff'
+                  t === 'charcoal' ? '#1e1e24' :
+                  t === 'sepia' ? '#f4ebd4' :
+                  t === 'ivory' ? '#FAF5E6' : '#ffffff'
               }}
             />
           ))}
         </div>
       </div>
 
-      {/* 2. Font Size Control (Gorgeous Range Slider with small/large A indicators) */}
+      {/* 2. Font Size */}
       <div className="space-y-1.5">
         <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider opacity-70">
           <span>Cỡ chữ (Font Size)</span>
@@ -70,10 +62,7 @@ export default function ReaderConfigMenu({
         <div className={`flex items-center gap-3 rounded-full px-5 py-3 ${glassControlClass}`}>
           <span className="text-[10px] font-bold opacity-60">A</span>
           <input
-            type="range"
-            min="14"
-            max="32"
-            value={fontSize}
+            type="range" min="14" max="32" value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
             className="flex-1 accent-primary h-1 bg-surface-container-high rounded-full appearance-none cursor-pointer"
           />
@@ -81,22 +70,15 @@ export default function ReaderConfigMenu({
         </div>
       </div>
 
-      {/* 3. Font Family Selection */}
+      {/* 3. Font Family */}
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold uppercase tracking-wider opacity-70">Kiểu chữ (Font Family)</label>
         <div className={`grid grid-cols-3 gap-1 rounded-xl p-1 ${glassControlClass}`}>
-          {[
-            { id: 'serif', label: 'Serif' },
-            { id: 'sans', label: 'Sans' },
-            { id: 'mono', label: 'Mono' }
-          ].map((f) => (
+          {[{ id: 'serif', label: 'Serif' }, { id: 'sans', label: 'Sans' }, { id: 'mono', label: 'Mono' }].map((f) => (
             <button
               key={f.id}
               onClick={() => setFontFamily(f.id as FontType)}
-              className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${fontFamily === f.id
-                ? 'bg-primary text-on-primary shadow'
-                : 'text-foreground hover:bg-surface-container-high'
-                }`}
+              className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${fontFamily === f.id ? 'bg-primary text-on-primary shadow' : 'text-foreground hover:bg-surface-container-high'}`}
             >
               {f.label}
             </button>
@@ -104,22 +86,15 @@ export default function ReaderConfigMenu({
         </div>
       </div>
 
-      {/* 4. Line Height Selection */}
+      {/* 4. Line Height */}
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold uppercase tracking-wider opacity-70">Giãn dòng (Line Height)</label>
         <div className={`grid grid-cols-3 gap-1 rounded-xl p-1 ${glassControlClass}`}>
-          {[
-            { id: 'tight', label: 'Hẹp' },
-            { id: 'normal', label: 'Thường' },
-            { id: 'loose', label: 'Rộng' }
-          ].map((l) => (
+          {[{ id: 'tight', label: 'Hẹp' }, { id: 'normal', label: 'Thường' }, { id: 'loose', label: 'Rộng' }].map((l) => (
             <button
               key={l.id}
               onClick={() => setLineHeight(l.id as LineHeightType)}
-              className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${lineHeight === l.id
-                ? 'bg-primary text-on-primary shadow'
-                : 'text-foreground hover:bg-surface-container-high'
-                }`}
+              className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${lineHeight === l.id ? 'bg-primary text-on-primary shadow' : 'text-foreground hover:bg-surface-container-high'}`}
             >
               {l.label}
             </button>
@@ -127,41 +102,36 @@ export default function ReaderConfigMenu({
         </div>
       </div>
 
-      {/* 5. Display Frame Options */}
+      {/* 5. Full Frame toggle */}
       {setFullFrame && (
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase tracking-wider opacity-70">Khung hiển thị</label>
           <button
             onClick={() => setFullFrame((prev: boolean) => !prev)}
-            className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all cursor-pointer ${fullFrame
-              ? 'border-primary bg-primary shadow text-on-primary'
-              : `border-transparent hover:bg-surface-container-high text-foreground ${glassControlClass}`
-              }`}
+            className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all cursor-pointer ${fullFrame ? 'border-primary bg-primary shadow text-on-primary' : `border-transparent hover:bg-surface-container-high text-foreground ${glassControlClass}`}`}
           >
             {fullFrame ? 'Đang tràn khung (Bật)' : 'Cân đối (Tắt)'}
           </button>
         </div>
       )}
 
-      {/* 6. Brightness Control */}
+      {/* 6. Volume */}
       <div className="space-y-1.5">
         <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider opacity-70">
-          <span>Độ sáng màn hình</span>
-          <span className="text-primary text-xs font-extrabold">{brightness}%</span>
+          <span>Âm lượng</span>
+          <span className="text-primary text-xs font-extrabold">{volume}%</span>
         </div>
         <div className={`flex items-center gap-3 rounded-full px-5 py-3 ${glassControlClass}`}>
-          <Sun className="h-4 w-4 text-on-surface-variant shrink-0" />
+          <Volume className="h-4 w-4 text-on-surface-variant shrink-0" />
           <input
-            type="range"
-            min="40"
-            max="100"
-            value={brightness}
-            onChange={(e) => setBrightness(Number(e.target.value))}
+            type="range" min="0" max="100" value={volume}
+            onChange={(e) => setVolume(Number(e.target.value))}
             className="flex-1 accent-primary h-1 bg-surface-container-high rounded-full appearance-none cursor-pointer"
           />
-          <Sun className="h-5 w-5 text-on-surface-variant shrink-0 font-bold opacity-80" />
+          <Volume2 className="h-5 w-5 text-on-surface-variant shrink-0 opacity-80" />
         </div>
       </div>
+
     </div>
   )
 }

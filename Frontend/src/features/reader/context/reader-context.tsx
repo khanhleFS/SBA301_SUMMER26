@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { readerService, type ChapterDetails } from '../services/reader-service'
 import { upsertBookmark, getBookmark, type BookmarkResponse } from '@/services/bookmark-service'
 import { useAuthStore } from '@/store/auth.store'
+import { useThemeStore } from '@/store/theme.store'
 import { extractUuid } from '../services/reader-service'
 
 export type ThemeType = 'nocturne' | 'charcoal' | 'sepia' | 'ivory' | 'day'
@@ -27,8 +28,6 @@ interface ReaderContextType {
   setLineHeight: (lineHeight: LineHeightType) => void
   fullFrame: boolean
   setFullFrame: (full: boolean) => void
-  brightness: number
-  setBrightness: (brightness: number) => void
 }
 
 const ReaderContext = createContext<ReaderContextType | undefined>(undefined)
@@ -51,22 +50,47 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
     }
   }, [initialChapterId])
 
+  const { themeMode, setThemeMode } = useThemeStore()
+
   // Settings state
   const [theme, setTheme] = useState<ThemeType>(() => {
     if (typeof window !== 'undefined') {
+      const isAppDark = themeMode === 'dark' || (themeMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
       const savedChoice = localStorage.getItem('reader-theme') as ThemeType | null
+      
       if (savedChoice && ['nocturne', 'charcoal', 'sepia', 'ivory', 'day'].includes(savedChoice)) {
-        return savedChoice
+        const isSavedDark = savedChoice === 'nocturne' || savedChoice === 'charcoal'
+        if (isAppDark === isSavedDark) {
+          return savedChoice
+        }
       }
-      return document.documentElement.classList.contains('dark') ? 'nocturne' : 'day'
+      return isAppDark ? 'nocturne' : 'day'
     }
     return 'nocturne'
   })
+
+  // 1. Global → Reader: when user toggles app dark/light mode, sync reader theme to match
+  const themeRef = useRef(theme)
+  themeRef.current = theme
+  const prevThemeModeRef = useRef<string>(themeMode)
+  useEffect(() => {
+    if (prevThemeModeRef.current === themeMode) return
+    prevThemeModeRef.current = themeMode
+
+    const isAppDark = themeMode === 'dark' || (themeMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    const isCurrentDark = themeRef.current === 'nocturne' || themeRef.current === 'charcoal'
+
+    if (isAppDark && !isCurrentDark) {
+      setTheme('nocturne')
+    } else if (!isAppDark && isCurrentDark) {
+      setTheme('day')
+    }
+  }, [themeMode])
+
   const [fontFamily, setFontFamily] = useState<FontType>('serif')
   const [fontSize, setFontSize] = useState(18)
   const [lineHeight, setLineHeight] = useState<LineHeightType>('normal')
   const [fullFrame, setFullFrame] = useState(false)
-  const [brightness, setBrightness] = useState(100)
 
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
 
@@ -88,18 +112,16 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
         bookmarkRef.current = existing
 
         if (existing) {
-          // Cập nhật lastChapterId khi đổi chapter (reset lastPage = 0)
           if (existing.lastChapterId !== chapterId) {
             await upsertBookmark({ novelId, lastChapterId: chapterId || null, lastPage: 0 })
           } else {
-            // Restore scroll position nếu quay lại chapter đã đọc dở
             const savedPercent = existing.lastPage ?? 0
             if (savedPercent > 0) {
               setTimeout(() => {
                 const height = document.documentElement.scrollHeight - document.documentElement.clientHeight
                 window.scrollTo({ top: (savedPercent / 100) * height, behavior: 'smooth' })
                 setScrollProgress(savedPercent)
-              }, 400) // delay để DOM render xong
+              }, 400)
             }
           }
         }
@@ -123,7 +145,6 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
 
     setScrollProgress(scrollPercent)
 
-    // Debounce: chỉ gọi API sau 1.5s dừng scroll
     if (saveScrollTimerRef.current) clearTimeout(saveScrollTimerRef.current)
     saveScrollTimerRef.current = setTimeout(async () => {
       try {
@@ -144,16 +165,25 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
     }
   }, [handleScrollSave])
 
-  // Sync theme with document
+  // 2. Reader → Global: when user picks a theme inside Reader Config, sync app mode to match
+  const themeModeRef = useRef(themeMode)
+  themeModeRef.current = themeMode
   useEffect(() => {
     localStorage.setItem('reader-theme', theme)
     const isDarkTheme = theme === 'nocturne' || theme === 'charcoal'
+
     if (isDarkTheme) {
       document.documentElement.classList.add('dark')
     } else {
       document.documentElement.classList.remove('dark')
     }
-  }, [theme])
+
+    // Only update global themeMode if the dark/light polarity actually differs (avoids loop)
+    const isAppDark = themeModeRef.current === 'dark' || (themeModeRef.current === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    if (isDarkTheme !== isAppDark) {
+      setThemeMode(isDarkTheme ? 'dark' : 'light')
+    }
+  }, [theme, setThemeMode])
 
   return (
     <ReaderContext.Provider value={{
@@ -171,9 +201,7 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
       lineHeight,
       setLineHeight,
       fullFrame,
-      setFullFrame,
-      brightness,
-      setBrightness
+      setFullFrame
     }}>
       {children}
     </ReaderContext.Provider>

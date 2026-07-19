@@ -77,9 +77,6 @@ export function StoryBanner({ inLibrary, onLibraryToggle, onScrollToChapters }: 
                     </>
                   )}
                 </button>
-                <button className="p-3 bg-surface-container-high text-foreground rounded-full border border-outline/20 hover:bg-surface-bright active:scale-95 transition-all cursor-pointer">
-                  <Share2 className="h-4 w-4" />
-                </button>
               </div>
             </div>
           </div>

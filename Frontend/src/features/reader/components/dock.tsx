@@ -11,12 +11,13 @@ interface DockProps {
   items: DockItemType[]
   className?: string
   position?: 'bottom' | 'left' | 'right' | 'top'
+  children?: React.ReactNode
 }
 
-export default function Dock({ items, className = '' }: DockProps) {
+export default function Dock({ items, className = '', children }: DockProps) {
   return (
     <div
-      className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-surface-container-high border border-outline/10 shadow-lg ${className}`}
+      className={`flex items-center gap-2 px-3 py-2 rounded-2xl bg-surface-container-high border border-outline/10 shadow-lg ${className}`}
       role="toolbar"
       aria-label="Reader controls"
     >
@@ -25,7 +26,7 @@ export default function Dock({ items, className = '' }: DockProps) {
           key={index}
           onClick={item.onClick}
           title={item.label}
-          className={`relative group w-10 h-10 flex items-center justify-center rounded-full bg-primary text-on-primary border border-white/10 cursor-pointer hover:brightness-110 active:scale-95 transition-all ${item.className ?? ''}`}
+          className={`relative group w-10 h-10 flex items-center justify-center rounded-full bg-primary text-on-primary border border-white/10 cursor-pointer hover:brightness-110 active:scale-95 transition-all shrink-0 ${item.className ?? ''}`}
           aria-label={item.label}
         >
           {item.icon}
@@ -34,6 +35,7 @@ export default function Dock({ items, className = '' }: DockProps) {
           </span>
         </button>
       ))}
+      {children}
     </div>
   )
 }

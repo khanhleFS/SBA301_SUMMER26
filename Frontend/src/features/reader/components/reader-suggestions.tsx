@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import Container from '@/components/shared/site/container'
-import { MOCK_STORIES } from '@/services/mock-data'
+import { useTopNovels } from '@/hooks/useTopNovels'
 
 interface ReaderSuggestionsProps {
   currentTheme: {
@@ -10,8 +10,12 @@ interface ReaderSuggestionsProps {
 }
 
 export default function ReaderSuggestions({ currentTheme }: ReaderSuggestionsProps) {
-  // Take 4 stories for recommendations
-  const displayList = MOCK_STORIES.slice(0, 4)
+  // Fetch top 4 novels from the shared Zustand store
+  const { data: displayList = [], isLoading } = useTopNovels(4)
+
+  if (isLoading || displayList.length === 0) {
+    return null
+  }
 
   return (
     <Container className="mt-16 pb-20 select-none">
@@ -19,9 +23,9 @@ export default function ReaderSuggestions({ currentTheme }: ReaderSuggestionsPro
         <h3 className={`font-serif text-lg font-bold ${currentTheme.text}`}>
           Gợi ý truyện cùng thể loại
         </h3>
-        <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+        <Link to="/search" className="text-[10px] font-bold uppercase tracking-wider text-primary hover:underline">
           Xem thêm
-        </span>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
@@ -33,14 +37,16 @@ export default function ReaderSuggestions({ currentTheme }: ReaderSuggestionsPro
           >
             <div className="relative aspect-[3/4] overflow-hidden rounded-xl md:rounded-[32px] bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-2">
               <img
-                src={novel.imgUrl || 'https://placehold.co/400x533/E6E1E5/4F378A?text=No+Cover'}
+                src={novel.coverImageUrl || 'https://placehold.co/400x533/E6E1E5/4F378A?text=No+Cover'}
                 alt={novel.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="absolute top-4 right-4 bg-primary text-on-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                {novel.genres[0]}
-              </div>
+              {novel.categories && novel.categories.length > 0 && (
+                <div className="absolute top-4 right-4 bg-primary text-on-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                  {novel.categories[0]}
+                </div>
+              )}
             </div>
 
             <div className="space-y-1 text-center">
@@ -48,9 +54,9 @@ export default function ReaderSuggestions({ currentTheme }: ReaderSuggestionsPro
                 {novel.title}
               </h3>
               <div className="flex items-center justify-center gap-2 text-[10px] md:text-xs font-bold">
-                <span className="text-primary inline-block">Chương {novel.chapters.length}</span>
+                <span className="text-primary inline-block">Chương {novel.chapterCount}</span>
                 <span className={`${currentTheme.textMuted} opacity-30 inline-block`}>•</span>
-                <span className={`${currentTheme.textMuted} italic inline-block`}>{novel.publishTime}</span>
+                <span className={`${currentTheme.textMuted} italic inline-block`}>{novel.authorName}</span>
               </div>
             </div>
           </Link>
