@@ -6,6 +6,10 @@ import com.fpt.sba301_su26_groupproject.dto.novel.NovelRequestDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelStatsResponseDTO;
 import com.fpt.sba301_su26_groupproject.service.NovelService;
+import com.fpt.sba301_su26_groupproject.service.ChapterService;
+import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterRequestDTO;
+import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterResponseDTO;
+import com.fpt.sba301_su26_groupproject.dto.chapter.ChapterUnlockResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +37,7 @@ import java.util.UUID;
 public class NovelController {
 
     private final NovelService novelService;
+    private final ChapterService chapterService;
     private final UploadService uploadService;
 
     @Operation(
@@ -71,7 +76,7 @@ public class NovelController {
     )
     @GetMapping("/author/novels/{id}")
     public ResponseEntity<ApiResponse<NovelResponseDTO>> getNovelById(
-            @PathVariable UUID id) {
+            @PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.<NovelResponseDTO>builder()
                 .code(200)
                 .message("Lấy thông tin bộ truyện thành công")
@@ -99,7 +104,7 @@ public class NovelController {
     @Operation(summary = "Get novel by ID (Guest/Reader)")
     @GetMapping("/novels/{id}")
     public ResponseEntity<ApiResponse<NovelResponseDTO>> getPublicNovelById(
-            @PathVariable UUID id) {
+            @PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.<NovelResponseDTO>builder()
                 .code(200)
                 .message("Lấy thông tin bộ truyện thành công")
@@ -123,7 +128,7 @@ public class NovelController {
     )
     @PutMapping("/author/novels/{id}")
     public ResponseEntity<ApiResponse<NovelResponseDTO>> updateNovel(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             @Valid @RequestBody NovelRequestDTO request,
             Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.<NovelResponseDTO>builder()
@@ -139,7 +144,7 @@ public class NovelController {
     )
     @DeleteMapping("/author/novels/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteNovel(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             Authentication authentication) {
         novelService.deleteNovel(id, authentication.getName());
 
@@ -165,7 +170,7 @@ public class NovelController {
     )
     @GetMapping("/author/novels/{id}/stats")
     public ResponseEntity<ApiResponse<NovelStatsResponseDTO>> getNovelStats(
-            @PathVariable UUID id,
+            @PathVariable Long id,
             Authentication authentication) {
         NovelStatsResponseDTO result = novelService.getNovelStats(id, authentication.getName());
         return ResponseEntity.ok(ApiResponse.<NovelStatsResponseDTO>builder()
@@ -187,6 +192,137 @@ public class NovelController {
                 .code(200)
                 .message("Tải ảnh lên thành công")
                 .result(uploadService.uploadImage(file))
+                .build());
+    }
+
+    // --- Chapters API ---
+
+    @Operation(
+            summary = "Create chapter",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PostMapping("/author/novels/{novelId}/chapters")
+    public ResponseEntity<ApiResponse<ChapterResponseDTO>> createChapter(
+            @PathVariable Long novelId,
+            @Valid @RequestBody ChapterRequestDTO request,
+            Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.<ChapterResponseDTO>builder()
+                .code(201)
+                .message("Chương truyện được tạo thành công")
+                .result(chapterService.createChapter(novelId, request, authentication.getName()))
+                .build());
+    }
+
+    @Operation(summary = "Get chapters by novel")
+    @GetMapping("/novels/{novelId}/chapters")
+    public ResponseEntity<ApiResponse<List<ChapterResponseDTO>>> getChaptersByNovel(
+            @PathVariable Long novelId) {
+        return ResponseEntity.ok(ApiResponse.<List<ChapterResponseDTO>>builder()
+                .code(200)
+                .message("Lấy danh sách chương truyện thành công")
+                .result(chapterService.getChaptersByNovel(novelId))
+                .build());
+    }
+
+    @Operation(summary = "Get chapter details")
+    @GetMapping("/novels/{novelId}/chapters/{chapterNumber}")
+    public ResponseEntity<ApiResponse<ChapterResponseDTO>> getChapterDetails(
+            @PathVariable Long novelId,
+            @PathVariable Integer chapterNumber,
+            Authentication authentication) {
+        String userEmail = authentication == null ? null : authentication.getName();
+
+        return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
+                .code(200)
+                .message("Lấy thông tin chương truyện thành công")
+                .result(chapterService.getChapterDetails(novelId, chapterNumber, userEmail))
+                .build());
+    }
+
+    @Operation(summary = "User reads a chapter (Increments view, saves history etc.)")
+    @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/read")
+    public ResponseEntity<ApiResponse<ChapterResponseDTO>> readChapter(
+            @PathVariable Long novelId,
+            @PathVariable Integer chapterNumber,
+            Authentication authentication) {
+        String userEmail = authentication == null ? null : authentication.getName();
+
+        return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
+                .code(200)
+                .message("Đọc chương truyện thành công")
+                .result(chapterService.readChapter(novelId, chapterNumber, userEmail))
+                .build());
+    }
+
+    @Operation(
+            summary = "Update chapter",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PutMapping("/author/novels/{novelId}/chapters/{chapterId}")
+    public ResponseEntity<ApiResponse<ChapterResponseDTO>> updateChapter(
+            @PathVariable Long novelId,
+            @PathVariable Long chapterId,
+            @Valid @RequestBody ChapterRequestDTO request,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
+                .code(200)
+                .message("Cập nhật chương truyện thành công")
+                .result(chapterService.updateChapter(novelId, chapterId, request, authentication.getName()))
+                .build());
+    }
+
+    @Operation(
+            summary = "Delete chapter",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @DeleteMapping("/author/novels/{novelId}/chapters/{chapterId}")
+    public ResponseEntity<ApiResponse<Void>> deleteChapter(
+            @PathVariable Long novelId,
+            @PathVariable Long chapterId,
+            Authentication authentication) {
+        chapterService.deleteChapter(novelId, chapterId, authentication.getName());
+
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
+                .code(200)
+                .message("Xóa chương truyện thành công")
+                .build());
+    }
+
+    @Operation(summary = "Generate chapter audio")
+    @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/audio")
+    public ResponseEntity<ApiResponse<ChapterResponseDTO>> generateChapterAudio(
+            @PathVariable Long novelId,
+            @PathVariable Integer chapterNumber) {
+        return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
+                .code(200)
+                .message("Tạo audio cho chương truyện thành công")
+                .result(chapterService.generateChapterAudio(novelId, chapterNumber))
+                .build());
+    }
+
+    @Operation(
+            summary = "Unlock chapter with coins",
+            security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/unlock")
+    public ResponseEntity<ApiResponse<ChapterUnlockResponseDTO>> unlockChapter(
+            @PathVariable Long novelId,
+            @PathVariable Integer chapterNumber,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.<ChapterUnlockResponseDTO>builder()
+                .code(200)
+                .message("Mở khóa chương truyện thành công")
+                .result(chapterService.unlockChapter(novelId, chapterNumber, authentication.getName()))
+                .build());
+    }
+
+    @Operation(summary = "Get enums")
+    @GetMapping("/novels/chapters/enums")
+    public ResponseEntity<ApiResponse<List<EnumResponseDTO>>> getChapterEnums() {
+        return ResponseEntity.ok(ApiResponse.<List<EnumResponseDTO>>builder()
+                .code(200)
+                .message("Lấy danh sách enums thành công")
+                .result(chapterService.getEnums())
                 .build());
     }
 }

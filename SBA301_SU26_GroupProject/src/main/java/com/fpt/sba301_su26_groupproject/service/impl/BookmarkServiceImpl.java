@@ -86,7 +86,7 @@ public class BookmarkServiceImpl implements BookmarkService {
 
     @Override
     @Transactional
-    public void removeBookmark(UUID novelId, String userEmail) {
+    public void removeBookmark(Long novelId, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ApiException(BookmarkErrorCode.BOOKMARK_USER_NOT_FOUND,
                         "Không tìm thấy người dùng"));
@@ -105,7 +105,7 @@ public class BookmarkServiceImpl implements BookmarkService {
 
     @Override
     @Transactional(readOnly = true)
-    public BookmarkResponseDTO getBookmark(UUID novelId, String userEmail) {
+    public BookmarkResponseDTO getBookmark(Long novelId, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ApiException(BookmarkErrorCode.BOOKMARK_USER_NOT_FOUND,
                         "Không tìm thấy người dùng"));

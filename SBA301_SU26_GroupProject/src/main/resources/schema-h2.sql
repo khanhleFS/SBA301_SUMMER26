@@ -77,7 +77,6 @@ CREATE TABLE coin_packages (
     name             VARCHAR(100) NOT NULL,
     price_vnd        INT          NOT NULL,
     base_coins       INT          NOT NULL,
-    first_time_bonus INT          NOT NULL DEFAULT 0,
     is_active        BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -89,7 +88,7 @@ CREATE TABLE coin_packages (
 --    status → NovelStatus : ONGOING | COMPLETED | CANCELLED
 -- ---------------------------------------------------------------
 CREATE TABLE novels (
-    id              UUID         NOT NULL DEFAULT RANDOM_UUID() PRIMARY KEY,
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
     author_id       UUID         NOT NULL,
     title           VARCHAR(255) NOT NULL,
     slug            VARCHAR(300) NOT NULL UNIQUE,
@@ -112,7 +111,7 @@ CREATE INDEX idx_novels_created_at ON novels(created_at);
 --    Entity: NovelCategory (@EmbeddedId novel_id + category_id)
 -- ---------------------------------------------------------------
 CREATE TABLE novel_categories (
-    novel_id    UUID NOT NULL,
+    novel_id    BIGINT NOT NULL,
     category_id UUID NOT NULL,
     PRIMARY KEY (novel_id, category_id),
     FOREIGN KEY (novel_id)    REFERENCES novels(id)     ON DELETE CASCADE,
@@ -127,8 +126,8 @@ CREATE INDEX idx_novel_categories_category_id ON novel_categories(category_id);
 --    NO is_free column (removed from entity)
 -- ---------------------------------------------------------------
 CREATE TABLE chapters (
-    id             UUID         NOT NULL DEFAULT RANDOM_UUID() PRIMARY KEY,
-    novel_id       UUID         NOT NULL,
+    id             BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    novel_id       BIGINT       NOT NULL,
     chapter_number INT          NOT NULL,
     title          VARCHAR(255) NOT NULL,
     slug           VARCHAR(300) NOT NULL,
@@ -155,7 +154,7 @@ CREATE INDEX idx_chapters_created_at ON chapters(created_at);
 CREATE TABLE chapter_unlocks (
     id          UUID      NOT NULL DEFAULT RANDOM_UUID() PRIMARY KEY,
     user_id     UUID      NOT NULL,
-    chapter_id  UUID      NOT NULL,
+    chapter_id  BIGINT    NOT NULL,
     coins_spent INT       NOT NULL,
     unlocked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
@@ -173,8 +172,8 @@ CREATE INDEX idx_chapter_unlocks_chapter_id ON chapter_unlocks(chapter_id);
 CREATE TABLE bookmarks (
     id              UUID      NOT NULL DEFAULT RANDOM_UUID() PRIMARY KEY,
     user_id         UUID      NOT NULL,
-    novel_id        UUID      NOT NULL,
-    last_chapter_id UUID,
+    novel_id        BIGINT    NOT NULL,
+    last_chapter_id BIGINT,
     is_favorite     BOOLEAN   NOT NULL DEFAULT FALSE,
     last_page       INT       NOT NULL DEFAULT 0,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -262,7 +261,7 @@ CREATE INDEX idx_orders_created_at ON orders(created_at);
 -- ---------------------------------------------------------------
 CREATE TABLE revenues (
     id                  UUID           NOT NULL DEFAULT RANDOM_UUID() PRIMARY KEY,
-    novel_id            UUID           NOT NULL,
+    novel_id            BIGINT         NOT NULL,
     author_id           UUID           NOT NULL,
     total_coins_earned  INT            NOT NULL DEFAULT 0,
     free_chapter_count  INT            NOT NULL DEFAULT 0,

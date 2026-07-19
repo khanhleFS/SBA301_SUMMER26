@@ -42,12 +42,7 @@ public class CoinPackage {
     @Column(name = "base_coins", nullable = false)
     private Integer baseCoins;
 
-    // Coin tặng thêm chỉ dành cho lần đầu nạp - Admin config trên dashboard
-    @NotNull
-    @Min(0)
-    @ColumnDefault("0")
-    @Column(name = "first_time_bonus", nullable = false)
-    private Integer firstTimeBonus;
+
 
     @NotNull
     @ColumnDefault("1")
@@ -69,7 +64,6 @@ public class CoinPackage {
         createdAt = Instant.now();
         updatedAt = Instant.now();
         if (isActive == null)      isActive = true;
-        if (firstTimeBonus == null) firstTimeBonus = 0;
     }
 
     @PreUpdate
@@ -78,7 +72,7 @@ public class CoinPackage {
     }
 
     // Tính tổng coin thực nhận
-    public Integer getTotalCoins(boolean isFirstTime) {
-        return baseCoins + (isFirstTime ? firstTimeBonus : 0);
+    public Integer getTotalCoins() {
+        return baseCoins;
     }
 }

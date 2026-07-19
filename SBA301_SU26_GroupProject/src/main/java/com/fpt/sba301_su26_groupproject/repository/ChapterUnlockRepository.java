@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChapterUnlockRepository extends JpaRepository<ChapterUnlock, UUID> {
-    boolean existsByUserIdAndChapterId(UUID userId, UUID chapterId);
+    boolean existsByUserIdAndChapterId(UUID userId, Long chapterId);
 
     @Query("SELECT c.id, COALESCE(SUM(cu.coinsSpent), 0) FROM ChapterUnlock cu JOIN cu.chapter c WHERE c.novel.id = :novelId GROUP BY c.id")
-    List<Object[]> findRevenueByChapterGroupId(@Param("novelId") UUID novelId);
+    List<Object[]> findRevenueByChapterGroupId(@Param("novelId") Long novelId);
 }

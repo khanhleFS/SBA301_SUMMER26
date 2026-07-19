@@ -50,7 +50,7 @@ public class BookmarkController {
     )
     @DeleteMapping("/{novelId}")
     public ResponseEntity<ApiResponse<Void>> removeBookmark(
-            @PathVariable UUID novelId,
+            @PathVariable Long novelId,
             Authentication authentication) {
         bookmarkService.removeBookmark(novelId, authentication.getName());
         return ResponseEntity.ok(
@@ -68,7 +68,7 @@ public class BookmarkController {
     )
     @GetMapping("/{novelId}")
     public ResponseEntity<ApiResponse<BookmarkResponseDTO>> getBookmark(
-            @PathVariable UUID novelId,
+            @PathVariable Long novelId,
             Authentication authentication) {
         BookmarkResponseDTO result = bookmarkService.getBookmark(novelId, authentication.getName());
         return ResponseEntity.ok(

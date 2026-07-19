@@ -76,7 +76,6 @@ CREATE TABLE coin_packages (
     name             NVARCHAR(100)    NOT NULL,
     price_vnd        INT              NOT NULL,
     base_coins       INT              NOT NULL,
-    first_time_bonus INT              NOT NULL DEFAULT 0,
     is_active        BIT              NOT NULL DEFAULT 1,
     created_at       DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
     updated_at       DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME()
@@ -86,7 +85,7 @@ CREATE TABLE coin_packages (
 -- 5. novels
 -- ---------------------------------------------------------------
 CREATE TABLE novels (
-    id              UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+    id              BIGINT           NOT NULL IDENTITY(1,1) PRIMARY KEY,
     author_id       UNIQUEIDENTIFIER NOT NULL,
     title           NVARCHAR(255)    NOT NULL,
     slug            NVARCHAR(300)    NOT NULL,
@@ -109,7 +108,7 @@ CREATE INDEX idx_novels_created_at ON novels(created_at);
 -- 6. novel_categories
 -- ---------------------------------------------------------------
 CREATE TABLE novel_categories (
-    novel_id    UNIQUEIDENTIFIER NOT NULL,
+    novel_id    BIGINT           NOT NULL,
     category_id UNIQUEIDENTIFIER NOT NULL,
     CONSTRAINT pk_novel_categories PRIMARY KEY (novel_id, category_id),
     CONSTRAINT fk_nc_novel    FOREIGN KEY (novel_id)    REFERENCES novels(id)     ON DELETE CASCADE,
@@ -121,8 +120,8 @@ CREATE INDEX idx_novel_categories_category_id ON novel_categories(category_id);
 -- 7. chapters
 -- ---------------------------------------------------------------
 CREATE TABLE chapters (
-    id             UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
-    novel_id       UNIQUEIDENTIFIER NOT NULL,
+    id             BIGINT           NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    novel_id       BIGINT           NOT NULL,
     chapter_number INT              NOT NULL,
     title          NVARCHAR(255)    NOT NULL,
     slug           NVARCHAR(300)    NOT NULL,
@@ -148,7 +147,7 @@ CREATE INDEX idx_chapters_created_at ON chapters(created_at);
 CREATE TABLE chapter_unlocks (
     id          UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
     user_id     UNIQUEIDENTIFIER NOT NULL,
-    chapter_id  UNIQUEIDENTIFIER NOT NULL,
+    chapter_id  BIGINT           NOT NULL,
     coins_spent INT              NOT NULL,
     unlocked_at DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
     CONSTRAINT fk_cu_user    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
@@ -164,8 +163,8 @@ CREATE INDEX idx_chapter_unlocks_chapter_id ON chapter_unlocks(chapter_id);
 CREATE TABLE bookmarks (
     id              UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
     user_id         UNIQUEIDENTIFIER NOT NULL,
-    novel_id        UNIQUEIDENTIFIER NOT NULL,
-    last_chapter_id UNIQUEIDENTIFIER NULL,
+    novel_id        BIGINT           NOT NULL,
+    last_chapter_id BIGINT           NULL,
     is_favorite     BIT              NOT NULL DEFAULT 0,
     last_page       INT              NOT NULL DEFAULT 0,
     created_at      DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
@@ -242,7 +241,7 @@ CREATE INDEX idx_orders_created_at ON orders(created_at);
 -- ---------------------------------------------------------------
 CREATE TABLE revenues (
     id                   UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
-    novel_id             UNIQUEIDENTIFIER NOT NULL,
+    novel_id             BIGINT           NOT NULL,
     author_id            UNIQUEIDENTIFIER NOT NULL,
     total_coins_earned   INT              NOT NULL DEFAULT 0,
     free_chapter_count   INT              NOT NULL DEFAULT 0,

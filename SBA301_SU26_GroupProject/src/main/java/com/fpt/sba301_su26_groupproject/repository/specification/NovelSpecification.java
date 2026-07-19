@@ -34,7 +34,7 @@ public class NovelSpecification {
             }
 
             if (categoryName != null && !categoryName.isBlank()) {
-                Subquery<UUID> subquery = query.subquery(UUID.class);
+                Subquery<Long> subquery = query.subquery(Long.class);
                 Root<NovelCategory> subRoot = subquery.from(NovelCategory.class);
                 Join<NovelCategory, Category> categoryJoin = subRoot.join("category");
 

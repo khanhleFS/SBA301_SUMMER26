@@ -10,8 +10,8 @@ import java.util.UUID;
 
 @Repository
 public interface NovelCategoryRepository extends JpaRepository<NovelCategory, NovelCategoryId> {
-    void deleteByNovelId(UUID novelId);
-    List<NovelCategory> findByNovelId(UUID novelId);
+    void deleteByNovelId(Long novelId);
+    List<NovelCategory> findByNovelId(Long novelId);
     void  deleteByCategoryId(UUID categoryId);
-    boolean existsByNovelIdAndCategoryId(UUID novelId, UUID categoryId);
+    boolean existsByNovelIdAndCategoryId(Long novelId, UUID categoryId);
 }

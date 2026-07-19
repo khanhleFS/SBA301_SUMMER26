@@ -6,8 +6,8 @@ import java.util.UUID;
 
 @Builder
 public record ChapterStatsDTO(
-        @Schema(example = "e58ed763-928c-4155-bee9-fdbaaadc593c")
-        UUID chapterId,
+        @Schema(example = "1")
+        Long chapterId,
         
         @Schema(example = "1")
         int chapterNumber,

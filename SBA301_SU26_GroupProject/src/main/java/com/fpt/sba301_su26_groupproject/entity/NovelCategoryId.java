@@ -18,7 +18,7 @@ public class NovelCategoryId implements Serializable {
     private static final long serialVersionUID = 3745906987118040220L;
     @NotNull
     @Column(name = "novel_id", nullable = false)
-    private UUID novelId;
+    private Long novelId;
 
     @NotNull
     @Column(name = "category_id", nullable = false)
