@@ -129,7 +129,7 @@ public class ChapterServiceImpl implements ChapterService {
                 throw new ApiException(ChapterErrorCode.CHAPTER_LOCKED, "Chương này yêu cầu trả phí để đọc.");
             }
         }
-        return mapToResponseDTO(chapter);
+        return mapToResponseDTO(chapter, userEmail);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class ChapterServiceImpl implements ChapterService {
         // Cập nhật view count của truyện (Novel) nếu cần thiết (không yêu cầu nhưng là best practice)
         // Hiện tại chỉ tăng chapter view.
         
-        return mapToResponseDTO(chapter);
+        return mapToResponseDTO(chapter, userEmail);
     }
 
     @Override
@@ -313,7 +313,13 @@ public class ChapterServiceImpl implements ChapterService {
     }
 
     private ChapterResponseDTO mapToResponseDTO(Chapter chapter) {
-        Map<String, String> encryptedMap = encryptionService.encrypt(chapter.getContent());
+        return mapToResponseDTO(chapter, null);
+    }
+
+    private ChapterResponseDTO mapToResponseDTO(Chapter chapter, String userEmail) {
+        String userIdentifier = (userEmail != null && !userEmail.isBlank()) ? userEmail : "GUEST_JWT";
+        String contextId = userIdentifier + ":novel:" + chapter.getNovel().getId() + ":chapter:" + chapter.getChapterNumber();
+        Map<String, String> encryptedMap = encryptionService.encrypt(chapter.getContent(), contextId);
         return ChapterResponseDTO.builder()
                 .id(chapter.getId())
                 .novelId(chapter.getNovel().getId())

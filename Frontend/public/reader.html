@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +16,7 @@
     }
 
     body {
-      background-color: var(--page-bg, #eaeaea);
+      background-color: #eaeaea;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       justify-content: center;
@@ -26,31 +25,27 @@
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
-      transition: background-color 0.2s ease;
     }
 
     .story-card {
       width: 100%;
-      max-width: var(--card-max-width, 800px);
-      /* Đồng bộ với fullFrame */
-      background-color: var(--card-bg, #fff8eb);
+      max-width: 800px;
+      background-color: #fff8eb; /* Màu giấy đọc sách ngà vàng */
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
       border-radius: 8px;
       padding: 20px;
-      transition: background-color 0.2s ease;
-      /* KHÔNG transition max-width — đổi ngay lập tức để canvas đo đúng width mới */
     }
 
     .story-header {
       text-align: center;
       margin-bottom: 20px;
       padding-bottom: 10px;
-      border-bottom: 1px solid var(--border-color, #e0d7c6);
+      border-bottom: 1px solid #e0d7c6;
     }
 
     .story-header h1 {
       font-size: 22px;
-      color: var(--text-color, #333);
+      color: #333;
     }
 
     /* Thẻ Canvas chứa văn bản */
@@ -60,7 +55,6 @@
     }
   </style>
 </head>
-
 <body>
 
   <div class="story-card">
@@ -72,13 +66,49 @@
     <canvas id="storyCanvas"></canvas>
   </div>
 
-  <script>
-    // Key giải mã (Khớp với app.security.secret-key ở Spring Boot)
-    const SECRET_KEY_STR = '12345678901234567890123456789012';
+<script>
+  // Lưu trữ dữ liệu thô dạng cache local để phục vụ resize window
+  let globalDecryptedText = "";
 
-    // Lưu trữ dữ liệu thô dạng cache local để phục vụ resize window
-    let globalDecryptedText = "";
+  function getJwtUserIdentifier() {
+    try {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      if (token && token.includes('.')) {
+        const payloadBase64 = token.split('.')[1];
+        const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+        const payload = JSON.parse(payloadJson);
+        if (payload && (payload.sub || payload.email)) {
+          return payload.sub || payload.email;
+        }
+      }
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user && user.email) return user.email;
+      }
+    } catch (e) {}
+    return "GUEST_JWT";
+  }
 
+  /**
+   * Sinh Dynamic Key động theo JWT Token của User và bối cảnh chương (Không dùng Secret Key cố định)
+   * Công thức: SHA-256(jwtUserIdentifier + ":novel:" + novelId + ":chapter:" + chapterNumber + ":" + ivHex)
+   */
+  function deriveDynamicKey(novelId, chapterNumber, ivHex) {
+    const userIdentifier = getJwtUserIdentifier();
+    const contextId = `${userIdentifier}:novel:${novelId}:chapter:${chapterNumber}`;
+    const seed = `${contextId}:${ivHex}`;
+    return CryptoJS.SHA256(seed);
+  }
+
+  /**
+   * 1. Hàm giải mã chuỗi HEX nhận từ Spring Boot API bằng Dynamic Key
+   */
+  function decryptData(encryptedHex, ivHex, novelId, chapterNumber) {
+    if (!encryptedHex || !ivHex) return "";
+    const key = deriveDynamicKey(novelId, chapterNumber, ivHex);
+    const iv = CryptoJS.enc.Hex.parse(ivHex);
+    const encryptedBase64 = CryptoJS.enc.Hex.parse(encryptedHex).toString(CryptoJS.enc.Base64);
     /**
      * 0. Bảng màu theme — PHẢI khớp với themeStyles trong reader-content.tsx (React)
      */
@@ -224,16 +254,21 @@
       });
     }
 
-    /**
-     * 3. Fetch dữ liệu từ Spring Boot API
-     */
-    async function loadChapter(novelId = 1, chapterNumber = 1) {
-      try {
-        const response = await fetch(`http://localhost:8080/api/novels/${novelId}/chapters/${chapterNumber}`);
-
-        if (!response.ok) {
-          throw new Error("Không thể tải chương truyện");
-        }
+  /**
+   * 3. Fetch dữ liệu từ Spring Boot API
+   */
+  async function loadChapter(novelId = 1, chapterNumber = 1) {
+    try {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(`http://localhost:8080/api/novels/${novelId}/chapters/${chapterNumber}`, { headers });
+      
+      if (!response.ok) {
+        throw new Error("Không thể tải chương truyện");
+      }
 
         const resBody = await response.json();
         const data = resBody.result || resBody;
@@ -242,12 +277,12 @@
           // Đổi tiêu đề chương
           document.getElementById('chapterTitle').innerText = `${data.title || 'Chương ' + chapterNumber}`;
 
-          // Giải mã nội dung
-          if (data.encryptedData && data.iv) {
-            globalDecryptedText = decryptData(data.encryptedData, data.iv);
-          } else {
-            globalDecryptedText = data.content || "";
-          }
+        // Giải mã nội dung
+        if (data.encryptedData && data.iv) {
+          globalDecryptedText = decryptData(data.encryptedData, data.iv, data.novelId || novelId, data.chapterNumber || chapterNumber);
+        } else {
+          globalDecryptedText = data.content || "";
+        }
 
           // Vẽ lên Canvas
           renderCanvas(globalDecryptedText);
