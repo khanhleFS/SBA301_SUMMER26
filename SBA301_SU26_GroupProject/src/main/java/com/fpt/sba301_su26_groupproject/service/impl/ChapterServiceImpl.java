@@ -17,6 +17,7 @@ import com.fpt.sba301_su26_groupproject.entity.Novel;
 import com.fpt.sba301_su26_groupproject.entity.User;
 import com.fpt.sba301_su26_groupproject.repository.*;
 import com.fpt.sba301_su26_groupproject.service.ChapterService;
+import com.fpt.sba301_su26_groupproject.service.EncryptionService;
 import com.fpt.sba301_su26_groupproject.service.TtsService;
 import com.fpt.sba301_su26_groupproject.service.UploadService;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -49,6 +51,8 @@ public class ChapterServiceImpl implements ChapterService {
     private final ChapterUnlockRepository chapterUnlockRepository;
 
     private final CoinTransactionRepository coinTransactionRepository;
+
+    private final EncryptionService encryptionService;
 
     @Override
     @Transactional
@@ -309,13 +313,16 @@ public class ChapterServiceImpl implements ChapterService {
     }
 
     private ChapterResponseDTO mapToResponseDTO(Chapter chapter) {
+        Map<String, String> encryptedMap = encryptionService.encrypt(chapter.getContent());
         return ChapterResponseDTO.builder()
                 .id(chapter.getId())
                 .novelId(chapter.getNovel().getId())
                 .chapterNumber(chapter.getChapterNumber())
                 .title(chapter.getTitle())
                 .slug(chapter.getSlug())
-                .content(chapter.getContent())
+                .content(null)
+                .encryptedData(encryptedMap.get("encryptedData"))
+                .iv(encryptedMap.get("iv"))
                 .audioUrl(chapter.getAudioUrl())
                 .status(chapter.getStatus())
                 .coinPrice(chapter.getCoinPrice())

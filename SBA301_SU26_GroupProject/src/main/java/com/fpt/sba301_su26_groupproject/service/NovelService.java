@@ -13,6 +13,8 @@ public interface NovelService {
     NovelResponseDTO updateNovel(Long novelId, NovelRequestDTO requestDTO, String authorEmail);
     void deleteNovel(Long novelId, String authorEmail);
     NovelResponseDTO getNovelById(Long novelId);
+    NovelResponseDTO getNovelByIdentifier(String identifier);
+    com.fpt.sba301_su26_groupproject.entity.Novel findEntityByIdentifier(String identifier);
     List<NovelResponseDTO> getAllNovelsByAuthor(String authorEmail);
     List<EnumResponseDTO> getEnums();
     NovelPageResponseDTO searchNovels(String title, String status, String categoryName, Integer minChapters, int page, int size);

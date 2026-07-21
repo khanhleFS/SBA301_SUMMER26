@@ -29,9 +29,17 @@ export interface ChapterItem {
 export function extractId(slugWithId: string): string {
   if (!slugWithId) return ''
   const parts = slugWithId.split('-')
-  const last = parts[parts.length - 1]
-  if (/^\d+$/.test(last)) return last
-  // fallback: maybe it's already a plain id
+  if (parts.length >= 5) {
+    const possibleUuid = parts.slice(-5).join('-')
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (uuidRegex.test(possibleUuid)) {
+      return possibleUuid
+    }
+  }
+  const lastPart = parts[parts.length - 1]
+  if (/^\d+$/.test(lastPart)) {
+    return lastPart
+  }
   return slugWithId
 }
 
@@ -53,7 +61,7 @@ export const storyDetailService = {
       cover: novel.coverImageUrl || undefined
     }
   },
-  
+
   getStoryChapters: async (storyId: string): Promise<ChapterItem[]> => {
     const id = extractId(storyId)
     const chapters = await getChaptersByNovel(id)

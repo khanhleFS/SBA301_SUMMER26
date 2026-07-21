@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -148,6 +149,57 @@ public class NovelServiceImpl implements NovelService {
         Novel novel = novelRepository.findById(novelId)
                 .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Novel not found"));
         return mapToResponseDTO(novel);
+    }
+
+    @Override
+    public NovelResponseDTO getNovelByIdentifier(String identifier) {
+        Novel novel = findEntityByIdentifier(identifier);
+        return mapToResponseDTO(novel);
+    }
+
+    @Override
+    public Novel findEntityByIdentifier(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            throw new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Novel not found");
+        }
+
+        // 1. Try direct numeric ID
+        try {
+            Long id = Long.parseLong(identifier);
+            Optional<Novel> byId = novelRepository.findById(id);
+            if (byId.isPresent()) {
+                return byId.get();
+            }
+        } catch (NumberFormatException ignored) {}
+
+        // 2. Try extracting trailing numeric ID from slug (e.g. "my-novel-slug-21")
+        if (identifier.contains("-")) {
+            String lastPart = identifier.substring(identifier.lastIndexOf("-") + 1);
+            try {
+                Long id = Long.parseLong(lastPart);
+                Optional<Novel> byId = novelRepository.findById(id);
+                if (byId.isPresent()) {
+                    return byId.get();
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+
+        // 3. Try exact slug match
+        Optional<Novel> bySlug = novelRepository.findBySlug(identifier);
+        if (bySlug.isPresent()) {
+            return bySlug.get();
+        }
+
+        // 4. Try slug without trailing ID suffix
+        if (identifier.contains("-")) {
+            String slugWithoutId = identifier.substring(0, identifier.lastIndexOf("-"));
+            Optional<Novel> bySlugNoId = novelRepository.findBySlug(slugWithoutId);
+            if (bySlugNoId.isPresent()) {
+                return bySlugNoId.get();
+            }
+        }
+
+        throw new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Novel not found with identifier: " + identifier);
     }
 
     @Override

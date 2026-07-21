@@ -1,5 +1,28 @@
 import { getPublicNovelById } from '@/services/novel-service'
 import { getChaptersByNovel, getChapterDetails } from '@/services/chapter-service'
+import CryptoJS from 'crypto-js'
+
+const SECRET_KEY_STR = '12345678901234567890123456789012'
+
+export function decryptContent(encryptedHex?: string, ivHex?: string): string {
+  if (!encryptedHex || !ivHex) return ''
+  try {
+    const key = CryptoJS.enc.Utf8.parse(SECRET_KEY_STR)
+    const iv = CryptoJS.enc.Hex.parse(ivHex)
+    const encryptedBase64 = CryptoJS.enc.Hex.parse(encryptedHex).toString(CryptoJS.enc.Base64)
+
+    const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key, {
+      iv: iv,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7
+    })
+
+    return decrypted.toString(CryptoJS.enc.Utf8)
+  } catch (err) {
+    console.error('Lỗi giải mã nội dung chapter:', err)
+    return ''
+  }
+}
 
 export interface ChapterSummary {
   id: number
@@ -71,11 +94,16 @@ export const readerService = {
       ? `${sortedChapters[currentChapterIndex + 1].slug}-${sortedChapters[currentChapterIndex + 1].id}` 
       : null
 
+    // Decrypt content using encryptedData + iv or fallback to plain content
+    const rawText = (detail.encryptedData && detail.iv)
+      ? decryptContent(detail.encryptedData, detail.iv)
+      : (detail.content || '')
+
     // Split content by paragraphs (e.g. by newlines)
-    const paragraphs = detail.content ? detail.content.split('\n').filter(p => p.trim() !== '') : []
+    const paragraphs = rawText ? rawText.split('\n').filter(p => p.trim() !== '') : []
 
     // Estimate words and readTime
-    const wordCount = detail.content ? detail.content.split(/\s+/).length : 0
+    const wordCount = rawText ? rawText.split(/\s+/).length : 0
     const readTimeMinutes = Math.max(1, Math.round(wordCount / 200)) // ~200 words per minute
 
     return {

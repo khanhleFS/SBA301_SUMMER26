@@ -20,6 +20,10 @@ public record ChapterResponseDTO(
          String slug,
          @Schema(example = "The night was silent when the journey began...")
          String content,
+         @Schema(example = "a1b2c3d4e5f6...")
+         String encryptedData,
+         @Schema(example = "f6e5d4c3b2a1...")
+         String iv,
          @Schema(example = "https://cdn.example.com/audio/chapter-1.mp3")
          String audioUrl,
          @Schema(example = "UNLOCKED")

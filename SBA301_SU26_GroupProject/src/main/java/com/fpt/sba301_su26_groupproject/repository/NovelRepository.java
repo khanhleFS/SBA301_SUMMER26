@@ -9,12 +9,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface NovelRepository extends JpaRepository<Novel, Long>, JpaSpecificationExecutor<Novel> {
     List<Novel> findByAuthorId(UUID authorId);
+    Optional<Novel> findBySlug(String slug);
     boolean existsBySlug(String slug);
     boolean existsByTitle(String title);
     @Query("SELECT COUNT(n) > 0 FROM Novel n WHERE n.title = :title AND n.id <> :id")
