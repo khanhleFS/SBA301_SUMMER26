@@ -23,7 +23,7 @@ function formatShortVND(value: number) {
 }
 
 export function DashboardChartSection({ chartData, platformNet }: { chartData: number[]; platformNet: number }) {
-  // Chuyển mảng number[] thành mảng object để Recharts có thể đọc
+  // chartData is already in VND from the real API
   const formattedChartData = chartData.map((val, idx) => ({
     name: `Tháng ${idx + 1}`,
     value: val,
@@ -34,11 +34,11 @@ export function DashboardChartSection({ chartData, platformNet }: { chartData: n
       <div className="rounded-lg border border-gray-300 bg-surface p-4 shadow-sm lg:col-span-9 sm:p-5">
         <div className="flex items-center justify-between gap-3 border-b border-gray-200 dark:border-zinc-800 pb-3">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Biểu đồ gì đó?</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Doanh số nạp tiền của người dùng</div>
           </div>
         </div>
 
-        <div className="mt-4 h-[120px] w-full min-h-0">
+        <div className="mt-4 h-[180px] w-full min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={formattedChartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.06)" />
@@ -50,6 +50,7 @@ export function DashboardChartSection({ chartData, platformNet }: { chartData: n
               />
               <YAxis
                 tickLine={false}
+                tickFormatter={formatShortVND}
                 style={{ fontSize: 9, fontWeight: 500, fill: 'var(--muted-foreground)' }}
               />
               <Tooltip
@@ -59,9 +60,9 @@ export function DashboardChartSection({ chartData, platformNet }: { chartData: n
                   borderRadius: '6px',
                   fontSize: '11px',
                 }}
-                formatter={(value: any) => [`${value}%`, 'Chỉ số']}
+                formatter={(value: any) => [formatFullVND(value), 'Doanh thu nạp']}
               />
-              <Bar dataKey="value" name="Chỉ số" fill="var(--primary)" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="value" name="Doanh thu nạp" fill="var(--primary)" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -69,7 +70,7 @@ export function DashboardChartSection({ chartData, platformNet }: { chartData: n
 
       <div className="flex min-h-[6rem] flex-col items-start justify-center rounded-xl border border-primary bg-primary p-5 text-white shadow-sm lg:col-span-3">
         <div className="w-full">
-          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-on-primary">Thống kê quan trọng</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-on-primary">Doanh thu ròng (25%)</div>
           <div className="mt-4 text-4xl font-bold leading-none sm:text-5xl text-on-primary">{formatFullVND(Math.round(platformNet))}</div>
         </div>
       </div>
@@ -80,11 +81,11 @@ export function DashboardChartSection({ chartData, platformNet }: { chartData: n
 export function DashboardUserPulseSection({
   totalUsers,
   totalAuthors,
-  pendingRequests,
+  totalNovels,
 }: {
   totalUsers: number
   totalAuthors: number
-  pendingRequests: number
+  totalNovels: number
 }) {
   return (
     <section className="flex flex-col justify-between rounded-xl border border-outline-variant bg-surface-container-low p-4 shadow-sm lg:col-span-5 sm:p-5">
@@ -112,10 +113,10 @@ export function DashboardUserPulseSection({
             iconBg="bg-violet-500/10"
           />
           <PulseCard
-            label="Chờ duyệt"
-            value={pendingRequests}
-            icon={<UserPlus className="h-5 w-5 text-amber-600" />}
-            iconBg="bg-amber-500/10"
+            label="Tổng truyện"
+            value={totalNovels}
+            icon={<UserPlus className="h-5 w-5 text-emerald-600" />}
+            iconBg="bg-emerald-500/10"
           />
         </div>
       </div>
@@ -125,21 +126,21 @@ export function DashboardUserPulseSection({
 }
 
 export function DashboardTransactionsSection({
-  recentTransactions,
+  recentOrders,
 }: {
-  recentTransactions: {
-    id: string
-    user: string
-    method: string
-    amount: number
-    time: string
-    status: 'success' | 'pending'
+  recentOrders: {
+    orderId: string
+    username: string
+    userEmail: string
+    amountVnd: number
+    status: string
+    createdAt: string
   }[]
 }) {
   return (
     <aside className="flex h-full w-full flex-col justify-between rounded-xl border border-outline-variant bg-surface-container-low p-4 shadow-sm lg:col-span-7 sm:p-5">
       <div>
-        {/* HEADER: Giữ nguyên y hệt của bạn */}
+        {/* HEADER */}
         <div className="flex h-[40px] items-center justify-between gap-3 border-b border-outline-variant pb-3">
           <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Giao dịch gần đây</div>
 
@@ -151,14 +152,17 @@ export function DashboardTransactionsSection({
           </button>
         </div>
 
-        {/* DANH SÁCH: Đã ốp style icon bo tròn và flex layout của TransactionSection */}
+        {/* DANH SÁCH */}
         <div className="mt-2 flex flex-col">
-          {recentTransactions.map((transaction) => {
-            const isCompleted = transaction.status === 'success'
+          {recentOrders.map((order) => {
+            const isCompleted = order.status === 'COMPLETED'
+            const timeLabel = order.createdAt
+              ? new Date(order.createdAt).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
+              : ''
 
             return (
               <div
-                key={transaction.id}
+                key={order.orderId}
                 className="group flex w-full items-center gap-3 rounded-md px-2 py-3 text-left transition-colors hover:bg-surface-container-lowest"
               >
                 {/* ICON BÊN TRÁI */}
@@ -175,19 +179,19 @@ export function DashboardTransactionsSection({
 
                 {/* THÔNG TIN CHÍNH */}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-foreground">{transaction.user}</p>
+                  <p className="truncate text-sm font-bold text-foreground">{order.username}</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    <span className="font-mono">{transaction.time}</span>
+                    <span className="font-mono">{timeLabel}</span>
                   </p>
                 </div>
 
-                {/* SỐ TIỀN BÊN PHẢI (Giữ nguyên hàm format của bạn) */}
+                {/* SỐ TIỀN BÊN PHẢI */}
                 <div className="shrink-0 text-right">
                   <p className="text-sm font-black text-green-600">
-                    +{formatFullVND(Math.round(transaction.amount))}
+                    +{formatFullVND(order.amountVnd)}
                   </p>
                   <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
-                    {formatShortVND(Math.round(transaction.amount))}
+                    {formatShortVND(order.amountVnd)}
                   </p>
                 </div>
               </div>

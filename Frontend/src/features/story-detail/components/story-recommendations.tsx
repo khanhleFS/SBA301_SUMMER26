@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Eye, Loader2 } from 'lucide-react'
+import { Eye, Loader2, BookOpen } from 'lucide-react'
 import { useStoryDetailContext } from '../context/story-detail-context'
 import { useTopNovels } from '@/hooks/useTopNovels'
 
@@ -18,7 +18,7 @@ export function StoryRecommendations() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-10">
-         <Loader2 className="animate-spin text-primary w-6 h-6" />
+        <Loader2 className="animate-spin text-primary w-6 h-6" />
       </div>
     )
   }
@@ -35,7 +35,7 @@ export function StoryRecommendations() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           {displayList.map((rec) => (
-            <Link key={rec.id} to={`/${rec.slug}`} className="group block space-y-3">
+            <Link key={rec.id} to={`/${rec.slug}-${rec.id}`} className="group block space-y-3">
               <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-1">
                 <img src={rec.coverImageUrl || COVER_PLACEHOLDER} alt={rec.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -45,9 +45,13 @@ export function StoryRecommendations() {
               </div>
               <div className="space-y-1 text-center">
                 <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{rec.title}</h3>
-                <div className="flex items-center justify-center gap-1 text-[10px] font-bold">
-                  <Eye className="h-3 w-3 text-primary" />
-                  <span className="text-primary">{rec.viewCount?.toLocaleString() || 0}</span>
+                <div className="flex items-center justify-center gap-3 text-[10px] font-bold">
+                  <div className="flex items-center gap-1 text-primary">
+                    <span>Chương {rec.chapterCount || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-muted-foreground italic">
+                    <span>{rec.authorName}</span>
+                  </div>
                 </div>
               </div>
             </Link>
@@ -63,7 +67,7 @@ export function StoryRecommendations() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           {displayList.map((rec) => (
-            <Link key={rec.id} to={`/${rec.slug}`} className="group block space-y-3">
+            <Link key={rec.id} to={`/${rec.slug}-${rec.id}`} className="group block space-y-3">
               <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-1">
                 <img src={rec.coverImageUrl || COVER_PLACEHOLDER} alt={rec.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -73,9 +77,15 @@ export function StoryRecommendations() {
               </div>
               <div className="space-y-1 text-center">
                 <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{rec.title}</h3>
-                <div className="flex items-center justify-center gap-1 text-[10px] font-bold">
-                  <Eye className="h-3 w-3 text-primary" />
-                  <span className="text-primary">{rec.viewCount?.toLocaleString() || 0}</span>
+                <div className="flex items-center justify-center gap-3 text-[10px] font-bold">
+                  <div className="flex items-center gap-1 text-primary">
+                    <Eye className="h-3 w-3" />
+                    <span>{rec.viewCount?.toLocaleString() || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-1 opacity-60 text-foreground">
+                    <BookOpen className="h-3 w-3" />
+                    <span>{rec.chapterCount || 0} ch</span>
+                  </div>
                 </div>
               </div>
             </Link>

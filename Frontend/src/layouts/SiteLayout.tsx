@@ -30,10 +30,6 @@ export default function SiteLayout({ requireAuth = false }: SiteLayoutProps) {
 		return <Navigate to="/admin/dashboard" replace />
 	}
 
-	if (isAuthenticated && user?.role === 'AUTHOR') {
-		return <Navigate to="/author/novels" replace />
-	}
-
 	if (requireAuth && !isAuthenticated) {
 		return <Navigate to="/login" replace />
 	}

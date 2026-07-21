@@ -1,4 +1,4 @@
-import { Volume, Volume2, Headphones, Play, Pause, Sparkles, Loader2, RotateCcw, RotateCw } from 'lucide-react'
+import { Volume, Volume2 } from 'lucide-react'
 
 type ThemeType = 'nocturne' | 'charcoal' | 'sepia' | 'ivory' | 'day'
 type FontType = 'serif' | 'sans' | 'mono'
@@ -44,9 +44,9 @@ export default function ReaderConfigMenu({
               style={{
                 backgroundColor:
                   t === 'nocturne' ? '#151419' :
-                  t === 'charcoal' ? '#1e1e24' :
-                  t === 'sepia' ? '#f4ebd4' :
-                  t === 'ivory' ? '#FAF5E6' : '#ffffff'
+                    t === 'charcoal' ? '#1e1e24' :
+                      t === 'sepia' ? '#f4ebd4' :
+                        t === 'ivory' ? '#FAF5E6' : '#ffffff'
               }}
             />
           ))}

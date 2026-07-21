@@ -16,13 +16,14 @@ export default function LoginFeature() {
   const handleSubmit = wrap(async () => {
     setError(null)
     try {
-      const { accessToken, refreshToken, userId, username, email: userEmail, role } = await loginUser({ email, password })
+      const { accessToken, refreshToken, userId, username, email: userEmail, role, isAuthor } = await loginUser({ email, password })
       login(
         {
           id: userId,
           username,
           email: userEmail,
           role,
+          isAuthor,
           fullName: username,
           avatarUrl: undefined,
         },
@@ -31,8 +32,6 @@ export default function LoginFeature() {
       )
       if (role === 'ADMIN') {
         navigate('/admin/dashboard', { replace: true })
-      } else if (role === 'AUTHOR') {
-        navigate('/author/dashboard', { replace: true })
       } else {
         navigate('/', { replace: true })
       }

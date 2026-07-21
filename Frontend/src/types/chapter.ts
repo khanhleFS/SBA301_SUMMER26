@@ -1,8 +1,8 @@
 export type ChapterStatus = 'UNLOCKED' | 'LOCKED' | 'FREE'
 
 export interface ChapterResponseDTO {
-  id: string
-  novelId: string
+  id: number
+  novelId: number
   chapterNumber: number
   title: string
   slug: string

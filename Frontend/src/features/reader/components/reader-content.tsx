@@ -20,8 +20,6 @@ import {
   VolumeX,
   Sparkles,
   Loader2,
-  RotateCcw,
-  RotateCw
 } from 'lucide-react'
 import Dock from './dock'
 import ReaderSuggestions from './reader-suggestions'
@@ -437,31 +435,56 @@ function ReaderContent() {
             } ${currentTheme.bg}`}
           style={{ borderColor: 'rgba(var(--current-text-color), 0.1)', borderOpacity: 0.1 } as any}
         >
+          <div className="mb-6">
+            <button
+              onClick={() => navigate(`/${novelSlugWithId || ''}`)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold transition-all duration-200 cursor-pointer w-fit group hover:text-primary ${currentTheme.textMuted}`}
+              style={{ borderColor: 'rgba(var(--current-text-color), 0.12)', backgroundColor: 'rgba(var(--current-text-color), 0.04)' }}
+            >
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              <span>Quay lại trang truyện</span>
+            </button>
+          </div>
+
           <div className={`flex items-center flex-wrap gap-1 text-[9px] sm:text-[10px] uppercase tracking-wider font-bold mb-8 select-none ${currentTheme.textMuted}`}>
             <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
             <span className="opacity-40">/</span>
+
             <Link to="/search" className="hover:text-primary transition-colors">Khám phá</Link>
             <span className="opacity-40">/</span>
-            <span className="hover:text-primary transition-colors cursor-pointer" onClick={() => navigate('/story')}>
-              {activeChap.author}
+
+            <span className="hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(`/${novelSlugWithId || ''}`)}>
+              {activeChap.novelTitle || 'Tên Truyện'}
             </span>
             <span className="opacity-40">/</span>
+
             <span className="text-primary">{activeChap.chapterNum}</span>
           </div>
 
           <div className="flex flex-col items-center text-center mb-6">
-            <span className="text-xs uppercase tracking-widest font-bold text-primary mb-3">{activeChap.chapterNum}</span>
+            <span className="text-xs uppercase tracking-widest font-bold text-primary mb-3">
+              {activeChap.chapterNum}
+            </span>
+
             <h2 className={`font-serif text-3xl md:text-4xl font-bold leading-tight mb-4 ${currentTheme.text}`}>
               {activeChap.title}
             </h2>
+
             <div className={`flex items-center gap-3 text-xs font-semibold tracking-wide ${currentTheme.textMuted}`}>
-              <span>By {activeChap.author}</span>
+              <span>
+                By{' '}
+                <Link
+                  to={`/search?q=${encodeURIComponent(activeChap.author)}`}
+                  className="hover:text-primary hover:underline underline-offset-4 transition-all"
+                >
+                  {activeChap.author}
+                </Link>
+              </span>
               <span className="w-1 h-1 bg-current opacity-30 rounded-full" />
               <span>{activeChap.readTime}</span>
               <span className="w-1 h-1 bg-current opacity-30 rounded-full" />
               <span>{activeChap.words}</span>
             </div>
-
           </div>
 
           <div className="h-[1px] w-full bg-current opacity-10 my-6" />
@@ -523,6 +546,17 @@ function ReaderContent() {
           </div>
 
           <div className="h-[1px] w-full bg-current opacity-10 my-8" />
+
+          <div className="flex justify-start">
+            <button
+              onClick={() => navigate(`/${novelSlugWithId || ''}`)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold transition-all duration-200 cursor-pointer w-fit group hover:text-primary ${currentTheme.textMuted}`}
+              style={{ borderColor: 'rgba(var(--current-text-color), 0.12)', backgroundColor: 'rgba(var(--current-text-color), 0.04)' }}
+            >
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              <span>Quay lại trang truyện</span>
+            </button>
+          </div>
         </div>
 
         <ReaderSuggestions currentTheme={currentTheme} />
@@ -589,7 +623,7 @@ function ReaderContent() {
                               >
                                 {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                               </button>
-                              
+
                               <div className="w-24 sm:w-32 flex flex-col justify-center">
                                 <input
                                   type="range" min="0" max={duration || 0} value={currentTime}

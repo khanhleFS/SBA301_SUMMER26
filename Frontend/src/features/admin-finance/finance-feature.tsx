@@ -13,7 +13,7 @@ function FinanceContent() {
     return <FinanceSkeleton />
   }
 
-  const { kpiData, cashFlow, cashFlowMonth, recentDeposits } = data
+  const { kpiData, cashFlow, cashFlowMonth, recentDeposits, transactions } = data
 
   return (
     <div className="space-y-6">
@@ -23,7 +23,7 @@ function FinanceContent() {
         cashFlowMonth={cashFlowMonth}
         recentDeposits={recentDeposits}
       />
-      <FinanceTransactionTable />
+      <FinanceTransactionTable transactions={transactions} />
     </div>
   )
 }
@@ -31,4 +31,3 @@ function FinanceContent() {
 export default function FinanceFeature() {
   return <FinanceContent />
 }
-

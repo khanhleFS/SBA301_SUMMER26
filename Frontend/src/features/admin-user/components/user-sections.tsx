@@ -1,9 +1,13 @@
 import { useState } from 'react'
-import type { UserItem, UserManagementData } from '../services/user.service'
+import type { UserItem, UserManagementData, UserRole, UserStatus } from '../services/user.service'
 import { UserStatsSection } from './user-stats'
 import { UserTableSection } from './user-table'
 import { PromoteModal } from './promote-modal'
 import { BanModal } from './ban-modal'
+
+export type FilterRole = UserRole | 'ALL'
+export type FilterStatus = UserStatus | 'ALL'
+export type StatType = 'total' | 'author' | 'pending'
 
 type UserManagementSectionsProps = {
   data: UserManagementData
@@ -23,6 +27,10 @@ export function UserManagementSections({
   const [promoteTarget, setPromoteTarget] = useState<UserItem | null>(null)
   const [banTarget, setBanTarget] = useState<UserItem | null>(null)
 
+  // Đưa state bộ lọc lên cha
+  const [roleFilter, setRoleFilter] = useState<FilterRole>('ALL')
+  const [statusFilter, setStatusFilter] = useState<FilterStatus>('ALL')
+
   async function handleConfirmPromote() {
     if (!promoteTarget) return
     await onPromote(promoteTarget.id)
@@ -39,6 +47,25 @@ export function UserManagementSections({
     await onApprove(user.id)
   }
 
+  // Xử lý khi click vào thẻ stat
+  function handleStatClick(type: StatType) {
+    if (type === 'total') {
+      setRoleFilter('ALL')
+      setStatusFilter('ALL')
+    } else if (type === 'author') {
+      setRoleFilter('AUTHOR')
+      setStatusFilter('ALL')
+    } else if (type === 'pending') {
+      setRoleFilter('ALL')
+      setStatusFilter('pending')
+    }
+  }
+
+  // Xác định thẻ stat nào đang active dựa vào bộ lọc hiện tại
+  let activeStat: StatType = 'total'
+  if (roleFilter === 'AUTHOR' && statusFilter === 'ALL') activeStat = 'author'
+  else if (roleFilter === 'ALL' && statusFilter === 'pending') activeStat = 'pending'
+
   return (
     <>
       <div className="space-y-5">
@@ -51,7 +78,11 @@ export function UserManagementSections({
           </div>
         </div>
 
-        <UserStatsSection stats={data.stats} />
+        <UserStatsSection
+          stats={data.stats}
+          activeStat={activeStat}
+          onStatClick={handleStatClick}
+        />
 
         <UserTableSection
           users={data.users}
@@ -59,6 +90,11 @@ export function UserManagementSections({
           onToggleBan={setBanTarget}
           onApprove={handleApprove}
           isMutating={isMutating}
+          // Truyền state và setter xuống cho Table
+          roleFilter={roleFilter}
+          setRoleFilter={setRoleFilter}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
         />
       </div>
 

@@ -213,7 +213,7 @@ export function useCreateChapter(novelId: string) {
 export function useUpdateChapter(novelId: string, chapterId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (request: ChapterRequestDTO) => updateChapter(chapterId, request),
+    mutationFn: (request: ChapterRequestDTO) => updateChapter(novelId, chapterId, request),
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.chapters(novelId) })
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.chapter(novelId, data.chapterNumber) })
@@ -224,7 +224,7 @@ export function useUpdateChapter(novelId: string, chapterId: string) {
 export function useDeleteChapter(novelId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (chapterId: string) => deleteChapter(chapterId),
+    mutationFn: (chapterId: string) => deleteChapter(novelId, chapterId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: authorNovelKeys.chapters(novelId) })
     },

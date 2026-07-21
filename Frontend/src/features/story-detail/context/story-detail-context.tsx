@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
-import { storyDetailService, type StoryDetailInfo, type ChapterItem, extractUuid } from '../services/story-detail-service'
+import { storyDetailService, type StoryDetailInfo, type ChapterItem, extractId } from '../services/story-detail-service'
 import { getBookmark, upsertBookmark, removeBookmark } from '@/services/bookmark-service'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -62,7 +62,7 @@ export function StoryDetailProvider({ children, storyId }: { children: ReactNode
       setIsFavorite(false)
       return
     }
-    const novelId = extractUuid(storyId)
+    const novelId = extractId(storyId)
     if (!novelId) return
 
     getBookmark(novelId).then(bookmark => {
@@ -83,7 +83,7 @@ export function StoryDetailProvider({ children, storyId }: { children: ReactNode
   const toggleLibrary = useCallback(async () => {
     if (!isAuthenticated) return
 
-    const novelId = extractUuid(storyId)
+    const novelId = extractId(storyId)
     if (!novelId) return
 
     if (inLibrary) {

@@ -1,4 +1,4 @@
-import { BookOpen, Bookmark, BookmarkCheck, Share2 } from 'lucide-react'
+import { BookOpen, Bookmark, BookmarkCheck } from 'lucide-react'
 import { useStoryDetailContext } from '../context/story-detail-context'
 
 const COVER_PLACEHOLDER = 'https://placehold.co/400x600/1a1a1a/ededed?text=Cover'

@@ -3,13 +3,15 @@ import { StorySynopsis } from './components/story-synopsis'
 import { StoryChapters } from './components/story-chapters'
 import { StoryRecommendations } from './components/story-recommendations'
 import Container from '@/components/shared/site/container'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 
 // Import Context & Skeletons
 import { StoryDetailProvider, useStoryDetailContext } from './context/story-detail-context'
 import { StoryDetailPageSkeleton } from './components/story-detail-skeleton'
 
 function StoryDetailContent() {
+  const navigate = useNavigate()
   const {
     storyInfo,
     chapters,
@@ -27,7 +29,7 @@ function StoryDetailContent() {
   const scrollToChapters = () => {
     const desktopEl = document.getElementById('chapters-section-desktop')
     const mobileEl = document.getElementById('chapters-section-mobile')
-    
+
     // Check if desktop element is visible
     if (desktopEl && getComputedStyle(desktopEl).display !== 'none') {
       desktopEl.scrollIntoView({ behavior: 'smooth' })
@@ -41,18 +43,26 @@ function StoryDetailContent() {
   }
 
   return (
-    <div className="relative select-none pb-12 w-full text-foreground bg-transparent">
-      <Container className="pt-6 md:pt-12 space-y-8 md:space-y-12">
-        <StoryBanner 
+    <div className="relative select-none w-full text-foreground bg-transparent">
+      <Container className="pt-6 space-y-2 md:space-y-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 px-4 py-2 rounded-full border border-outline/10 hover:border-primary/20 text-xs font-bold bg-surface-container-high/40 hover:bg-primary/5 hover:text-primary transition-all duration-200 cursor-pointer shadow-sm w-fit group"
+        >
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+          <span>Quay lại</span>
+        </button>
+
+        <StoryBanner
           inLibrary={inLibrary}
           onLibraryToggle={toggleLibrary}
           onScrollToChapters={scrollToChapters}
         />
-        
+
         <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <StorySynopsis />
-            <StoryChapters 
+            <StoryChapters
               storySlug={storyInfo.slug}
               chaptersLength={chapters.length}
               paginatedChapters={paginatedChapters}
@@ -63,10 +73,20 @@ function StoryDetailContent() {
               onPageChange={setCurrentPage}
             />
           </div>
-          
+
           <aside className="space-y-8">
             <StoryRecommendations />
           </aside>
+        </div>
+
+        <div className="pt-6 border-t border-outline/10 flex justify-start">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full border border-outline/10 hover:border-primary/20 text-xs font-bold bg-surface-container-high/40 hover:bg-primary/5 hover:text-primary transition-all duration-200 cursor-pointer shadow-sm w-fit group"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Quay lại</span>
+          </button>
         </div>
       </Container>
     </div>

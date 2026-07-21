@@ -32,7 +32,7 @@ export default function ReaderSuggestions({ currentTheme }: ReaderSuggestionsPro
         {displayList.map((novel) => (
           <Link
             key={novel.id}
-            to={`/${novel.slug}`}
+            to={`/${novel.slug}-${novel.id}`}
             className="group block space-y-3 md:space-y-6"
           >
             <div className="relative aspect-[3/4] overflow-hidden rounded-xl md:rounded-[32px] bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-2">

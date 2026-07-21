@@ -27,7 +27,7 @@ export async function getMyNovels(): Promise<NovelResponseDTO[]> {
 /**
  * Fetches detail of a single novel by ID.
  */
-export async function getNovelById(id: string): Promise<NovelResponseDTO> {
+export async function getNovelById(id: string | number): Promise<NovelResponseDTO> {
   const response = await api.get(`/author/novels/${id}`)
   if (response.data && response.data.code === 200) {
     return response.data.result
@@ -38,7 +38,7 @@ export async function getNovelById(id: string): Promise<NovelResponseDTO> {
 /**
  * Updates an existing novel (Author access required).
  */
-export async function updateNovel(id: string, request: NovelRequestDTO): Promise<NovelResponseDTO> {
+export async function updateNovel(id: string | number, request: NovelRequestDTO): Promise<NovelResponseDTO> {
   const response = await api.put(`/author/novels/${id}`, request)
   if (response.data && response.data.code === 200) {
     return response.data.result
@@ -49,7 +49,7 @@ export async function updateNovel(id: string, request: NovelRequestDTO): Promise
 /**
  * Deletes a novel (Author access required).
  */
-export async function deleteNovel(id: string): Promise<void> {
+export async function deleteNovel(id: string | number): Promise<void> {
   const response = await api.delete(`/author/novels/${id}`)
   if (response.data && response.data.code === 200) {
     return
@@ -82,7 +82,7 @@ export async function getPublicNovelEnums(): Promise<EnumResponseDTO[]> {
 /**
  * Fetches public details of a single novel by ID for readers/guests.
  */
-export async function getPublicNovelById(id: string): Promise<NovelResponseDTO> {
+export async function getPublicNovelById(id: string | number): Promise<NovelResponseDTO> {
   const response = await api.get(`/novels/${id}`)
   if (response.data && (response.data.code === 200 || response.status === 200)) {
     return response.data.result
@@ -114,7 +114,28 @@ export async function searchNovels(params: {
   }
   throw new Error(response.data?.message || 'Không thể tải danh sách truyện')
 }
-
-
-
+/**
+ * Fetches chapter-level statistics for a novel (Author access required).
+ * Endpoint: GET /author/novels/{id}/stats
+ */
+export async function getNovelStats(novelId: number | string): Promise<{
+  totalViews: number
+  totalRevenue: number
+  avgConversionRate: number
+  chapters: {
+    chapterId: number
+    chapterNumber: number
+    title: string
+    status: string
+    viewCount: number
+    revenue: number
+    conversionRate: number
+  }[]
+}> {
+  const response = await api.get(`/author/novels/${novelId}/stats`)
+  if (response.data && response.data.code === 200) {
+    return response.data.result
+  }
+  throw new Error(response.data?.message || 'Không thể tải thống kê truyện')
+}
 
