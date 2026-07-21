@@ -35,6 +35,10 @@ export function extractUuid(slugWithId: string): string {
       return possibleUuid
     }
   }
+  const lastPart = parts[parts.length - 1]
+  if (/^\d+$/.test(lastPart)) {
+    return lastPart
+  }
   return slugWithId
 }
 

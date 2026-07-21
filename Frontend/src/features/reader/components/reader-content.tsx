@@ -83,6 +83,108 @@ function ArticleProgressBar({ targetRef }: ArticleProgressBarProps) {
   )
 }
 
+interface CanvasArticleProps {
+  paragraphs: string[]
+  fontSize: number
+  fontFamily: string
+  lineHeight: string
+  textColor: string
+  bgColor: string
+}
+
+function CanvasArticle({ paragraphs, fontSize, fontFamily, lineHeight, textColor, bgColor }: CanvasArticleProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const container = containerRef.current
+    if (!canvas || !container) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const fontStyle = `${fontSize}px ${fontFamily === 'serif' ? '"Georgia", "Merriweather", serif' : fontFamily === 'mono' ? 'monospace' : 'system-ui, sans-serif'}`
+    const lhNum = fontSize * (lineHeight === 'tight' ? 1.5 : lineHeight === 'normal' ? 1.85 : 2.2)
+    const padding = 16
+
+    const parentWidth = container.clientWidth || 700
+    const maxWidth = parentWidth - padding * 2
+
+    ctx.font = fontStyle
+
+    const lines: string[] = []
+    paragraphs.forEach(p => {
+      if (!p.trim()) {
+        lines.push('')
+        return
+      }
+      const words = p.split(' ')
+      let currentLine = '    '
+      for (let i = 0; i < words.length; i++) {
+        const testLine = currentLine + words[i] + ' '
+        if (ctx.measureText(testLine).width > maxWidth && i > 0) {
+          lines.push(currentLine)
+          currentLine = words[i] + ' '
+        } else {
+          currentLine = testLine
+        }
+      }
+      lines.push(currentLine)
+      lines.push('')
+    })
+
+    const dpr = window.devicePixelRatio || 1
+    const totalHeight = lines.length * lhNum + padding * 2
+
+    canvas.width = parentWidth * dpr
+    canvas.height = totalHeight * dpr
+    canvas.style.width = `${parentWidth}px`
+    canvas.style.height = `${totalHeight}px`
+
+    ctx.scale(dpr, dpr)
+
+    ctx.fillStyle = bgColor
+    ctx.fillRect(0, 0, parentWidth, totalHeight)
+
+    ctx.font = fontStyle
+    ctx.fillStyle = textColor
+    ctx.textBaseline = 'top'
+
+    lines.forEach((line, idx) => {
+      if (line) {
+        ctx.fillText(line.trimEnd(), padding, padding + idx * lhNum)
+      }
+    })
+  }, [paragraphs, fontSize, fontFamily, lineHeight, textColor, bgColor])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
+        (e.ctrlKey && ['U', 'S'].includes(e.key.toUpperCase()))
+      ) {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  return (
+    <div
+      ref={containerRef}
+      className="w-full select-none"
+      onContextMenu={e => e.preventDefault()}
+      onSelectStart={e => e.preventDefault()}
+      style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
+    >
+      <canvas ref={canvasRef} className="block w-full rounded-lg" />
+    </div>
+  )
+}
+
 function ReaderContent() {
   const navigate = useNavigate()
   const { novelSlugWithId } = useParams<{ novelSlugWithId: string }>()
@@ -480,32 +582,15 @@ function ReaderContent() {
 
           <div className="h-[1px] w-full bg-current opacity-10 my-6" />
 
-          <main className="mx-auto cursor-pointer space-y-8 my-8" onClick={handleCanvasClick}>
-            <article
-              ref={articleContentRef}
-              className={`text-justify hyphens-auto select-text space-y-6 md:space-y-8 ${fontFamily === 'serif' ? 'font-serif' :
-                fontFamily === 'sans' ? 'font-sans' : 'font-mono'
-                }`}
-              style={{
-                fontSize: `${fontSize}px`,
-                lineHeight: lineHeight === 'tight' ? 1.5 : lineHeight === 'normal' ? 1.85 : 2.2
-              }}
-            >
-              {activeChap.paragraphs.map((p, idx) => {
-                if (activeChap.id === 42 && idx === 3) {
-                  return (
-                    <blockquote key={idx} className={`border-l-4 border-primary pl-6 py-4 my-8 rounded-r-xl italic bg-current/[0.05] ${currentTheme.text}`}>
-                      "To weave is to sacrifice the thread for the pattern. Remember that, child of the Spire."
-                    </blockquote>
-                  )
-                }
-                return (
-                  <p key={idx} className={`indent-4 leading-[1.8] ${currentTheme.text}`}>
-                    {p}
-                  </p>
-                )
-              })}
-            </article>
+          <main className="mx-auto space-y-8 my-8" onClick={handleCanvasClick} ref={articleContentRef as any}>
+            <CanvasArticle
+              paragraphs={activeChap.paragraphs}
+              fontSize={fontSize}
+              fontFamily={fontFamily}
+              lineHeight={lineHeight}
+              textColor={currentTheme.text.includes('#') ? currentTheme.text.replace('text-[', '').replace(']', '') : '#2c2c2c'}
+              bgColor={currentTheme.bg.includes('#') ? currentTheme.bg.replace('bg-[', '').replace(']', '').split(' ')[0] : '#ffffff'}
+            />
           </main>
 
           <div className="h-[1px] w-full bg-current opacity-10 my-6" />

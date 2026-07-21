@@ -23,6 +23,7 @@ import java.util.UUID;
 public class BookmarkController {
 
     private final BookmarkService bookmarkService;
+    private final com.fpt.sba301_su26_groupproject.service.NovelService novelService;
 
     @Operation(
             summary = "Upsert bookmark (tạo mới hoặc cập nhật)",
@@ -50,9 +51,10 @@ public class BookmarkController {
     )
     @DeleteMapping("/{novelId}")
     public ResponseEntity<ApiResponse<Void>> removeBookmark(
-            @PathVariable Long novelId,
+            @PathVariable String novelId,
             Authentication authentication) {
-        bookmarkService.removeBookmark(novelId, authentication.getName());
+        Long resolvedNovelId = novelService.findEntityByIdentifier(novelId).getId();
+        bookmarkService.removeBookmark(resolvedNovelId, authentication.getName());
         return ResponseEntity.ok(
                 ApiResponse.<Void>builder()
                         .code(200)
@@ -68,9 +70,10 @@ public class BookmarkController {
     )
     @GetMapping("/{novelId}")
     public ResponseEntity<ApiResponse<BookmarkResponseDTO>> getBookmark(
-            @PathVariable Long novelId,
+            @PathVariable String novelId,
             Authentication authentication) {
-        BookmarkResponseDTO result = bookmarkService.getBookmark(novelId, authentication.getName());
+        Long resolvedNovelId = novelService.findEntityByIdentifier(novelId).getId();
+        BookmarkResponseDTO result = bookmarkService.getBookmark(resolvedNovelId, authentication.getName());
         return ResponseEntity.ok(
                 ApiResponse.<BookmarkResponseDTO>builder()
                         .code(200)

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trình Đọc Truyện Bảo Mật</title>
+
+  <!-- Thư viện CryptoJS phục vụ giải mã AES -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #eaeaea;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 20px 10px;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    .story-card {
+      width: 100%;
+      max-width: 800px;
+      background-color: #fff8eb; /* Màu giấy đọc sách ngà vàng */
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .story-header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e0d7c6;
+    }
+
+    .story-header h1 {
+      font-size: 22px;
+      color: #333;
+    }
+
+    /* Thẻ Canvas chứa văn bản */
+    #storyCanvas {
+      display: block;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="story-card">
+    <div class="story-header">
+      <h1 id="chapterTitle">Đang tải nội dung...</h1>
+    </div>
+
+    <!-- Người dùng bấm Inspect Element vào đây chỉ thấy 1 thẻ canvas này -->
+    <canvas id="storyCanvas"></canvas>
+  </div>
+
+<script>
+  // Key giải mã (Khớp với app.security.secret-key ở Spring Boot)
+  const SECRET_KEY_STR = '12345678901234567890123456789012';
+  
+  // Lưu trữ dữ liệu thô dạng cache local để phục vụ resize window
+  let globalDecryptedText = "";
+
+  /**
+   * 1. Hàm giải mã chuỗi HEX nhận từ Spring Boot API
+   */
+  function decryptData(encryptedHex, ivHex) {
+    if (!encryptedHex || !ivHex) return "";
+    const key = CryptoJS.enc.Utf8.parse(SECRET_KEY_STR);
+    const iv = CryptoJS.enc.Hex.parse(ivHex);
+    const encryptedBase64 = CryptoJS.enc.Hex.parse(encryptedHex).toString(CryptoJS.enc.Base64);
+
+    const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key, {
+      iv: iv,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7
+    });
+
+    return decrypted.toString(CryptoJS.enc.Utf8);
+  }
+
+  /**
+   * 2. Thuật toán vẽ văn bản lên Canvas
+   */
+  function renderCanvas(text) {
+    if (!text) return;
+
+    const canvas = document.getElementById('storyCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Cấu hình Font và khoảng cách
+    const fontSize = 18;
+    const lineHeight = 32;
+    const padding = 15;
+    const fontStyle = `${fontSize}px "Segoe UI", Arial, sans-serif`;
+
+    const parentWidth = canvas.parentElement.clientWidth - 40; // Trừ padding container
+    const maxWidth = parentWidth - (padding * 2);
+
+    ctx.font = fontStyle;
+
+    // Tách văn bản theo các đoạn (xuống dòng \n)
+    const paragraphs = text.split('\n');
+    const lines = [];
+
+    paragraphs.forEach(paragraph => {
+      if (paragraph.trim() === '') {
+        lines.push(''); // Thêm dòng trống giữa các đoạn
+        return;
+      }
+
+      const words = paragraph.split(' ');
+      let currentLine = '';
+
+      for (let i = 0; i < words.length; i++) {
+        const testLine = currentLine + words[i] + ' ';
+        if (ctx.measureText(testLine).width > maxWidth && i > 0) {
+          lines.push(currentLine);
+          currentLine = words[i] + ' ';
+        } else {
+          currentLine = testLine;
+        }
+      }
+      lines.push(currentLine);
+    });
+
+    // Cấu hình tỷ lệ hiển thị độ phân giải cao (Màn hình Retina / Điện thoại)
+    const dpr = window.devicePixelRatio || 1;
+    const totalHeight = (lines.length * lineHeight) + (padding * 2);
+
+    canvas.width = parentWidth * dpr;
+    canvas.height = totalHeight * dpr;
+    canvas.style.width = `${parentWidth}px`;
+    canvas.style.height = `${totalHeight}px`;
+
+    ctx.scale(dpr, dpr);
+
+    // Vẽ nền Canvas
+    ctx.fillStyle = "#fff8eb";
+    ctx.fillRect(0, 0, parentWidth, totalHeight);
+
+    // Vẽ chữ
+    ctx.font = fontStyle;
+    ctx.fillStyle = "#2c2c2c";
+    ctx.textBaseline = "top";
+
+    lines.forEach((line, index) => {
+      ctx.fillText(line.trim(), padding, padding + (index * lineHeight));
+    });
+  }
+
+  /**
+   * 3. Fetch dữ liệu từ Spring Boot API
+   */
+  async function loadChapter(novelId = 1, chapterNumber = 1) {
+    try {
+      const response = await fetch(`http://localhost:8080/api/novels/${novelId}/chapters/${chapterNumber}`);
+      
+      if (!response.ok) {
+        throw new Error("Không thể tải chương truyện");
+      }
+
+      const resBody = await response.json();
+      const data = resBody.result || resBody;
+
+      if (data) {
+        // Đổi tiêu đề chương
+        document.getElementById('chapterTitle').innerText = `${data.title || 'Chương ' + chapterNumber}`;
+
+        // Giải mã nội dung
+        if (data.encryptedData && data.iv) {
+          globalDecryptedText = decryptData(data.encryptedData, data.iv);
+        } else {
+          globalDecryptedText = data.content || "";
+        }
+
+        // Vẽ lên Canvas
+        renderCanvas(globalDecryptedText);
+      }
+    } catch (err) {
+      document.getElementById('chapterTitle').innerText = "Lỗi: " + err.message;
+    }
+  }
+
+  // --- CÁC BIỆN PHÁP CHẶN THAO TÁC BỎ BỔ SUNG ---
+  document.addEventListener('contextmenu', e => e.preventDefault()); // Chặn chuột phải
+  document.addEventListener('selectstart', e => e.preventDefault()); // Chặn bôi đen
+  document.addEventListener('keydown', e => {
+    // Chặn F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S
+    if (e.key === 'F12' || 
+       (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+       (e.ctrlKey && ['U','S'].includes(e.key.toUpperCase()))) {
+      e.preventDefault();
+    }
+  });
+
+  // Khởi chạy tải Chương ID novel = 21, chapterNumber = 1 (hoặc mặc định)
+  window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const novelId = urlParams.get('novelId') || 21;
+    const chapterNumber = urlParams.get('chapter') || 1;
+    loadChapter(novelId, chapterNumber);
+  });
+
+  // Tự vẽ lại khi đổi kích thước màn hình
+  window.addEventListener('resize', () => renderCanvas(globalDecryptedText));
+</script>
+
+</body>
+</html>

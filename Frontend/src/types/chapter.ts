@@ -7,6 +7,8 @@ export interface ChapterResponseDTO {
   title: string
   slug: string
   content: string
+  encryptedData?: string
+  iv?: string
   audioUrl: string | null
   status: ChapterStatus
   coinPrice: number
