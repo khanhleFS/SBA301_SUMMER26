@@ -110,8 +110,8 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterResponseDTO getChapterDetails(Long novelId, Integer chapterNumber, String userEmail) {
-        Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
+    public ChapterResponseDTO getChapterDetails(Long novelId, Long chapterId, String userEmail) {
+        Chapter chapter = chapterRepository.findByNovelIdAndId(novelId, chapterId)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện tương ứng."));
         // Kiểm tra phí nếu là chương trả phí (VIP)
         if (!chapter.getStatus().equals(ChapterStatus.FREE)) {
@@ -134,8 +134,8 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterResponseDTO readChapter(Long novelId, Integer chapterNumber, String userEmail) {
-        Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
+    public ChapterResponseDTO readChapter(Long novelId, Long chapterId, String userEmail) {
+        Chapter chapter = chapterRepository.findByNovelIdAndId(novelId, chapterId)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện tương ứng."));
         // Kiểm tra phí nếu là chương trả phí (VIP)
         if (!chapter.getStatus().equals(ChapterStatus.FREE)) {
@@ -218,13 +218,13 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterResponseDTO generateChapterAudio(Long novelId, Integer chapterNumber) {
+    public ChapterResponseDTO generateChapterAudio(Long novelId, Long chapterId) {
         // 1. Tìm chapter
-        Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
+        Chapter chapter = chapterRepository.findByNovelIdAndId(novelId, chapterId)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND,
                         "Không tìm thấy chương truyện tương ứng."));
 
-        log.info("[TTS] Bắt đầu tạo audio cho chapter {} của novel {}", chapterNumber, novelId);
+        log.info("[TTS] Bắt đầu tạo audio cho chapter {} của novel {}", chapterId, novelId);
 
         // 2. Gọi Google TTS → nhận MP3 bytes
         byte[] audioBytes = ttsService.synthesizeSpeech(chapter.getContent());
@@ -244,7 +244,7 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional
-    public ChapterUnlockResponseDTO unlockChapter(Long novelId, Integer chapterNumber, String userEmail) {
+    public ChapterUnlockResponseDTO unlockChapter(Long novelId, Long chapterId, String userEmail) {
         if (userEmail == null) {
             throw new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Bạn cần đăng nhập để mở khóa chương này.");
         }
@@ -252,7 +252,7 @@ public class ChapterServiceImpl implements ChapterService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_UNAUTHORIZED, "Người dùng không tồn tại."));
 
-        Chapter chapter = chapterRepository.findByNovelIdAndChapterNumber(novelId, chapterNumber)
+        Chapter chapter = chapterRepository.findByNovelIdAndId(novelId, chapterId)
                 .orElseThrow(() -> new ApiException(ChapterErrorCode.CHAPTER_NOT_FOUND, "Không tìm thấy chương truyện tương ứng."));
 
         // Kiểm tra xem chương có phải chương trả phí không
@@ -304,7 +304,7 @@ public class ChapterServiceImpl implements ChapterService {
         return ChapterUnlockResponseDTO.builder()
                 .chapterId(chapter.getId())
                 .novelId(novelId)
-                .chapterNumber(chapterNumber)
+                .chapterNumber(chapter.getChapterNumber())
                 .title(chapter.getTitle())
                 .coinsSpent(cost)
                 .remainingCoins(user.getCoinBalance())

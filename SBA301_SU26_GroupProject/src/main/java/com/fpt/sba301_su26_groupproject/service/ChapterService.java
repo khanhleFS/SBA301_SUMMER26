@@ -14,17 +14,17 @@ public interface ChapterService {
 
     List<ChapterResponseDTO> getChaptersByNovel(Long novelId);
 
-    ChapterResponseDTO getChapterDetails(Long novelId, Integer chapterNumber, String userEmail);
+    ChapterResponseDTO getChapterDetails(Long novelId, Long chapterId, String userEmail);
 
-    ChapterResponseDTO readChapter(Long novelId, Integer chapterNumber, String userEmail);
+    ChapterResponseDTO readChapter(Long novelId, Long chapterId, String userEmail);
 
     ChapterResponseDTO updateChapter(Long novelId, Long chapterId, ChapterRequestDTO requestDTO, String authorEmail);
 
     void deleteChapter(Long novelId, Long chapterId, String authorEmail);
 
-    ChapterResponseDTO generateChapterAudio(Long novelId, Integer chapterNumber);
+    ChapterResponseDTO generateChapterAudio(Long novelId, Long chapterId);
 
-    ChapterUnlockResponseDTO unlockChapter(Long novelId, Integer chapterNumber, String userEmail);
+    ChapterUnlockResponseDTO unlockChapter(Long novelId, Long chapterId, String userEmail);
 
     List<EnumResponseDTO> getEnums();
 }

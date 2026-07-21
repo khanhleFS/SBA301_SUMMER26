@@ -14,6 +14,7 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     @Query("SELECT COALESCE(MAX(c.chapterNumber), 0) FROM Chapter c WHERE c.novel.id = :novelId")
     Integer findMaxChapterNumberByNovelId(@Param("novelId") Long novelId);
     Optional<Chapter> findByNovelIdAndChapterNumber(Long novelId, Integer chapterNumber);
+    Optional<Chapter> findByNovelIdAndId(Long novelId, Long id);
 
     boolean existsByNovelIdAndChapterNumber(Long novelId, Integer chapterNumber);
 

@@ -226,10 +226,10 @@ public class NovelController {
     }
 
     @Operation(summary = "Get chapter details")
-    @GetMapping("/novels/{novelId}/chapters/{chapterNumber}")
+    @GetMapping("/novels/{novelId}/chapters/{chapterId}")
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> getChapterDetails(
             @PathVariable String novelId,
-            @PathVariable Integer chapterNumber,
+            @PathVariable Long chapterId,
             Authentication authentication) {
         String userEmail = authentication == null ? null : authentication.getName();
         Long resolvedNovelId = novelService.findEntityByIdentifier(novelId).getId();
@@ -237,15 +237,15 @@ public class NovelController {
         return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
                 .code(200)
                 .message("Lấy thông tin chương truyện thành công")
-                .result(chapterService.getChapterDetails(resolvedNovelId, chapterNumber, userEmail))
+                .result(chapterService.getChapterDetails(resolvedNovelId, chapterId, userEmail))
                 .build());
     }
 
     @Operation(summary = "User reads a chapter (Increments view, saves history etc.)")
-    @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/read")
+    @PostMapping("/novels/{novelId}/chapters/{chapterId}/read")
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> readChapter(
             @PathVariable String novelId,
-            @PathVariable Integer chapterNumber,
+            @PathVariable Long chapterId,
             Authentication authentication) {
         String userEmail = authentication == null ? null : authentication.getName();
         Long resolvedNovelId = novelService.findEntityByIdentifier(novelId).getId();
@@ -253,7 +253,7 @@ public class NovelController {
         return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
                 .code(200)
                 .message("Đọc chương truyện thành công")
-                .result(chapterService.readChapter(resolvedNovelId, chapterNumber, userEmail))
+                .result(chapterService.readChapter(resolvedNovelId, chapterId, userEmail))
                 .build());
     }
 
@@ -292,14 +292,14 @@ public class NovelController {
     }
 
     @Operation(summary = "Generate chapter audio")
-    @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/audio")
+    @PostMapping("/novels/{novelId}/chapters/{chapterId}/audio")
     public ResponseEntity<ApiResponse<ChapterResponseDTO>> generateChapterAudio(
             @PathVariable Long novelId,
-            @PathVariable Integer chapterNumber) {
+            @PathVariable Long chapterId) {
         return ResponseEntity.ok(ApiResponse.<ChapterResponseDTO>builder()
                 .code(200)
                 .message("Tạo audio cho chương truyện thành công")
-                .result(chapterService.generateChapterAudio(novelId, chapterNumber))
+                .result(chapterService.generateChapterAudio(novelId, chapterId))
                 .build());
     }
 
@@ -307,15 +307,15 @@ public class NovelController {
             summary = "Unlock chapter with coins",
             security = @SecurityRequirement(name = "Bearer Authentication")
     )
-    @PostMapping("/novels/{novelId}/chapters/{chapterNumber}/unlock")
+    @PostMapping("/novels/{novelId}/chapters/{chapterId}/unlock")
     public ResponseEntity<ApiResponse<ChapterUnlockResponseDTO>> unlockChapter(
             @PathVariable Long novelId,
-            @PathVariable Integer chapterNumber,
+            @PathVariable Long chapterId,
             Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.<ChapterUnlockResponseDTO>builder()
                 .code(200)
                 .message("Mở khóa chương truyện thành công")
-                .result(chapterService.unlockChapter(novelId, chapterNumber, authentication.getName()))
+                .result(chapterService.unlockChapter(novelId, chapterId, authentication.getName()))
                 .build());
     }
 
