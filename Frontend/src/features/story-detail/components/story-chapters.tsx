@@ -4,18 +4,9 @@ import SpotlightCard from '@/components/custom/spot-light-card/SpotlightCard'
 import { useStoryDetailContext } from '../context/story-detail-context'
 import { MOCK_USER_READ_STATE } from '@/services/mock-data'
 import { useMemo, useState, useEffect } from 'react'
-import type { ChapterItem } from '../services/story-detail-service'
-
-interface StoryChaptersProps {
-  storySlug: string
-  chaptersLength: number
-  paginatedChapters: ChapterItem[]
-  currentPage: number
-  totalPages: number
-  isSortedAsc: boolean
-  onSortToggle: () => void
-  onPageChange: (page: number | ((p: number) => number)) => void
-}
+import type { ChapterItem, StoryChaptersProps } from '../types/story-detail.types'
+import { unlockChapter } from '@/services/chapter-service'
+import { useAuthStore } from '@/store/auth.store'
 
 export function StoryChapters({
   storySlug,
@@ -34,6 +25,7 @@ export function StoryChapters({
   const [chapterToBuy, setChapterToBuy] = useState<ChapterItem | null>(null)
   const [isBuying, setIsBuying] = useState(false)
   const [buyError, setBuyError] = useState<string | null>(null)
+  const [purchaseResult, setPurchaseResult] = useState<{ coinsSpent: number; remainingCoins: number } | null>(null)
 
   // Reset trang về 1 khi danh sách gốc thay đổi (ví dụ: đổi chiều sort)
   useEffect(() => {
@@ -53,6 +45,7 @@ export function StoryChapters({
     setChapterToBuy(null)
     setIsBuying(false)
     setBuyError(null)
+    setPurchaseResult(null)
   }
 
   const handleConfirmBuy = async () => {
@@ -61,11 +54,11 @@ export function StoryChapters({
     setBuyError(null)
 
     try {
-      // TODO: thay bằng API thực tế, ví dụ:
-      // await buyChapter({ chapterId: chapterToBuy.id })
+      const novelId = storyInfo.id
+      const result = await unlockChapter(novelId, chapterToBuy.id)
 
-      // Giả lập gọi API
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      // Refresh auth store to update remaining coin balance
+      await useAuthStore.getState().refreshProfile()
 
       // Mở khóa chapter sau khi mua thành công
       setPurchasedChapterIds((prev) => {
@@ -73,9 +66,15 @@ export function StoryChapters({
         next.add(chapterToBuy.id)
         return next
       })
-      handleCloseModal()
-    } catch (err) {
-      setBuyError(err instanceof Error ? err.message : 'Mua chương thất bại, vui lòng thử lại.')
+
+      // Lưu kết quả để hiện trạng thái thành công trong modal
+      setPurchaseResult({
+        coinsSpent: result.coinsSpent,
+        remainingCoins: result.remainingCoins,
+      })
+      setIsBuying(false)
+    } catch (err: any) {
+      setBuyError(err.message || 'Mua chương thất bại, vui lòng thử lại.')
       setIsBuying(false)
     }
   }
@@ -239,49 +238,96 @@ export function StoryChapters({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <button className="absolute inset-0 cursor-default" onClick={handleCloseModal} />
           <div className="relative w-full max-w-sm rounded-xl p-5 shadow-2xl bg-surface-container-low border border-outline/10">
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-primary/80">Mở khóa chương</p>
-                <h3 className="mt-1 text-lg font-bold text-on-surface">{chapterToBuy.title}</h3>
-              </div>
-              <button
-                onClick={handleCloseModal}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-container text-on-surface transition-colors hover:bg-surface-container-high"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
 
-            <div className="mb-4 flex items-center justify-center gap-2 rounded-lg bg-surface-container p-4 text-primary">
-              <Coins className="h-6 w-6" strokeWidth={2.5} />
-              <span className="text-2xl font-extrabold">
-                {(chapterToBuy.price ?? 0).toLocaleString()} Coins
-              </span>
-            </div>
+            {purchaseResult ? (
+              // --- Trạng thái THÀNH CÔNG ---
+              <>
+                <div className="mb-4 flex flex-col items-center text-center gap-2">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10 text-green-500">
+                    <Coins className="h-6 w-6" strokeWidth={2.5} />
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-green-500">Mua thành công</p>
+                  <h3 className="text-lg font-bold text-on-surface">{chapterToBuy.title}</h3>
+                </div>
 
-            <p className="mb-4 text-center text-xs text-on-surface-variant">
-              Số coin sẽ được trừ trực tiếp từ ví của bạn để mở khóa chương này.
-            </p>
+                <div className="mb-4 space-y-2 rounded-lg bg-surface-container p-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-on-surface-variant">Đã trừ</span>
+                    <span className="font-bold text-on-surface">{purchaseResult.coinsSpent.toLocaleString()} Coins</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-on-surface-variant">Số dư còn lại</span>
+                    <span className="font-extrabold text-primary flex items-center gap-1">
+                      <Coins className="h-4 w-4" strokeWidth={2.5} />
+                      {purchaseResult.remainingCoins.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
 
-            {buyError && (
-              <p className="mb-3 text-xs font-semibold text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg p-2.5 text-center">
-                {buyError}
-              </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCloseModal}
+                    className="flex-1 py-2.5 text-sm rounded-lg font-bold border border-outline/20 text-on-surface-variant hover:bg-surface-container transition-colors"
+                  >
+                    Đóng
+                  </button>
+                  <Link
+                    to={`/${storySlug}/${chapterToBuy.slug}`}
+                    onClick={handleCloseModal}
+                    className="btn-primary flex-1 flex items-center justify-center py-2.5 text-sm rounded-lg font-bold shadow-md"
+                  >
+                    Đọc ngay
+                  </Link>
+                </div>
+              </>
+            ) : (
+              // --- Trạng thái XÁC NHẬN MUA (giữ nguyên như cũ) ---
+              <>
+                <div className="mb-4 flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-primary/80">Mở khóa chương</p>
+                    <h3 className="mt-1 text-lg font-bold text-on-surface">{chapterToBuy.title}</h3>
+                  </div>
+                  <button
+                    onClick={handleCloseModal}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-container text-on-surface transition-colors hover:bg-surface-container-high"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="mb-4 flex items-center justify-center gap-2 rounded-lg bg-surface-container p-4 text-primary">
+                  <Coins className="h-6 w-6" strokeWidth={2.5} />
+                  <span className="text-2xl font-extrabold">
+                    {(chapterToBuy.price ?? 0).toLocaleString()} Coins
+                  </span>
+                </div>
+
+                <p className="mb-4 text-center text-xs text-on-surface-variant">
+                  Số coin sẽ được trừ trực tiếp từ ví của bạn để mở khóa chương này.
+                </p>
+
+                {buyError && (
+                  <p className="mb-3 text-xs font-semibold text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg p-2.5 text-center">
+                    {buyError}
+                  </p>
+                )}
+
+                <button
+                  onClick={handleConfirmBuy}
+                  disabled={isBuying}
+                  className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm rounded-lg font-bold shadow-md disabled:opacity-50"
+                >
+                  {isBuying ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Đang xử lý...
+                    </>
+                  ) : (
+                    'Xác nhận mua'
+                  )}
+                </button>
+              </>
             )}
-
-            <button
-              onClick={handleConfirmBuy}
-              disabled={isBuying}
-              className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm rounded-lg font-bold shadow-md disabled:opacity-50"
-            >
-              {isBuying ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Đang xử lý...
-                </>
-              ) : (
-                'Xác nhận mua'
-              )}
-            </button>
           </div>
         </div>
       )}

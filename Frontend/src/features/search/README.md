@@ -22,7 +22,7 @@ Tính năng Search có kiến trúc Modular rất sạch sẽ và hiện đại:
 Feature này được xây dựng chuẩn mực theo mô hình Layer:
 
 - **Context (`context/search-context.tsx`)**: Đảm nhiệm State Management cục bộ cho trang Search (giữ trạng thái bộ lọc hiện hành, query chữ, page hiện tại) để tránh Prop-drilling giữa Sidebar và Danh sách truyện.
-- **Service (`services/story-service.ts`)**: Tách biệt logic lấy data ra khỏi Component. Có thể đây là nơi chứa API calls `getStories(filters)` hoặc Mock Data logic trả về kết quả truy vấn.
+- **Service (`services/search.service.ts`)**: Tách biệt logic lấy data ra khỏi Component. Có thể đây là nơi chứa API calls `getStories(filters)` hoặc Mock Data logic trả về kết quả truy vấn.
 - **Skeleton / Loader**: Có sử dụng `search-skeleton.tsx` đóng vai trò làm Loader riêng biệt siêu nhẹ cho List Truyện.
 
 ## 🪝 Custom Hooks
@@ -33,17 +33,16 @@ Feature này được xây dựng chuẩn mực theo mô hình Layer:
 - `components/search-sidebar.tsx` -> dùng `filterGroups`, `categories`, `clearFilters`, `isFiltersLoading` từ context.
 - `components/search-card.tsx` -> nhận `Story` + `userReadState` từ context/feature.
 - `components/search-pagination.tsx` -> dùng `currentPage` / `setCurrentPage` từ context.
-- `context/search-context.tsx` -> gọi `storyService.getStories()` và `storyService.getSearchFilters()`.
-- `services/story-service.ts` -> lấy mock stories từ [src/services/mock-data.ts](../../services/mock-data.ts) và filters từ [src/services/mock-data.ts](../../services/mock-data.ts).
+- `context/search-context.tsx` -> gọi `searchService.getStories()` và `searchService.getSearchFilters()`.
+- `services/search.service.ts` -> gọi API backend hoặc mapper.
 
 ## ✅ Trạng thái hiện tại
-- State bộ lọc là local UI state, còn stories/filter metadata là mock server-state.
-- Ảnh cover truyện mock đang dùng placeholder thống nhất.
+- State bộ lọc là local UI state, còn stories/filter metadata là server-state.
+- Ảnh cover truyện thống nhất từ backend.
 
 ## 🧪 Mock data & placeholder images
-- Dữ liệu mock cho stories và filter scope được gom ở [src/services/mock-data.ts](../../services/mock-data.ts).
-- Ảnh truyện mock dùng placeholder dùng chung thay vì URL rải rác, để giao diện đồng nhất khi backend chưa sẵn sàng.
+- Dữ liệu cho stories và filter scope được xử lý qua [services/search.service.ts](services/search.service.ts).
 
 ## TODO
-- Thay `storyService.getStories()` và `storyService.getSearchFilters()` bằng API thật.
+- Đã kết nối `searchService.getStories()` và `searchService.getSearchFilters()` với API thật.
 - Khi backend hỗ trợ phân trang thật, chuyển `currentPage` sang query params hoặc server pagination.

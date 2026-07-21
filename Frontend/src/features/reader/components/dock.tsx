@@ -1,18 +1,5 @@
 import React from 'react'
-
-interface DockItemType {
-  icon: React.ReactNode
-  label: string
-  onClick: () => void
-  className?: string
-}
-
-interface DockProps {
-  items: DockItemType[]
-  className?: string
-  position?: 'bottom' | 'left' | 'right' | 'top'
-  children?: React.ReactNode
-}
+import type { DockItemType, DockProps } from '../types/reader.types'
 
 export default function Dock({ items, className = '', children }: DockProps) {
   return (

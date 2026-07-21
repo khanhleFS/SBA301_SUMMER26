@@ -1,34 +1,10 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { useParams } from 'react-router-dom'
-import { readerService, type ChapterDetails } from '../services/reader-service'
+import { readerService, extractId } from '../services/reader.service'
+import type { ChapterDetails, ReaderContextType, ThemeType, FontType, LineHeightType } from '../types/reader.types'
 import { upsertBookmark, getBookmark, type BookmarkResponse } from '@/services/bookmark-service'
 import { useAuthStore } from '@/store/auth.store'
 import { useThemeStore } from '@/store/theme.store'
-import { extractId } from '../services/reader-service'
-
-export type ThemeType = 'nocturne' | 'charcoal' | 'sepia' | 'ivory' | 'day'
-export type FontType = 'serif' | 'sans' | 'mono'
-export type LineHeightType = 'tight' | 'normal' | 'loose'
-
-interface ReaderContextType {
-  currentChapterId: string
-  setCurrentChapterId: (id: string) => void
-  activeChapter: ChapterDetails | null
-  isLoading: boolean
-  scrollProgress: number  // Scroll % hiện tại trong chapter (0-100)
-  
-  // Reader settings
-  theme: ThemeType
-  setTheme: (theme: ThemeType) => void
-  fontFamily: FontType
-  setFontFamily: (font: FontType) => void
-  fontSize: number
-  setFontSize: (size: number) => void
-  lineHeight: LineHeightType
-  setLineHeight: (lineHeight: LineHeightType) => void
-  fullFrame: boolean
-  setFullFrame: (full: boolean) => void
-}
 
 const ReaderContext = createContext<ReaderContextType | undefined>(undefined)
 
@@ -38,6 +14,11 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
   const [activeChapter, setActiveChapter] = useState<ChapterDetails | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [scrollProgress, setScrollProgress] = useState(0)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+  const reloadChapter = useCallback(() => {
+    setRefreshTrigger(prev => prev + 1)
+  }, [])
 
   // Bookmark state để lưu scroll position
   const bookmarkRef = useRef<BookmarkResponse | null>(null)
@@ -93,9 +74,12 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
   const [fullFrame, setFullFrame] = useState(false)
 
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
+  const isAuthLoading = useAuthStore(s => s.isLoading)
 
   // Fetch chapter + restore scroll position từ bookmark
   useEffect(() => {
+    if (isAuthLoading) return
+
     setIsLoading(true)
     setScrollProgress(0)
 
@@ -132,7 +116,7 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
       console.error('Failed to load chapter', error)
       setIsLoading(false)
     })
-  }, [currentChapterId, novelSlugWithId, isAuthenticated])
+  }, [currentChapterId, novelSlugWithId, isAuthenticated, isAuthLoading, refreshTrigger])
 
   // Debounced scroll listener — lưu vị trí scroll vào bookmark mỗi 1.5 giây
   const handleScrollSave = useCallback(() => {
@@ -192,6 +176,7 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
       activeChapter,
       isLoading,
       scrollProgress,
+      reloadChapter,
       theme,
       setTheme,
       fontFamily,

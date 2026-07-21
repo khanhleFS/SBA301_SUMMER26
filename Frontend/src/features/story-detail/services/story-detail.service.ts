@@ -1,31 +1,8 @@
 import { getPublicNovelById } from '@/services/novel-service'
 import { getChaptersByNovel } from '@/services/chapter-service'
+import type { StoryDetailInfo, ChapterItem } from '../types/story-detail.types'
 
-export interface StoryDetailInfo {
-  id: string
-  slug: string
-  title: string
-  author: string
-  status: string
-  chaptersCount: number
-  views: string
-  rating: number
-  synopsis: string[]
-  genres: string[]
-  cover?: string
-}
-
-export interface ChapterItem {
-  id: number
-  slug: string
-  title: string
-  time: string
-  views: string
-  isLocked?: boolean
-  price?: number
-}
-
-/** Extracts the numeric Long ID from the end of a slug-id string (e.g. "ten-truyen-123" → "123"). */
+/** Extracts the numeric Long ID or UUID from the end of a slug-id string. */
 export function extractId(slugWithId: string): string {
   if (!slugWithId) return ''
   const parts = slugWithId.split('-')
@@ -66,15 +43,13 @@ export const storyDetailService = {
     const id = extractId(storyId)
     const chapters = await getChaptersByNovel(id)
     return chapters.map((c) => ({
-      id: c.chapterNumber,
+      id: c.id,
       slug: `${c.slug}-${c.id}`,
       title: c.title,
       time: c.createdAt ? new Date(c.createdAt).toLocaleDateString('vi-VN') : 'Vừa xong',
       views: (c.viewCount || 0).toString(),
-      isLocked: c.status === 'LOCKED' || c.coinPrice > 0,
+      isLocked: c.status === 'LOCKED',
       price: c.coinPrice > 0 ? c.coinPrice : undefined
     }))
   }
 }
-
-

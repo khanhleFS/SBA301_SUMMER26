@@ -14,6 +14,7 @@ export interface NovelResponseDTO {
   authorId: string
   authorName: string
   categories: string[]
+  unlockedChapterIds?: number[]
 }
 
 export interface NovelPageResponseDTO {

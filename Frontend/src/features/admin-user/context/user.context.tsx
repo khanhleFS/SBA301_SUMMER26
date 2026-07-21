@@ -4,20 +4,8 @@ import {
   promoteToAuthor,
   toggleBanUser,
   approvePendingUser,
-  type UserManagementData,
-  type UserItem,
-} from '../services/user.service'
-
-interface UserManagementContextValue {
-  data: UserManagementData | null
-  isLoading: boolean
-  error: string | null
-  refresh: () => void
-  promote: (userId: string) => Promise<void>
-  toggleBan: (userId: string) => Promise<void>
-  approve: (userId: string) => Promise<void>
-  isMutating: boolean
-}
+} from '../services/admin-user.service'
+import type { UserManagementData, UserManagementContextValue } from '../types/admin-user.types'
 
 export function useUserManagement(): UserManagementContextValue {
   const queryClient = useQueryClient()

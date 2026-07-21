@@ -11,11 +11,16 @@ import {
   Shield,
   Ban,
 } from 'lucide-react'
-import type { UserItem, UserRole, UserStatus } from '../services/user.service'
-import type { FilterRole, FilterStatus } from './user-sections'
-
-type SortKey = 'fullName' | 'joinedAt' | 'totalReads' | 'walletBalance'
-type SortDir = 'asc' | 'desc'
+import type {
+  UserItem,
+  UserRole,
+  UserStatus,
+  FilterRole,
+  FilterStatus,
+  SortKey,
+  SortDir,
+  UserTableSectionProps,
+} from '../types/admin-user.types'
 
 const ROLE_CONFIG: Record<UserRole, { label: string; classes: string }> = {
   ADMIN: { label: 'Admin', classes: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
@@ -27,18 +32,6 @@ const STATUS_CONFIG: Record<UserStatus, { label: string; classes: string; dot: s
   active: { label: 'Hoạt động', classes: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', dot: 'bg-emerald-500' },
   banned: { label: 'Bị cấm', classes: 'bg-red-500/10 text-red-600 border-red-500/20', dot: 'bg-red-500' },
   pending: { label: 'Chờ duyệt', classes: 'bg-amber-500/10 text-amber-600 border-amber-500/20', dot: 'bg-amber-500' },
-}
-
-interface UserTableSectionProps {
-  users: UserItem[]
-  onPromote: (user: UserItem) => void
-  onToggleBan: (user: UserItem) => void
-  onApprove: (user: UserItem) => void
-  isMutating: boolean
-  roleFilter: FilterRole
-  setRoleFilter: (role: FilterRole) => void
-  statusFilter: FilterStatus
-  setStatusFilter: (status: FilterStatus) => void
 }
 
 export function UserTableSection({

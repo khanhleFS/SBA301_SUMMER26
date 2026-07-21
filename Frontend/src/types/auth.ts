@@ -6,6 +6,7 @@ export interface User {
   isAuthor?: boolean
   avatarUrl?: string
   fullName?: string
+  coinBalance?: number
 }
 
 // ─── Auth Request / Response DTOs ───────────────────────────────────────────

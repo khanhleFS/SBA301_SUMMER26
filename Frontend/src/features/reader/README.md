@@ -17,7 +17,7 @@ Feature này bao gồm Component cha (Controller) và các Component con tái s�
 
 ## ⚙️ Service & Context
 - **Context (`context/reader-context.tsx`)**: Quản lý tập trung toàn bộ cấu hình đọc của người dùng (chủ đề, phông chữ, giãn cách dòng, độ sáng, full-frame) và theo dõi trạng thái `isLoading` khi chuyển chương. Đồng bộ hóa mượt mà các thiết lập đọc trực tiếp vào `localStorage` của trình duyệt.
-- **Service (`services/reader-service.ts`)**: Cung cấp `readerService` với API giả lập `getChapter` hỗ trợ promise delay (500ms) để tải nội dung chương truyện theo thiết kế bất đồng bộ chuẩn xác.
+- **Service (`services/reader.service.ts`)**: Cung cấp `readerService` tải và giải mã nội dung chương truyện theo thiết kế bất đồng bộ chuẩn xác.
 
 ## 🪝 Custom Hooks
 - **`useReaderContext()`**: Hook cục bộ giúp tất cả các thành phần UI (Dock, Selector, ConfigMenu) truy cập và cập nhật nhanh chóng trạng thái cấu hình của trình đọc mà không lo ngại prop-drilling.
@@ -29,7 +29,7 @@ Feature này bao gồm Component cha (Controller) và các Component con tái s�
 - `components/dock.tsx` -> điều khiển điều hướng/fullscreen/cài đặt từ context.
 - `components/reader-config-menu.tsx` -> consume cấu hình đọc từ context.
 - `components/reader-suggestions.tsx` -> dùng `MOCK_STORIES` từ [src/services/mock-data.ts](../../services/mock-data.ts).
-- `services/reader-service.ts` -> cấp nội dung chapter mock.
+- `services/reader.service.ts` -> cấp nội dung chapter từ backend/decryption.
 
 ## ✅ Trạng thái hiện tại
 - Reader context vẫn là local UI-state, còn chapter content là mock service.

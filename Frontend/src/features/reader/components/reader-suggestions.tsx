@@ -2,12 +2,7 @@ import { Link } from 'react-router-dom'
 import Container from '@/components/shared/site/container'
 import { useTopNovels } from '@/hooks/useTopNovels'
 
-interface ReaderSuggestionsProps {
-  currentTheme: {
-    text: string
-    textMuted: string
-  }
-}
+import type { ReaderSuggestionsProps } from '../types/reader.types'
 
 export default function ReaderSuggestions({ currentTheme }: ReaderSuggestionsProps) {
   // Fetch top 4 novels from the shared Zustand store

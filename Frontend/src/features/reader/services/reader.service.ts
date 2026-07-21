@@ -1,28 +1,14 @@
 import { getPublicNovelById } from '@/services/novel-service'
 import { getChaptersByNovel, getChapterDetails } from '@/services/chapter-service'
 import CryptoJS from 'crypto-js'
-
 import { useAuthStore } from '@/store/auth.store'
+import type { ChapterDetails, ChapterSummary } from '../types/reader.types'
 
 export function getJwtUserIdentifier(): string {
   try {
     const authState = useAuthStore.getState()
-    const token = authState.token || (typeof window !== 'undefined' ? (localStorage.getItem('accessToken') || localStorage.getItem('token')) : null)
-    
-    // Nếu không có Token (đã đăng xuất / logout), bắt buộc dùng GUEST_JWT
-    if (!token || !token.includes('.')) {
-      return 'GUEST_JWT'
-    }
-
     if (authState.isAuthenticated && authState.user && authState.user.email) {
       return authState.user.email
-    }
-
-    const payloadBase64 = token.split('.')[1]
-    const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'))
-    const payload = JSON.parse(payloadJson)
-    if (payload && (payload.sub || payload.email)) {
-      return payload.sub || payload.email
     }
   } catch (e) {}
   return 'GUEST_JWT'
@@ -55,30 +41,6 @@ export function decryptContent(encryptedHex?: string, ivHex?: string, novelId?: 
     console.error('Lỗi giải mã nội dung chapter:', err)
     return ''
   }
-}
-
-export interface ChapterSummary {
-  id: number
-  slug: string
-  chapterNum: string
-  title: string
-}
-
-export interface ChapterDetails {
-  id: number
-  novelId: string
-  title: string
-  chapterNum: string
-  author: string
-  words: string
-  readTime: string
-  cover?: string
-  paragraphs: string[]
-  prevChapter: string | null
-  nextChapter: string | null
-  audioUrl: string | null
-  novelTitle?: string
-  chaptersList?: ChapterSummary[]
 }
 
 /** Extracts the numeric Long ID from the end of a slug-id string (e.g. "ten-truyen-123" → "123"). */
@@ -115,7 +77,18 @@ export const readerService = {
     const currentChapterMeta = sortedChapters[currentChapterIndex]
 
     // 2. Fetch the detailed content of the current chapter
-    const detail = await getChapterDetails(novelId, currentChapterMeta.chapterNumber)
+    let detail: any
+    let isLocked = false
+    try {
+      detail = await getChapterDetails(novelId, currentChapterMeta.id)
+    } catch (err: any) {
+      if (currentChapterMeta.status !== 'FREE') {
+        isLocked = true
+        detail = currentChapterMeta
+      } else {
+        throw err
+      }
+    }
 
     // 3. Fetch public novel details to get author and cover image
     const novel = await getPublicNovelById(novelId)
@@ -128,7 +101,7 @@ export const readerService = {
       : null
 
     // Decrypt content using encryptedData + iv or fallback to plain content
-    const rawText = (detail.encryptedData && detail.iv)
+    const rawText = (!isLocked && detail.encryptedData && detail.iv)
       ? decryptContent(detail.encryptedData, detail.iv, detail.novelId, detail.chapterNumber)
       : (detail.content || '')
 
@@ -140,7 +113,8 @@ export const readerService = {
     const readTimeMinutes = Math.max(1, Math.round(wordCount / 200)) // ~200 words per minute
 
     return {
-      id: detail.chapterNumber,
+      id: detail.id,
+      chapterNumber: detail.chapterNumber,
       novelId: novelId,
       title: detail.title,
       chapterNum: `Chương ${detail.chapterNumber}`,
@@ -154,13 +128,13 @@ export const readerService = {
       audioUrl: detail.audioUrl || null,
       novelTitle: novel.title,
       chaptersList: sortedChapters.map(c => ({
-        id: c.chapterNumber,
+        id: c.id,
         slug: `${c.slug}-${c.id}`,
         chapterNum: `Chương ${c.chapterNumber}`,
         title: c.title
-      }))
+      })),
+      isLocked,
+      coinPrice: detail.coinPrice || 0
     }
   }
 }
-
-

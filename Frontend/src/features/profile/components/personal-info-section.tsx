@@ -2,14 +2,8 @@ import { AtSign, Mail, UserRound, Cookie } from 'lucide-react'
 import { SectionTitle } from './section-title'
 import { surfaceCardClass } from './profile-styles'
 import { useProfile } from '../context/profile.context'
-import type { LucideIcon } from 'lucide-react'
+import type { InfoRow } from '../types/profile.types'
 import { useState, useEffect } from 'react'
-
-interface InfoRow {
-  label: string
-  value: string
-  icon: LucideIcon
-}
 
 export function PersonalInfoSection() {
   const { data } = useProfile()

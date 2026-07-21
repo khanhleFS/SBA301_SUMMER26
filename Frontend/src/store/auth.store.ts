@@ -89,6 +89,7 @@ export const useAuthStore = create<AuthState>()(
                   isAuthor: profile.isAuthor ?? currentUser?.isAuthor ?? false,
                   fullName: profile.fullName ?? currentUser?.fullName ?? '',
                   avatarUrl: profile.avatarUrl ?? currentUser?.avatarUrl ?? undefined,
+                  coinBalance: profile.coinBalance ?? currentUser?.coinBalance ?? 0,
                 }
                 _setUser(updatedUser)
               } catch {
@@ -117,6 +118,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthor: profile.isAuthor ?? currentUser?.isAuthor ?? false,
             fullName: profile.fullName ?? currentUser?.fullName ?? '',
             avatarUrl: profile.avatarUrl ?? currentUser?.avatarUrl ?? undefined,
+            coinBalance: profile.coinBalance ?? currentUser?.coinBalance ?? 0,
           }
           _setUser(updatedUser)
         } catch (error) {

@@ -1,14 +1,5 @@
 import { Users, BookOpen, UserPlus } from 'lucide-react'
-import type { StatType } from './user-sections'
-
-type StatCardProps = {
-  label: string
-  value: number
-  icon: React.ReactNode
-  iconBg: string
-  isActive: boolean
-  onClick: () => void
-}
+import type { StatType, StatCardProps, UserStatsSectionProps } from '../types/admin-user.types'
 
 function StatCard({ label, value, icon, iconBg, isActive, onClick }: StatCardProps) {
   return (
@@ -33,16 +24,6 @@ function StatCard({ label, value, icon, iconBg, isActive, onClick }: StatCardPro
       </p>
     </button>
   )
-}
-
-interface UserStatsSectionProps {
-  stats: {
-    totalUsers: number
-    totalAuthors: number
-    pendingRequests: number
-  }
-  activeStat: StatType
-  onStatClick: (type: StatType) => void
 }
 
 export function UserStatsSection({ stats, activeStat, onStatClick }: UserStatsSectionProps) {

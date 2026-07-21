@@ -1,12 +1,5 @@
 import { X, CheckCircle, Ban } from 'lucide-react'
-import type { UserItem } from '../services/user.service'
-
-interface BanModalProps {
-  user: UserItem
-  onConfirm: () => void
-  onClose: () => void
-  isLoading: boolean
-}
+import type { UserItem, BanModalProps } from '../types/admin-user.types'
 
 export function BanModal({ user, onConfirm, onClose, isLoading }: BanModalProps) {
   const isBanned = user.status === 'banned'

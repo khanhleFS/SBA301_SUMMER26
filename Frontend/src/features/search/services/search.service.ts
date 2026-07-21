@@ -1,4 +1,4 @@
-import type { Story } from '../components/search-card'
+import type { Story } from '../types/search.types'
 import { searchNovels, getPublicNovelEnums } from '@/services/novel-service'
 import { filterService, type FilterGroup, type FilterOption } from '@/services/filter-service'
 import { getAllCategories } from '@/services/category-service'
@@ -14,7 +14,7 @@ const STATUS_DISPLAY_MAP: Record<string, string> = {
   DROPPED: 'Drop',
 }
 
-export const storyService = {
+export const searchService = {
   getStories: async (params: {
     searchQuery?: string
     category?: string
@@ -24,7 +24,7 @@ export const storyService = {
     size?: number
   }): Promise<{ stories: Story[]; totalPages: number; totalElements: number }> => {
     const backendStatus = params.status && params.status !== 'All'
-      ? params.status  // already the backend enum value (ONGOING, COMPLETED, etc.)
+      ? params.status
       : undefined
 
     const minChaptersNum = params.minChapters && params.minChapters !== 'Any'
@@ -42,7 +42,6 @@ export const storyService = {
 
     const stories: Story[] = result.content.map((novel) => ({
       id: novel.id,
-      // slug-id pattern: slug + UUID for the URL
       slug: `${novel.slug}-${novel.id}`,
       title: novel.title,
       reads: (novel.viewCount || 0).toString(),
@@ -72,11 +71,6 @@ export const storyService = {
     }
   },
 
-  /**
-   * Fetches NovelStatus enum values from the public backend API.
-   * Returns FilterOption[] ready to be used in the status filter group.
-   * First option is always "Tất cả" (All).
-   */
   getNovelStatuses: async (): Promise<FilterOption[]> => {
     try {
       const enums = await getPublicNovelEnums()
@@ -87,7 +81,7 @@ export const storyService = {
         { label: 'Tất cả', value: 'All' },
         ...novelStatusEnum.value.map(v => ({
           label: STATUS_DISPLAY_MAP[v] ?? v,
-          value: v, // send backend enum value directly (no mapping needed on submit)
+          value: v,
         }))
       ]
     } catch {
@@ -95,10 +89,6 @@ export const storyService = {
     }
   },
 
-  /**
-   * Fetches ChapterRange threshold values from the public backend API.
-   * Returns FilterOption[] for the chapters filter group.
-   */
   getChapterRanges: async (): Promise<FilterOption[]> => {
     try {
       const enums = await getPublicNovelEnums()

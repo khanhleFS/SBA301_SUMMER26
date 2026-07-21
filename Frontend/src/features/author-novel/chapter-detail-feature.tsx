@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { ChapterForm } from './components/chapter-form'
-import { useChapterDetails } from './hooks/use-author-novels'
+import { useChapterDetails, useChapters } from './hooks/use-author-novels'
 
 export default function AuthorChapterDetailFeature() {
   const { novelId, chapterNumber } = useParams<{ novelId: string; chapterNumber: string }>()
@@ -11,6 +11,9 @@ export default function AuthorChapterDetailFeature() {
     novelId,
     parsedChapterNumber
   )
+
+  const { data: chapters } = useChapters(novelId)
+  const existingChapterNumbers = chapters ? chapters.map(c => c.chapterNumber) : []
 
   if (!isNew && isLoading) {
     return (
@@ -30,7 +33,11 @@ export default function AuthorChapterDetailFeature() {
 
   return (
     <div className="container mx-auto">
-      <ChapterForm novelId={novelId || ''} chapter={isNew ? undefined : chapter} />
+      <ChapterForm
+        novelId={novelId || ''}
+        chapter={isNew ? undefined : chapter}
+        existingChapterNumbers={existingChapterNumbers}
+      />
     </div>
   )
 }

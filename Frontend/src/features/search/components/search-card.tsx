@@ -1,25 +1,8 @@
 import { Link } from 'react-router-dom'
 import { BookOpen, Feather, Eye, Clock, Bookmark, Crown, ArrowRight } from 'lucide-react'
 import SpotlightCard from '@/components/custom/spot-light-card/SpotlightCard'
-import type { UserReadState } from '../context/search-context'
-
-export interface Story {
-  id: string
-  slug: string
-  title: string
-  reads: string
-  publishTime: string
-  author: string
-  genres: string[]
-  currentChapter: number
-  status: string
-  imgUrl?: string
-}
-
-interface SearchCardProps {
-  story: Story
-  userReadState?: UserReadState
-}
+import type { Story, SearchCardProps, UserReadState } from '../types/search.types'
+export type { Story }
 
 export function ReadingStoryCard({ story, userReadState }: SearchCardProps) {
   const bookmarkedChapterId = userReadState?.bookmarks[story.id]

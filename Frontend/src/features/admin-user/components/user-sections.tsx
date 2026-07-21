@@ -1,21 +1,16 @@
 import { useState } from 'react'
-import type { UserItem, UserManagementData, UserRole, UserStatus } from '../services/user.service'
+import type {
+  UserItem,
+  UserManagementData,
+  FilterRole,
+  FilterStatus,
+  StatType,
+  UserManagementSectionsProps,
+} from '../types/admin-user.types'
 import { UserStatsSection } from './user-stats'
 import { UserTableSection } from './user-table'
 import { PromoteModal } from './promote-modal'
 import { BanModal } from './ban-modal'
-
-export type FilterRole = UserRole | 'ALL'
-export type FilterStatus = UserStatus | 'ALL'
-export type StatType = 'total' | 'author' | 'pending'
-
-type UserManagementSectionsProps = {
-  data: UserManagementData
-  onPromote: (userId: string) => Promise<void>
-  onToggleBan: (userId: string) => Promise<void>
-  onApprove: (userId: string) => Promise<void>
-  isMutating: boolean
-}
 
 export function UserManagementSections({
   data,

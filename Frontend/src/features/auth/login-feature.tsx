@@ -30,11 +30,6 @@ export default function LoginFeature() {
         accessToken,
         refreshToken
       )
-      if (role === 'ADMIN') {
-        navigate('/admin/dashboard', { replace: true })
-      } else {
-        navigate('/', { replace: true })
-      }
     } catch (err: any) {
       setError(err?.message || 'Email hoặc mật khẩu không chính xác.')
     }

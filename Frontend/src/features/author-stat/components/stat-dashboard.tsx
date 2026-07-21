@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
-import { fetchAuthorNovelsSummary, fetchNovelStats, type NovelStatSummary } from '../services/stat-service'
+import { fetchAuthorNovelsSummary, fetchNovelStats } from '../services/author-stat.service'
+import type { NovelStatSummary, AuthorNovelOption, StatTab } from '../types/author-stat.types'
 import {
   BookOpen,
   Eye,
   Coins,
   Percent,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import {
   XAxis,
@@ -18,11 +21,12 @@ import {
 } from 'recharts'
 
 export function StatDashboard() {
-  const [novels, setNovels] = useState<{ id: string; title: string; coverImageUrl?: string }[]>([])
+  const [novels, setNovels] = useState<AuthorNovelOption[]>([])
   const [selectedNovelId, setSelectedNovelId] = useState<string>('')
   const [stats, setStats] = useState<NovelStatSummary | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'views' | 'revenue' | 'conversion'>('views')
+  const [activeTab, setActiveTab] = useState<StatTab>('views')
+  const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
     fetchAuthorNovelsSummary().then((data) => {
@@ -33,6 +37,9 @@ export function StatDashboard() {
     })
   }, [])
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
   useEffect(() => {
     if (!selectedNovelId) return
     setLoading(true)
@@ -41,6 +48,19 @@ export function StatDashboard() {
       setLoading(false)
     })
   }, [selectedNovelId])
+
+  // Reset page to 1 if selected novel or chapters length changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedNovelId, stats?.chapters?.length])
+
+  const totalItems = stats?.chapters?.length || 0
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+
+  const paginatedChapters = stats?.chapters ? stats.chapters.slice(startIndex, startIndex + itemsPerPage) : []
+
+  const selectedNovel = novels.find(n => n.id === selectedNovelId)
 
   if (loading && !stats) {
     return (
@@ -61,21 +81,71 @@ export function StatDashboard() {
 
         {/* Custom Novel Selector */}
         <div className="relative inline-block w-full sm:w-64">
-          <div className="flex items-center gap-2 rounded-lg border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-primary/20">
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-            <select
-              value={selectedNovelId}
-              onChange={(e) => setSelectedNovelId(e.target.value)}
-              className="w-full bg-transparent text-xs font-semibold outline-none cursor-pointer appearance-none pr-6"
-            >
-              {novels.map((novel) => (
-                <option key={novel.id} value={novel.id} className="text-foreground">
-                  {novel.title}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 h-4 w-4 pointer-events-none text-muted-foreground" />
-          </div>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            // Thay px-3 thành pl-4 pr-3 để đẩy content vào trong 1 chút
+            className="flex w-full items-center justify-between gap-3 rounded-lg border border-outline-variant/60 bg-white dark:bg-zinc-900 pl-4 pr-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-semibold cursor-pointer text-left"
+          >
+            <div className="flex items-center gap-3 truncate">
+              {/* Khung chứa cố định w-5 giúp chữ luôn thẳng hàng */}
+              <div className="flex w-5 shrink-0 items-center justify-center">
+                {selectedNovel?.coverImageUrl ? (
+                  <img
+                    src={selectedNovel.coverImageUrl}
+                    alt={selectedNovel.title}
+                    className="h-7 w-5 rounded object-cover shadow-sm border border-outline/10"
+                  />
+                ) : (
+                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
+              <span className="truncate text-foreground">{selectedNovel?.title}</span>
+            </div>
+            <ChevronDown
+              className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200"
+              style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}
+            />
+          </button>
+
+          {isOpen && (
+            <>
+              {/* Overlay background to close dropdown when clicking outside */}
+              <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+
+              {/* Dropdown list container */}
+              <div className="absolute right-0 left-0 mt-1.5 max-h-60 overflow-y-auto rounded-lg border border-outline-variant/60 bg-white dark:bg-zinc-900 py-1 shadow-lg z-50 animate-in fade-in slide-in-from-top-1 duration-100">
+                {novels.map((novel) => {
+                  const isSelected = novel.id === selectedNovelId
+                  return (
+                    <button
+                      key={novel.id}
+                      onClick={() => {
+                        setSelectedNovelId(novel.id)
+                        setIsOpen(false)
+                      }}
+                      // Thay px-3 thành pl-4 pr-3 đồng bộ với trigger
+                      className={`flex w-full items-center gap-3 pl-4 pr-3 py-2 text-left text-xs transition-colors hover:bg-surface-container ${isSelected ? 'bg-primary/10 font-bold text-primary' : 'text-foreground'
+                        }`}
+                    >
+                      {/* Khung chứa cố định w-5 giúp chữ luôn thẳng hàng */}
+                      <div className="flex w-5 shrink-0 items-center justify-center">
+                        {novel.coverImageUrl ? (
+                          <img
+                            src={novel.coverImageUrl}
+                            alt={novel.title}
+                            className="h-7 w-5 rounded object-cover shadow-sm border border-outline/10"
+                          />
+                        ) : (
+                          <BookOpen className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
+                      <span className="truncate">{novel.title}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -86,27 +156,24 @@ export function StatDashboard() {
             {/* Views Card */}
             <button
               onClick={() => setActiveTab('views')}
-              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${
-                activeTab === 'views'
+              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${activeTab === 'views'
                   ? 'border-primary bg-primary/5 shadow-sm'
                   : 'border-outline-variant/60 bg-surface hover:border-primary/40'
-              }`}
+                }`}
             >
               <div className="space-y-1">
-                <span className={`text-xs font-semibold transition-colors ${
-                  activeTab === 'views' ? 'text-primary' : 'text-muted-foreground'
-                }`}>
+                <span className={`text-xs font-semibold transition-colors ${activeTab === 'views' ? 'text-primary' : 'text-muted-foreground'
+                  }`}>
                   Tổng lượt đọc
                 </span>
                 <p className="text-2xl font-black tracking-tight text-on-surface">
                   {stats.totalViews.toLocaleString('vi-VN')}
                 </p>
               </div>
-              <div className={`rounded-lg p-2 transition-colors ${
-                activeTab === 'views'
+              <div className={`rounded-lg p-2 transition-colors ${activeTab === 'views'
                   ? 'bg-primary/10 text-primary'
                   : 'bg-surface-container-high text-muted-foreground group-hover:text-primary'
-              }`}>
+                }`}>
                 <Eye className="h-5 w-5" />
               </div>
             </button>
@@ -114,27 +181,24 @@ export function StatDashboard() {
             {/* Revenue Card */}
             <button
               onClick={() => setActiveTab('revenue')}
-              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${
-                activeTab === 'revenue'
+              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${activeTab === 'revenue'
                   ? 'border-amber-500 bg-amber-500/5 shadow-sm'
                   : 'border-outline-variant/60 bg-surface hover:border-amber-500/40'
-              }`}
+                }`}
             >
               <div className="space-y-1">
-                <span className={`text-xs font-semibold transition-colors ${
-                  activeTab === 'revenue' ? 'text-amber-600' : 'text-muted-foreground'
-                }`}>
+                <span className={`text-xs font-semibold transition-colors ${activeTab === 'revenue' ? 'text-amber-600' : 'text-muted-foreground'
+                  }`}>
                   Doanh thu xu
                 </span>
                 <p className="text-2xl font-black tracking-tight text-on-surface">
                   {stats.totalRevenue.toLocaleString('vi-VN')}
                 </p>
               </div>
-              <div className={`rounded-lg p-2 transition-colors ${
-                activeTab === 'revenue'
+              <div className={`rounded-lg p-2 transition-colors ${activeTab === 'revenue'
                   ? 'bg-amber-500/10 text-amber-600'
                   : 'bg-surface-container-high text-muted-foreground group-hover:text-amber-500'
-              }`}>
+                }`}>
                 <Coins className="h-5 w-5" />
               </div>
             </button>
@@ -142,27 +206,24 @@ export function StatDashboard() {
             {/* Conversion Rate Card */}
             <button
               onClick={() => setActiveTab('conversion')}
-              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${
-                activeTab === 'conversion'
+              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${activeTab === 'conversion'
                   ? 'border-emerald-500 bg-emerald-500/5 shadow-sm'
                   : 'border-outline-variant/60 bg-surface hover:border-emerald-500/40'
-              }`}
+                }`}
             >
               <div className="space-y-1">
-                <span className={`text-xs font-semibold transition-colors ${
-                  activeTab === 'conversion' ? 'text-emerald-600' : 'text-muted-foreground'
-                }`}>
+                <span className={`text-xs font-semibold transition-colors ${activeTab === 'conversion' ? 'text-emerald-600' : 'text-muted-foreground'
+                  }`}>
                   Tỉ lệ mua VIP trung bình
                 </span>
                 <p className="text-2xl font-black tracking-tight text-on-surface">
                   {stats.avgConversionRate}%
                 </p>
               </div>
-              <div className={`rounded-lg p-2 transition-colors ${
-                activeTab === 'conversion'
+              <div className={`rounded-lg p-2 transition-colors ${activeTab === 'conversion'
                   ? 'bg-emerald-500/10 text-emerald-600'
                   : 'bg-surface-container-high text-muted-foreground group-hover:text-emerald-500'
-              }`}>
+                }`}>
                 <Percent className="h-5 w-5" />
               </div>
             </button>
@@ -240,19 +301,18 @@ export function StatDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/30">
-                  {stats.chapters.map((ch) => (
+                  {paginatedChapters.map((ch) => (
                     <tr key={ch.chapterNumber} className="hover:bg-surface-container-low/20 transition-colors">
                       <td className="p-3 text-center font-mono font-medium text-muted-foreground">{ch.chapterNumber}</td>
                       <td className="p-3 font-semibold text-on-surface">{ch.title}</td>
-                      <td className="p-3">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold ${
-                          ch.status === 'FREE'
-                            ? 'bg-slate-100 text-slate-800'
-                            : ch.status === 'UNLOCKED'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {ch.status}
+                      <td className="p-3 text-center">
+                        <span className={`inline-block rounded px-2 py-0.5 text-[9px] font-bold uppercase border ${ch.status === 'FREE'
+                          ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600'
+                          : ch.status === 'LOCKED'
+                            ? 'border-red-500/20 bg-red-500/10 text-red-600'
+                            : 'border-blue-500/20 bg-blue-500/10 text-blue-600'
+                          }`}>
+                          {ch.status === 'FREE' ? 'Miễn phí' : ch.status === 'LOCKED' ? 'Khóa' : 'Mở khóa'}
                         </span>
                       </td>
                       <td className="p-3 text-right font-mono font-medium">{ch.viewCount.toLocaleString('vi-VN')}</td>
@@ -267,6 +327,34 @@ export function StatDashboard() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Footer */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-outline-variant/60 p-4 bg-transparent mt-1">
+                <p className="text-xs text-muted-foreground">
+                  Hiển thị <span className="font-semibold text-foreground">{startIndex + 1}</span> - <span className="font-semibold text-foreground">{Math.min(startIndex + itemsPerPage, totalItems)}</span> trong tổng số <span className="font-semibold text-foreground">{totalItems}</span> chương.
+                </p>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="rounded-md border border-outline-variant bg-surface-container-lowest p-1 hover:bg-surface-container disabled:opacity-50 disabled:pointer-events-none transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft className="h-4 w-4 text-on-surface" />
+                  </button>
+                  <span className="flex items-center px-3 text-xs font-bold text-foreground">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="rounded-md border border-outline-variant bg-surface-container-lowest p-1 hover:bg-surface-container disabled:opacity-50 disabled:pointer-events-none transition-colors cursor-pointer"
+                  >
+                    <ChevronRight className="h-4 w-4 text-on-surface" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}

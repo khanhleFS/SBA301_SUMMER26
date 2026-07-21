@@ -3,7 +3,7 @@ import { Bookmark, CheckCircle2, History, List, WalletCards } from 'lucide-react
 import { SectionTitle } from './section-title'
 import { surfaceCardClass } from './profile-styles'
 import { useProfile } from '../context/profile.context'
-import type { CollectionItem, CollectionStory } from '../types/profile.types'
+import type { CollectionItem, CollectionStory, CollectionStoryItemProps } from '../types/profile.types'
 import type { LucideIcon } from 'lucide-react'
 
 const COLLECTION_ICONS: Record<string, LucideIcon> = {
@@ -67,10 +67,7 @@ export function CollectionSection() {
 function CollectionStoryItem({
   story,
   onClick
-}: {
-  story: CollectionStory
-  onClick: () => void
-}) {
+}: CollectionStoryItemProps) {
   const isCompleted = story.progress >= 100
 
   return (

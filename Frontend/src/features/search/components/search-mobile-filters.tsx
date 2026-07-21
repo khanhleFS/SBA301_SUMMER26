@@ -1,13 +1,8 @@
 import { useEffect } from 'react'
 import { SlidersHorizontal, Check, X, BookOpen, Crown } from 'lucide-react'
 import { useSearchContext } from '../context/search-context'
-import type { ReadingStateFilter } from '../context/search-context'
+import type { ReadingStateFilter, SearchMobileFiltersProps } from '../types/search.types'
 import { useAuthStore } from '@/store/auth.store'
-
-interface SearchMobileFiltersProps {
-  isOpen: boolean
-  onClose: () => void
-}
 
 export function SearchMobileFilters({ isOpen, onClose }: SearchMobileFiltersProps) {
   const {

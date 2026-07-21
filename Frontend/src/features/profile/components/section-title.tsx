@@ -1,9 +1,4 @@
-import type React from 'react'
-
-interface SectionTitleProps {
-  icon: React.ComponentType<{ className?: string }>
-  children: React.ReactNode
-}
+import type { SectionTitleProps } from '../types/profile.types'
 
 export function SectionTitle({ icon: Icon, children }: SectionTitleProps) {
   return (

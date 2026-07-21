@@ -8,7 +8,7 @@ import {
   Bar,
 } from 'recharts'
 import { Users, ArrowRight, CreditCard, UserPlus, BookOpen, CheckCircle2, Clock } from 'lucide-react'
-import type { PackageTier } from '../services/dashboard.service'
+import type { PackageTier, DashboardChartSectionProps, DashboardUserPulseSectionProps, DashboardTransactionsSectionProps, DashboardPackagesSectionProps, PulseCardProps, PackageCardProps } from '../types/admin-dashboard.types'
 
 function formatFullVND(value: number) {
   return `${value.toLocaleString('vi-VN')} đ`
@@ -22,7 +22,7 @@ function formatShortVND(value: number) {
   return `${value}`
 }
 
-export function DashboardChartSection({ chartData, platformNet }: { chartData: number[]; platformNet: number }) {
+export function DashboardChartSection({ chartData, platformNet }: DashboardChartSectionProps) {
   // chartData is already in VND from the real API
   const formattedChartData = chartData.map((val, idx) => ({
     name: `Tháng ${idx + 1}`,
@@ -82,11 +82,7 @@ export function DashboardUserPulseSection({
   totalUsers,
   totalAuthors,
   totalNovels,
-}: {
-  totalUsers: number
-  totalAuthors: number
-  totalNovels: number
-}) {
+}: DashboardUserPulseSectionProps) {
   return (
     <section className="flex flex-col justify-between rounded-xl border border-outline-variant bg-surface-container-low p-4 shadow-sm lg:col-span-5 sm:p-5">
       <div>
@@ -127,16 +123,7 @@ export function DashboardUserPulseSection({
 
 export function DashboardTransactionsSection({
   recentOrders,
-}: {
-  recentOrders: {
-    orderId: string
-    username: string
-    userEmail: string
-    amountVnd: number
-    status: string
-    createdAt: string
-  }[]
-}) {
+}: DashboardTransactionsSectionProps) {
   return (
     <aside className="flex h-full w-full flex-col justify-between rounded-xl border border-outline-variant bg-surface-container-low p-4 shadow-sm lg:col-span-7 sm:p-5">
       <div>
@@ -203,7 +190,7 @@ export function DashboardTransactionsSection({
   )
 }
 
-export function DashboardPackagesSection({ packageTiers }: { packageTiers: PackageTier[] }) {
+export function DashboardPackagesSection({ packageTiers }: DashboardPackagesSectionProps) {
   return (
     <section className="rounded-xl border border-[var(--outline-variant)] bg-surface-container-low p-4 shadow-sm">
       <div className="flex items-center justify-between gap-3 border-b border-[var(--outline-variant)] pb-3">
@@ -229,12 +216,7 @@ function PulseCard({
   value,
   icon,
   iconBg,
-}: {
-  label: string
-  value: number
-  icon: React.ReactNode
-  iconBg: string
-}) {
+}: PulseCardProps) {
   return (
     <div className="flex items-center justify-between rounded-md border border-outline-variant bg-surface-container-lowest p-4 transition-all duration-200 hover:bg-surface-container">
       <div className="space-y-1">
@@ -248,36 +230,45 @@ function PulseCard({
   )
 }
 
-function PackageCard({ data }: { data: PackageTier }) {
+function PackageCard({ data }: PackageCardProps) {
   const { name, price, coin, bonus, isPopular } = data
-  const cardBorder = isPopular ? 'border-primary ring-1 ring-primary-opaque' : 'border-[var(--outline-variant)]'
-  const cardBg = isPopular ? 'bg-primary/5' : 'bg-surface-container-lowest'
 
   return (
-    <div className={`relative flex flex-col justify-between overflow-hidden rounded-md border p-4 transition-transform hover:-translate-y-1 ${cardBorder} ${cardBg}`}>
+    <div
+      className={`relative flex flex-col justify-between overflow-hidden rounded-xl border p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md ${
+        isPopular
+          ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+          : 'border-outline-variant bg-surface-container-lowest'
+      }`}
+    >
       {isPopular && (
-        <div className="absolute right-0 top-0 rounded-bl-md bg-primary px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-on-primary shadow-sm">
-          <CreditCard className="h-4 w-4" strokeWidth={3} />
+        <div className="absolute right-0 top-0 rounded-bl-xl bg-primary px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-on-primary shadow-sm flex items-center gap-1">
+          <CreditCard className="h-3 w-3" /> Nổi bật
         </div>
       )}
 
-      <div className="mt-2 text-center">
-        <h3 className="truncate text-sm font-bold text-foreground">{name}</h3>
-        <div className="mt-1 flex items-baseline justify-center">
-          <span className="text-4xl font-black tracking-tight text-primary">{price}K</span>
-        </div>
-        <p className="mt-0.5 text-xs font-medium text-muted-foreground">{price * 1000} VNĐ</p>
+      <div className="flex flex-col items-center py-3 w-full text-center">
+        <h3 className="truncate text-sm font-bold text-foreground/80">{name}</h3>
+
+        <p className="mt-2 text-2xl font-extrabold text-foreground tracking-tight flex items-center justify-center gap-1">
+          {coin.toLocaleString('vi-VN')}
+          <span className="text-sm font-semibold text-muted-foreground">Coins</span>
+        </p>
+
+        <p className="mt-1 text-lg font-extrabold text-primary">
+          {(price * 1000).toLocaleString('vi-VN')} đ
+        </p>
       </div>
 
-      <div className="mt-5 rounded-lg bg-surface-container p-2.5 text-center transition-colors hover:bg-surface-container-high">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Nhận được</p>
-        <p className="mt-0.5 text-lg font-bold text-emerald-600">
-          {coin} <span className="text-xs">Coin</span>
-        </p>
+      <div className="mt-auto w-full pt-3 border-t border-outline-variant/40 text-center">
         {bonus > 0 ? (
-          <p className="mt-0.5 text-[10px] font-bold text-amber-600">+ Tặng {bonus} Coin</p>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+            + Tặng {bonus} Coins ưu đãi
+          </span>
         ) : (
-          <p className="mt-0.5 select-none text-[10px] text-transparent">No bonus</p>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Mệnh giá {price}K VNĐ
+          </span>
         )}
       </div>
     </div>

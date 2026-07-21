@@ -9,13 +9,22 @@ import {
   Tooltip,
   Bar,
 } from 'recharts'
-import type { CashFlowItem } from '../services/finance.service'
+import type {
+  CashFlowItem,
+  DepositItem,
+  KpiData,
+  TransactionItem,
+  CashFlowChartProps,
+  FinanceTransactionTableProps,
+  FinanceKpiSectionProps,
+  FinanceChartsAndDepositsSectionProps,
+} from '../types/admin-finance.types'
 
 function formatVND(value: number) {
   return `${value.toLocaleString('vi-VN')} đ`
 }
 
-function CashFlowChart({ cashFlow, cashFlowMonth }: { cashFlow: CashFlowItem[]; cashFlowMonth: CashFlowItem[] }) {
+function CashFlowChart({ cashFlow, cashFlowMonth }: CashFlowChartProps) {
   const [activeTab, setActiveTab] = useState<'week' | 'month'>('week')
 
   const formatMoney = (amount: number) =>
@@ -95,20 +104,7 @@ function CashFlowChart({ cashFlow, cashFlowMonth }: { cashFlow: CashFlowItem[]; 
   )
 }
 
-
-
-interface Transaction {
-  id: string
-  user: string
-  fullName: string
-  method: string
-  amount: number
-  coins: number
-  status: 'success' | 'pending' | 'failed'
-  time: string
-}
-
-export function FinanceTransactionTable({ transactions = [] }: { transactions?: Transaction[] }) {
+export function FinanceTransactionTable({ transactions = [] }: FinanceTransactionTableProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [methodFilter, setMethodFilter] = useState<string>('all')
@@ -361,7 +357,7 @@ function KpiCard({ data }: { data: any }) {
   )
 }
 
-export function FinanceKpiSection({ kpiData }: { kpiData: { id: number; title: string; subtitle: string; amount: string; growth: string; actionText: string; isPrimary: boolean; icon: any }[] }) {
+export function FinanceKpiSection({ kpiData }: FinanceKpiSectionProps) {
   return <KpiGrid kpiData={kpiData} />
 }
 
@@ -369,17 +365,7 @@ export function FinanceChartsAndDepositsSection({
   cashFlow,
   cashFlowMonth,
   recentDeposits,
-}: {
-  cashFlow: CashFlowItem[]
-  cashFlowMonth: CashFlowItem[]
-  recentDeposits: {
-    user: string
-    method: string
-    amount: number
-    status: 'success' | 'pending'
-    time: string
-  }[]
-}) {
+}: FinanceChartsAndDepositsSectionProps) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <div className="lg:col-span-2">

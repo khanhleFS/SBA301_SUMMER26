@@ -1,30 +1,11 @@
 import { getMyNovels, getNovelStats } from '@/services/novel-service'
 import type { NovelResponseDTO } from '@/types'
-
-export interface ChapterStatItem {
-  chapterId: number
-  chapterNumber: number
-  title: string
-  viewCount: number
-  revenue: number
-  conversionRate: number
-  status: string
-}
-
-export interface NovelStatSummary {
-  id: string
-  title: string
-  coverImageUrl?: string
-  totalViews: number
-  totalRevenue: number
-  avgConversionRate: number
-  chapters: ChapterStatItem[]
-}
+import type { NovelStatSummary, AuthorNovelOption } from '../types/author-stat.types'
 
 /**
  * Fetches all novels owned by the authenticated author for the dropdown selector.
  */
-export async function fetchAuthorNovelsSummary(): Promise<{ id: string; title: string; coverImageUrl?: string }[]> {
+export async function fetchAuthorNovelsSummary(): Promise<AuthorNovelOption[]> {
   const novels: NovelResponseDTO[] = await getMyNovels()
   return novels.map((n) => ({
     id: String(n.id),

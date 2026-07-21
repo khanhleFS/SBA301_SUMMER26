@@ -1,13 +1,8 @@
 import { BookOpen, Bookmark, BookmarkCheck } from 'lucide-react'
 import { useStoryDetailContext } from '../context/story-detail-context'
+import type { StoryBannerProps } from '../types/story-detail.types'
 
 const COVER_PLACEHOLDER = 'https://placehold.co/400x600/1a1a1a/ededed?text=Cover'
-
-interface StoryBannerProps {
-  inLibrary: boolean
-  onLibraryToggle: () => void
-  onScrollToChapters: () => void
-}
 
 export function StoryBanner({ inLibrary, onLibraryToggle, onScrollToChapters }: StoryBannerProps) {
   const { storyInfo } = useStoryDetailContext()

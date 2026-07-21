@@ -1,28 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
-import { storyDetailService, type StoryDetailInfo, type ChapterItem, extractId } from '../services/story-detail-service'
+import { storyDetailService, extractId } from '../services/story-detail.service'
+import type { StoryDetailInfo, ChapterItem, StoryDetailContextType } from '../types/story-detail.types'
 import { getBookmark, upsertBookmark, removeBookmark } from '@/services/bookmark-service'
 import { useAuthStore } from '@/store/auth.store'
-
-interface StoryDetailContextType {
-  storyId: string
-  storyInfo: StoryDetailInfo | null
-  chapters: ChapterItem[]
-  isLoading: boolean
-  
-  // Library states
-  inLibrary: boolean
-  isFavorite: boolean
-  toggleLibrary: () => void
-  
-  // Chapter list states
-  isSortedAsc: boolean
-  toggleSort: () => void
-  currentPage: number
-  setCurrentPage: (page: number | ((p: number) => number)) => void
-  itemsPerPage: number
-  totalPages: number
-  paginatedChapters: ChapterItem[]
-}
 
 const StoryDetailContext = createContext<StoryDetailContextType | undefined>(undefined)
 

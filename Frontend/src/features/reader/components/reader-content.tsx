@@ -21,12 +21,11 @@ import ReaderSuggestions from './reader-suggestions'
 import ChapterSelector from './chapter-selector'
 import ReaderConfigMenu from './reader-config-menu'
 import { ReaderSkeleton } from './reader-skeleton'
-import { useReaderContext, type ThemeType, type FontType, type LineHeightType } from '../context/reader-context'
-import { generateChapterAudio } from '@/services/chapter-service'
-
-interface ArticleProgressBarProps {
-  targetRef: React.RefObject<HTMLElement | null>
-}
+import { useReaderContext } from '../context/reader-context'
+import type { ThemeType, FontType, LineHeightType, ArticleProgressBarProps, CanvasArticleProps } from '../types/reader.types'
+import { generateChapterAudio, readChapter, unlockChapter } from '@/services/chapter-service'
+import { useAuthStore } from '@/store/auth.store'
+import { extractId } from '../services/reader.service'
 
 function ArticleProgressBar({ targetRef }: ArticleProgressBarProps) {
   const [element, setElement] = useState<HTMLElement | null>(null)
@@ -74,15 +73,6 @@ function ArticleProgressBar({ targetRef }: ArticleProgressBarProps) {
       }}
     />
   )
-}
-
-interface CanvasArticleProps {
-  paragraphs: string[]
-  fontSize: number
-  fontFamily: string
-  lineHeight: string
-  textColor: string
-  bgColor: string
 }
 
 function CanvasArticle({ paragraphs, fontSize, fontFamily, lineHeight, textColor, bgColor }: CanvasArticleProps) {
@@ -207,6 +197,7 @@ function ReaderContent() {
     activeChapter: activeChap,
     isLoading,
     scrollProgress,
+    reloadChapter,
     theme,
     setTheme,
     fontFamily,
@@ -218,6 +209,39 @@ function ReaderContent() {
     fullFrame,
     setFullFrame,
   } = useReaderContext()
+
+  const user = useAuthStore(s => s.user)
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated)
+  const [isUnlocking, setIsUnlocking] = useState(false)
+
+  // Ghi nhận đọc chương (tăng view và lưu lịch sử đọc)
+  useEffect(() => {
+    if (activeChap && !activeChap.isLocked && novelSlugWithId) {
+      const novelId = extractId(novelSlugWithId)
+      readChapter(novelId, activeChap.id).catch(err => {
+        console.warn('Ghi nhận đọc chương thất bại:', err)
+      })
+    }
+  }, [activeChap, novelSlugWithId])
+
+  // Mở khóa chương truyện bằng coin
+  const handleUnlock = async () => {
+    if (!activeChap || isUnlocking || !novelSlugWithId) return
+    setIsUnlocking(true)
+    try {
+      const novelId = extractId(novelSlugWithId)
+      await unlockChapter(novelId, activeChap.id)
+      alert('Mở khóa chương truyện thành công!')
+      // Refresh user profile để cập nhật số dư coin mới
+      await useAuthStore.getState().refreshProfile()
+      // Tải lại chương truyện
+      reloadChapter()
+    } catch (err: any) {
+      alert(err.message || 'Mở khóa chương truyện thất bại')
+    } finally {
+      setIsUnlocking(false)
+    }
+  }
 
   useEffect(() => {
     if (novelSlugWithId && currentChapKey) {
@@ -594,14 +618,65 @@ function ReaderContent() {
           <div className="h-[1px] w-full bg-current opacity-10 my-6" />
 
           <main className="mx-auto space-y-8 my-8" onClick={handleCanvasClick} ref={articleContentRef as any}>
-            <CanvasArticle
-              paragraphs={activeChap.paragraphs}
-              fontSize={fontSize}
-              fontFamily={fontFamily}
-              lineHeight={lineHeight}
-              textColor={currentTheme.text.includes('#') ? currentTheme.text.replace('text-[', '').replace(']', '') : '#2c2c2c'}
-              bgColor={currentTheme.bg.includes('#') ? currentTheme.bg.replace('bg-[', '').replace(']', '').split(' ')[0] : '#ffffff'}
-            />
+            {activeChap.isLocked ? (
+              <div className="flex flex-col items-center justify-center p-8 border border-dashed border-current/25 rounded-2xl bg-current/[0.02] text-center my-12 shadow-inner">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary animate-pulse">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold mb-2">Chương truyện này đã bị khóa</h3>
+                <p className="text-sm opacity-85 max-w-md mb-6">
+                  Nội dung chương này yêu cầu trả phí để đọc. Vui lòng mở khóa để tiếp tục theo dõi truyện.
+                </p>
+                <div className="flex flex-col items-center gap-3">
+                  <span className="text-lg font-extrabold text-primary flex items-center gap-1.5 bg-primary/5 px-4 py-1.5 rounded-full border border-primary/20">
+                    Giá mở khóa: {activeChap.coinPrice} 🪙
+                  </span>
+                  
+                  {isAuthenticated ? (
+                    <div className="flex flex-col items-center gap-2 mt-2">
+                      <span className="text-xs opacity-75 font-semibold">Số dư của bạn: {user?.coinBalance ?? 0} 🪙</span>
+                      {(user?.coinBalance ?? 0) >= (activeChap.coinPrice || 0) ? (
+                        <button
+                          onClick={handleUnlock}
+                          disabled={isUnlocking}
+                          className="px-8 py-3.5 bg-primary text-on-primary font-bold rounded-full cursor-pointer hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/30"
+                        >
+                          {isUnlocking ? 'Đang mở khóa...' : 'Mở khóa chương ngay'}
+                        </button>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 mt-2">
+                          <p className="text-xs text-red-500 font-bold">Số dư coin của bạn không đủ.</p>
+                          <Link
+                            to="/deposit"
+                            className="px-8 py-3.5 bg-amber-500 text-white font-bold rounded-full hover:bg-amber-600 active:scale-95 transition-all shadow-lg shadow-amber-500/20"
+                          >
+                            Nạp coin ngay
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => navigate('/login', { state: { from: window.location.pathname } })}
+                      className="px-8 py-3.5 bg-primary text-on-primary font-bold rounded-full cursor-pointer hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/30"
+                    >
+                      Đăng nhập để mở khóa
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <CanvasArticle
+                paragraphs={activeChap.paragraphs}
+                fontSize={fontSize}
+                fontFamily={fontFamily}
+                lineHeight={lineHeight}
+                textColor={currentTheme.text.includes('#') ? currentTheme.text.replace('text-[', '').replace(']', '') : '#2c2c2c'}
+                bgColor={currentTheme.bg.includes('#') ? currentTheme.bg.replace('bg-[', '').replace(']', '').split(' ')[0] : '#ffffff'}
+              />
+            )}
           </main>
 
           <div className="h-[1px] w-full bg-current opacity-10 my-6" />

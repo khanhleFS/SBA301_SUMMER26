@@ -5,14 +5,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { getActiveCoinPackages } from '@/services/coin-package-service'
 import { fetchProfileData } from '@/features/profile/services/profile.service'
 import { createOrder } from '@/services/payment-service'
-import type { MomoRequestType } from '@/types'
-
-type MomoPaymentMethod = {
-  value: MomoRequestType
-  title: string
-  description: string
-  icon: typeof Smartphone
-}
+import type { MomoRequestType, MomoPaymentMethod } from './types/payment.types'
 
 const MOMO_PAYMENT_METHODS: MomoPaymentMethod[] = [
   {
@@ -168,13 +161,6 @@ export default function PaymentCreateFeature() {
                           <CheckCircle2 className="h-5 w-5 text-primary opacity-0 transition-all peer-checked:scale-100 peer-checked:opacity-100" />
                         </div>
 
-                        {/* Badge khuyến mãi nạp lần đầu - Định vị tuyệt đối ở góc trái trên */}
-                        {pkg.firstTimeBonus > 0 && (
-                          <div className="absolute right-5 top-3 animate-pulse rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[9px] font-extrabold text-white shadow-sm">
-                            +{pkg.firstTimeBonus.toLocaleString()} Bonus
-                          </div>
-                        )}
-
                         {/* PHẦN TRÊN: Icon -> Coin -> Giá */}
                         <div className="flex flex-col items-center pt-6 pb-4 w-full">
                           <div className="flex flex-col items-center gap-1 w-full text-center">
@@ -252,14 +238,14 @@ export default function PaymentCreateFeature() {
                       <div className="flex items-center gap-1.5">
                         <span>{currentBalance.toLocaleString()}</span>
                         <span>+</span>
-                        <span className="text-primary">{(totalCoins + (selectedPkg.firstTimeBonus * quantity)).toLocaleString()}</span>
+                        <span className="text-primary">{totalCoins.toLocaleString()}</span>
                       </div>
                     </div>
 
                     {/* C (TỔNG SAU NẠP LỚN KÈM ICON) - Căn phải */}
                     <div className="flex items-center gap-2 text-primary">
                       <span className="text-4xl font-extrabold tracking-tight">
-                        {(currentBalance + totalCoins + (selectedPkg.firstTimeBonus * quantity)).toLocaleString()}
+                        {(currentBalance + totalCoins).toLocaleString()}
                       </span>
                       <Coins className="h-7 w-7" strokeWidth={2.5} />
                     </div>
@@ -276,13 +262,6 @@ export default function PaymentCreateFeature() {
                       <span className="text-on-surface-variant">Gói nạp:</span>
                       <span className="font-bold text-on-surface text-base">{selectedPkg.baseCoins.toLocaleString()} Coins</span>
                     </div>
-
-                    {selectedPkg.firstTimeBonus > 0 && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-amber-600 dark:text-amber-400 font-semibold">Khuyến mãi nạp lần đầu:</span>
-                        <span className="font-extrabold text-amber-600 dark:text-amber-400">+{selectedPkg.firstTimeBonus.toLocaleString()} Coins</span>
-                      </div>
-                    )}
 
                     <div className="flex justify-between items-center">
                       <span className="text-on-surface-variant">Đơn giá:</span>

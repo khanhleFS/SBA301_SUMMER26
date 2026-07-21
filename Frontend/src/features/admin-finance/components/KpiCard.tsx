@@ -1,17 +1,6 @@
-import { type LucideIcon } from 'lucide-react'
+import type { KpiData, KpiCardProps } from '../types/admin-finance.types'
 
-export type KpiData = {
-  id: number
-  title: string
-  subtitle: string
-  amount: string
-  growth: string
-  actionText: string
-  isPrimary: boolean
-  icon: LucideIcon
-}
-
-export default function KpiCard({ data }: { data: KpiData }) {
+export default function KpiCard({ data }: KpiCardProps) {
   const { title, subtitle, amount, growth, isPrimary, icon: Icon } = data
 
   const cardBg = isPrimary

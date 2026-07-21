@@ -1,21 +1,7 @@
 import { api } from '@/lib/api'
+import type { AdminDashboardData, DashboardData } from '../types/admin-dashboard.types'
 
-export interface AdminDashboardData {
-  totalUsers: number
-  totalAuthors: number
-  totalNovels: number
-  totalRevenueVnd: number
-  platformRevenueVnd: number
-  monthlyRevenueVnd: number[]
-  recentOrders: {
-    orderId: string
-    userEmail: string
-    username: string
-    amountVnd: number
-    status: string
-    createdAt: string
-  }[]
-}
+export type { AdminDashboardData, DashboardData }
 
 /**
  * Fetches admin dashboard statistics.
@@ -28,5 +14,3 @@ export async function fetchDashboardData(): Promise<AdminDashboardData> {
   }
   throw new Error(response.data?.message || 'Không thể tải thống kê dashboard')
 }
-
-export type { AdminDashboardData as DashboardData }

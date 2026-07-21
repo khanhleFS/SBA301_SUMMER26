@@ -2,10 +2,7 @@ import { Plus, Coins } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { surfaceCardClass } from './profile-styles'
 import { useProfile } from '../context/profile.context'
-
-interface WalletCardProps {
-  showActions?: boolean
-}
+import type { WalletCardProps } from '../types/profile.types'
 
 export function WalletCard({ showActions = true }: WalletCardProps) {
   const { data } = useProfile()

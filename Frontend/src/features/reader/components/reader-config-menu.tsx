@@ -1,22 +1,5 @@
 import { Volume, Volume2 } from 'lucide-react'
-
-type ThemeType = 'nocturne' | 'charcoal' | 'sepia' | 'ivory' | 'day'
-type FontType = 'serif' | 'sans' | 'mono'
-type LineHeightType = 'tight' | 'normal' | 'loose'
-
-interface ReaderConfigMenuProps {
-  // --- Appearance ---
-  theme: ThemeType
-  setTheme: (t: ThemeType) => void
-  fontSize: number
-  setFontSize: (s: number) => void
-  fontFamily: FontType
-  setFontFamily: (f: FontType) => void
-  lineHeight: LineHeightType
-  setLineHeight: (l: LineHeightType) => void
-  fullFrame?: boolean
-  setFullFrame?: (val: any) => void
-}
+import type { ThemeType, FontType, LineHeightType, ReaderConfigMenuProps } from '../types/reader.types'
 
 export default function ReaderConfigMenu({
   theme, setTheme,

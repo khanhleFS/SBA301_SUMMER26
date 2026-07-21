@@ -1,14 +1,11 @@
 import { X } from 'lucide-react'
 import { surfaceCardClass } from './profile-styles'
-import type { Transaction } from '../types/profile.types'
+import type { TransactionDetailModalProps, DetailRowProps } from '../types/profile.types'
 
 export function TransactionDetailModal({
   transaction,
   onClose
-}: {
-  transaction: Transaction
-  onClose: () => void
-}) {
+}: TransactionDetailModalProps) {
   const isTopup = transaction.type === 'topup'
 
   return (
@@ -20,12 +17,7 @@ export function TransactionDetailModal({
       />
       <div className={`relative w-full max-w-sm rounded-lg p-5 ${surfaceCardClass}`}>
         <div className="mb-5 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-primary/80">
-              Chi tiết giao dịch
-            </p>
-            <h3 className="mt-1 text-xl font-bold text-on-surface">{transaction.title}</h3>
-          </div>
+          <h3 className="mt-1 text-xl font-bold text-on-surface">{transaction.title}</h3>
           <button
             onClick={onClose}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-container text-on-surface transition-colors hover:bg-surface-container-high"
@@ -55,7 +47,7 @@ export function TransactionDetailModal({
   )
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailRow({ label, value }: DetailRowProps) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-outline/5 pb-3 last:border-b-0 last:pb-0">
       <span className="text-on-surface-variant">{label}</span>

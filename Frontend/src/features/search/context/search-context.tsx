@@ -1,41 +1,12 @@
 import { createContext, useContext, useState, useMemo, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { storyService, type FilterGroup, type FilterOption } from '../services/story-service'
-import type { Story } from '../components/search-card'
-import { type UserReadState } from '@/services/mock-data'
+import { searchService, type FilterGroup, type FilterOption } from '../services/search.service'
+import type { Story, SearchContextType, ReadingStateFilter, UserReadState } from '../types/search.types'
 import { useQuery } from '@tanstack/react-query'
 import { getMyBookmarks } from '@/services/bookmark-service'
 import { useAuthStore } from '@/store/auth.store'
 
-export type { UserReadState } from '@/services/mock-data'
-
-export type ReadingStateFilter = 'all' | 'reading' | 'purchased'
-
-interface SearchContextType {
-  searchQuery: string
-  selectedCategory: string
-  setSelectedCategory: (cat: string) => void
-  selectedChapters: string
-  setSelectedChapters: (chap: string) => void
-  selectedStatus: string
-  setSelectedStatus: (status: string) => void
-  selectedReadingState: ReadingStateFilter
-  setSelectedReadingState: (v: ReadingStateFilter) => void
-  showUnlockedOnly: boolean
-  setShowUnlockedOnly: (v: boolean) => void
-  currentPage: number
-  setCurrentPage: (page: number) => void
-  filteredStories: Story[]
-  pagedStories: Story[]
-  isLoading: boolean
-  categories: string[]
-  filterGroups: FilterGroup[]
-  isFiltersLoading: boolean
-  clearFilters: () => void
-  userReadState: UserReadState
-  totalPages: number
-  totalElements: number
-}
+export type { UserReadState, ReadingStateFilter }
 
 const ITEMS_PER_PAGE = 5
 
@@ -106,27 +77,27 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   // Load filter groups once on mount
   const { data: filterGroups = [], isLoading: isFiltersLoading } = useQuery<FilterGroup[]>({
     queryKey: ['searchFilters'],
-    queryFn: storyService.getSearchFilters,
+    queryFn: searchService.getSearchFilters,
   })
 
   // Load categories from backend (real API)
   const { data: categories = [] } = useQuery<string[]>({
     queryKey: ['searchCategories'],
-    queryFn: storyService.getCategories,
+    queryFn: searchService.getCategories,
     staleTime: 5 * 60 * 1000, // cache 5 min
   })
 
   // Load novel status options from backend (dynamic enum)
   const { data: novelStatuses = [] } = useQuery<FilterOption[]>({
     queryKey: ['novelStatuses'],
-    queryFn: storyService.getNovelStatuses,
+    queryFn: searchService.getNovelStatuses,
     staleTime: 10 * 60 * 1000,
   })
 
   // Load chapter range options from backend (dynamic enum)
   const { data: chapterRanges = [] } = useQuery<FilterOption[]>({
     queryKey: ['chapterRanges'],
-    queryFn: storyService.getChapterRanges,
+    queryFn: searchService.getChapterRanges,
     staleTime: 10 * 60 * 1000,
   })
 
@@ -154,7 +125,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   // Fetch all matching stories once per filter combo (no page param — client handles paging)
   const { data: storyResult, isLoading } = useQuery({
     queryKey: ['stories', searchQuery, selectedCategory, selectedChapters, selectedStatus],
-    queryFn: () => storyService.getStories({
+    queryFn: () => searchService.getStories({
       searchQuery,
       category: selectedCategory,
       minChapters: selectedChapters,

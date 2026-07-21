@@ -17,7 +17,7 @@ Feature này đã được tái cấu trúc từ dạng nguyên khối sang ki�
 
 ## ⚙️ Service & Context
 - **Context (`context/story-detail-context.tsx`)**: Đóng vai trò State Manager cục bộ, phân phối dữ liệu bộ truyện (`storyInfo`), danh sách chương (`chapters`), trạng thái thư viện (`inLibrary`), cũng như tính toán phân trang động cho các tab chương truyện.
-- **Service (`services/story-detail-service.ts`)**: Quản lý luồng tải thông tin chi tiết và danh sách chương từ máy chủ thông qua `storyDetailService` với mock delay 500ms mượt mà.
+- **Service (`services/story-detail.service.ts`)**: Quản lý luồng tải thông tin chi tiết và danh sách chương từ máy chủ thông qua `storyDetailService`.
 
 ## 🪝 Custom Hooks
 - **`useStoryDetailContext()`**: Trích xuất nhanh dữ liệu và điều khiển các hoạt động tương tác (lọc, phân trang, đổi thứ tự chương, toggle thư viện) tại bất kỳ vị trí component nào thuộc cấu trúc trang detail.

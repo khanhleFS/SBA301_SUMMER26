@@ -1,5 +1,5 @@
 import { useSearchContext } from '../context/search-context'
-import type { ReadingStateFilter } from '../context/search-context'
+import type { ReadingStateFilter } from '../types/search.types'
 import { SlidersHorizontal, RotateCcw, BookOpen, Crown } from 'lucide-react'
 import SpotlightCard from '@/components/custom/spot-light-card/SpotlightCard'
 import { SidebarFiltersSkeleton } from './search-skeleton'

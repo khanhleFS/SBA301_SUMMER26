@@ -1,20 +1,6 @@
 import { SlidersHorizontal } from 'lucide-react'
 import { SearchInput } from '@/components/shared/site/search-input'
-
-interface SearchHeaderSectionProps {
-  searchQuery: string
-  isLoading: boolean
-  filteredStoriesLength: number
-  inputValue: string
-  setInputValue: (value: string) => void
-  onSubmit: (e: React.FormEvent) => void
-  setIsMobileFilterOpen: (open: boolean) => void
-  activeFiltersCount: number
-  isFiltersLoading: boolean
-  categories: string[]
-  selectedCategory: string
-  setSelectedCategory: (cat: string) => void
-}
+import type { SearchHeaderSectionProps } from '../types/search.types'
 
 export function SearchHeaderSection({
   searchQuery,

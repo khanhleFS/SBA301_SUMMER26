@@ -43,7 +43,7 @@ export async function logoutUser(): Promise<void> {
  * Missing fields (id, role) are preserved from existing Zustand state.
  */
 export async function getUserProfile(): Promise<any> {
-  const response = await api.get('/auth/profile')
+  const response = await api.get('/profile')
   if (response.data && response.data.code === 200) {
     return response.data.result
   }
@@ -54,7 +54,7 @@ export async function getUserProfile(): Promise<any> {
  * Updates the current authenticated user's profile.
  */
 export async function updateUserProfile(request: ProfileDTO): Promise<void> {
-  const response = await api.put('/auth/profile', request)
+  const response = await api.put('/profile', request)
   if (response.data && response.data.code === 200) {
     return
   }

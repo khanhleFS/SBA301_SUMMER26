@@ -1,27 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
-
-interface ChapterSelectorProps {
-  position: 'top' | 'bottom'
-  activeChap: {
-    prevChapter: string | null
-    nextChapter: string | null
-    chapterNum: string
-    title: string
-    chaptersList?: {
-      id: number
-      slug: string
-      chapterNum: string
-      title: string
-    }[]
-  }
-  currentChapKey: string
-  setCurrentChapKey: (key: any) => void
-  activeSelector: 'top' | 'bottom' | null
-  setActiveSelector: (val: any) => void
-  currentTheme: { bg: string; text: string }
-}
+import type { ChapterSelectorProps } from '../types/reader.types'
 
 export default function ChapterSelector({
   position,

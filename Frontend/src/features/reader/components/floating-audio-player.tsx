@@ -13,28 +13,7 @@ import {
   Music,
 } from 'lucide-react'
 
-interface FloatingAudioPlayerProps {
-  novel?: string
-  chapter?: string
-  cover?: string
-  isPlaying: boolean
-  onPlayPause: () => void
-  duration: number
-  currentTime: number
-  onSeek: (time: number) => void
-  onPrevChapter: () => void
-  onNextChapter: () => void
-  hasPrevChapter: boolean
-  hasNextChapter: boolean
-  volume: number
-  setVolume: (vol: number) => void
-  isMuted: boolean
-  onMuteToggle: () => void
-  isGenerating: boolean
-  onGenerateAudio: () => void
-  audioUrl: string | null
-  onClose: () => void
-}
+import type { FloatingAudioPlayerProps } from '../types/reader.types'
 
 export default function FloatingAudioPlayer({
   novel = 'Truyện chữ',

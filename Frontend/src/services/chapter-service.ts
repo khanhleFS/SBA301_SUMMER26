@@ -1,5 +1,5 @@
 import { api } from '@/lib/api'
-import type { ChapterRequestDTO, ChapterResponseDTO, EnumResponseDTO } from '@/types'
+import type { ChapterRequestDTO, ChapterResponseDTO, EnumResponseDTO, ChapterUnlockResponseDTO } from '@/types'
 
 
 /**
@@ -14,22 +14,22 @@ export async function getChaptersByNovel(novelId: string | number): Promise<Chap
 }
 
 /**
- * Fetches detail for a specific chapter by novel ID and chapter number (Public/Reader).
+ * Fetches detail for a specific chapter by novel ID and chapter ID (Public/Reader).
  * This endpoint automatically verifies purchase/coins status on backend.
  */
-export async function getChapterDetails(novelId: string | number, chapterNumber: number): Promise<ChapterResponseDTO> {
-  const response = await api.get(`/novels/${novelId}/chapters/${chapterNumber}`)
+export async function getChapterDetails(novelId: string | number, chapterId: number): Promise<ChapterResponseDTO> {
+  const response = await api.get(`/novels/${novelId}/chapters/${chapterId}`)
   if (response.data && response.data.code === 200) {
     return response.data.result
   }
-  throw new Error(response.data?.message || `Không thể tải nội dung chương ${chapterNumber}`)
+  throw new Error(response.data?.message || `Không thể tải nội dung chương`)
 }
 
 /**
  * Initiates TTS audio generation for a chapter and returns the updated chapter details including audio URL.
  */
-export async function generateChapterAudio(novelId: string | number, chapterNumber: number): Promise<ChapterResponseDTO> {
-  const response = await api.post(`/novels/${novelId}/chapters/${chapterNumber}/audio`)
+export async function generateChapterAudio(novelId: string | number, chapterId: number): Promise<ChapterResponseDTO> {
+  const response = await api.post(`/novels/${novelId}/chapters/${chapterId}/audio`)
   if (response.data && response.data.code === 200) {
     return response.data.result
   }
@@ -78,5 +78,28 @@ export async function getChapterEnums(): Promise<EnumResponseDTO[]> {
     return response.data.result
   }
   throw new Error(response.data?.message || 'Không thể tải enums của chương')
+}
+
+
+export async function unlockChapter(
+  novelId: string | number,
+  chapterId: string | number
+): Promise<ChapterUnlockResponseDTO> {
+  const response = await api.post(`/novels/${novelId}/chapters/${chapterId}/unlock`)
+  if (response.data && response.data.code === 200) {
+    return response.data.result
+  }
+  throw new Error(response.data?.message || 'Mở khóa chương truyện thất bại')
+}
+
+export async function readChapter(
+  novelId: string | number,
+  chapterId: string | number
+): Promise<ChapterResponseDTO> {
+  const response = await api.post(`/novels/${novelId}/chapters/${chapterId}/read`)
+  if (response.data && response.data.code === 200) {
+    return response.data.result
+  }
+  throw new Error(response.data?.message || 'Ghi nhận đọc chương thất bại')
 }
 
