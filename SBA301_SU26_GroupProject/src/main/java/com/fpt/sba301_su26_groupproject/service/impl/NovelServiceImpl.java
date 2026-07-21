@@ -51,7 +51,7 @@ public class NovelServiceImpl implements NovelService {
                 .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_AUTHOR_NOT_FOUND, "Bạn không có quyền đăng truyện"));
 
         if (!Boolean.TRUE.equals(author.getIsAuthor())) {
-            throw new ApiException(com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode.FORBIDDEN, "Tài khoản của bạn chưa được đăng ký làm tác giả.");
+            throw new ApiException(CommonErrorCode.FORBIDDEN, "Tài khoản của bạn chưa được đăng ký làm tác giả.");
         }
 
         validateRequest(requestDTO, null);
@@ -61,9 +61,7 @@ public class NovelServiceImpl implements NovelService {
         novel.setSlug(generateSlug(requestDTO.title()));
         novel.setDescription(requestDTO.description());
         novel.setCoverImageUrl(requestDTO.coverImageUrl());
-
         novel.setStatus(requestDTO.status());
-
         novel.setViewCount(0);
         novel.setCreatedAt(Instant.now());
         novel.setUpdatedAt(Instant.now());
@@ -72,9 +70,8 @@ public class NovelServiceImpl implements NovelService {
         Novel savedNovel = novelRepository.save(novel);
 
         if (requestDTO.categoryIds() != null && !requestDTO.categoryIds().isEmpty()) {
-            assignCategoriesToNovel(savedNovel, requestDTO.categoryIds()); // Thay đổi: .getCategoryIds() -> .categoryIds()
+            assignCategoriesToNovel(savedNovel, requestDTO.categoryIds());
         }
-
 
         return mapToResponseDTO(savedNovel);
     }
@@ -159,7 +156,7 @@ public class NovelServiceImpl implements NovelService {
                 .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_AUTHOR_NOT_FOUND, "Author not found"));
 
         if (!Boolean.TRUE.equals(author.getIsAuthor())) {
-            throw new ApiException(com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode.FORBIDDEN, "Tài khoản của bạn không phải là tác giả.");
+            throw new ApiException(CommonErrorCode.FORBIDDEN, "Tài khoản của bạn không phải là tác giả.");
         }
 
         return novelRepository.findByAuthorId(author.getId())
@@ -167,6 +164,151 @@ public class NovelServiceImpl implements NovelService {
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<EnumResponseDTO> getEnums() {
+        return enumRepository.getNovelEnums();
+    }
+
+    @Override
+    public NovelPageResponseDTO searchNovels(String title, String status, String categoryName, Integer minChapters, int page, int size) {
+        NovelStatus novelStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                novelStatus = NovelStatus.valueOf(status.trim().toUpperCase());
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        String titleParam = (title != null && !title.isBlank()) ? title.trim() : null;
+        String categoryParam = (categoryName != null && !categoryName.isBlank()) ? categoryName.trim() : null;
+
+        Pageable pageable = PageRequest.of(page, size, org.springframework.data.domain.Sort.by("createdAt").descending());
+
+        org.springframework.data.jpa.domain.Specification<Novel> spec =
+                com.fpt.sba301_su26_groupproject.repository.specification.NovelSpecification.filterNovels(
+                        titleParam, novelStatus, categoryParam, minChapters
+                );
+
+        Page<Novel> novelPage = novelRepository.findAll(spec, pageable);
+
+        List<NovelResponseDTO> content = novelPage.getContent()
+                .stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+
+        return NovelPageResponseDTO.builder()
+                .content(content)
+                .page(novelPage.getNumber())
+                .size(novelPage.getSize())
+                .totalElements(novelPage.getTotalElements())
+                .totalPages(novelPage.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public NovelStatsResponseDTO getNovelStats(Long novelId, String authorEmail) {
+        Novel novel = novelRepository.findById(novelId)
+                .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Không tìm thấy truyện tương ứng"));
+
+        if (!novel.getAuthor().getEmail().equals(authorEmail)) {
+            throw new ApiException(NovelErrorCode.NOVEL_UNAUTHORIZED, "Bạn không có quyền xem thống kê của truyện này");
+        }
+
+        List<Chapter> chapters = chapterRepository.findByNovelIdOrderByChapterNumberAsc(novelId);
+
+        // === Revenue map (xu thu được per chapter) ===
+        List<Object[]> revenueData = chapterUnlockRepository.findRevenueByChapterGroupId(novelId);
+        java.util.Map<Long, Long> revenueMap = new java.util.HashMap<>();
+        for (Object[] row : revenueData) {
+            Long chapterId = row[0] instanceof Number ? ((Number) row[0]).longValue()
+                    : Long.parseLong(row[0].toString());
+            Number revenue = (Number) row[1];
+            revenueMap.put(chapterId, revenue != null ? revenue.longValue() : 0L);
+        }
+
+        // === Unlock count map (số lượt mua per chapter) ===
+        List<Object[]> unlockData = chapterUnlockRepository.findUnlockCountByChapterGroupId(novelId);
+        java.util.Map<Long, Long> unlockCountMap = new java.util.HashMap<>();
+        for (Object[] row : unlockData) {
+            Long chapterId = row[0] instanceof Number ? ((Number) row[0]).longValue()
+                    : Long.parseLong(row[0].toString());
+            Number count = (Number) row[1];
+            unlockCountMap.put(chapterId, count != null ? count.longValue() : 0L);
+        }
+
+        long totalViews = 0;
+        long totalRevenue = 0;
+
+        long firstChapterViews = chapters.isEmpty() ? 0 : chapters.get(0).getViewCount();
+        List<ChapterStatsDTO> chapterStatsList = new java.util.ArrayList<>();
+        // Chỉ lấy conversionRate của các chương VIP để tính trung bình
+        java.util.List<Double> vipConversionRates = new java.util.ArrayList<>();
+
+        for (Chapter chapter : chapters) {
+            long revenue = revenueMap.getOrDefault(chapter.getId(), 0L);
+            totalViews += chapter.getViewCount();
+            totalRevenue += revenue;
+
+            boolean isVip = (chapter.getStatus() != ChapterStatus.FREE);
+            String statusStr = isVip ? "VIP" : "FREE";
+
+            double conversionRate = 0.0;
+
+            if (isVip) {
+                // Tỉ lệ chuyển đổi mua: lượt mua / lượt xem
+                long unlocks = unlockCountMap.getOrDefault(chapter.getId(), 0L);
+                if (chapter.getViewCount() > 0) {
+                    conversionRate = ((double) unlocks / chapter.getViewCount()) * 100.0;
+                }
+                vipConversionRates.add(conversionRate);
+            } else {
+                // Tỉ lệ giữ chân: lượt xem chương N / lượt xem chương 1
+                if (firstChapterViews > 0) {
+                    conversionRate = ((double) chapter.getViewCount() / firstChapterViews) * 100.0;
+                }
+            }
+
+            // Không bao giờ vượt 100%
+            conversionRate = Math.min(conversionRate, 100.0);
+
+            chapterStatsList.add(ChapterStatsDTO.builder()
+                    .chapterId(chapter.getId())
+                    .chapterNumber(chapter.getChapterNumber())
+                    .title(chapter.getTitle())
+                    .status(statusStr)
+                    .viewCount(chapter.getViewCount())
+                    .revenue(revenue)
+                    .conversionRate(Math.round(conversionRate * 100.0) / 100.0)
+                    .build());
+        }
+
+        // Trung bình conversion rate: ưu tiên chỉ tính chương VIP
+        double avgConversionRate = 0.0;
+        if (!vipConversionRates.isEmpty()) {
+            avgConversionRate = vipConversionRates.stream()
+                    .mapToDouble(Double::doubleValue)
+                    .average()
+                    .orElse(0.0);
+        } else if (!chapterStatsList.isEmpty()) {
+            // Chưa có chương VIP → dùng trung bình retention rate của chương Free
+            avgConversionRate = chapterStatsList.stream()
+                    .mapToDouble(ChapterStatsDTO::conversionRate)
+                    .average()
+                    .orElse(0.0);
+        }
+
+        return NovelStatsResponseDTO.builder()
+                .totalViews(totalViews)
+                .totalRevenue(totalRevenue)
+                .avgConversionRate(Math.round(avgConversionRate * 100.0) / 100.0)
+                .chapters(chapterStatsList)
+                .build();
+    }
+
+    // =========================================================
+    // Private helpers
+    // =========================================================
 
     private void assignCategoriesToNovel(Novel novel, List<UUID> categoryIds) {
         List<Category> categories = categoryRepository.findAllById(categoryIds);
@@ -220,7 +362,7 @@ public class NovelServiceImpl implements NovelService {
         try {
             chapterCount = chapterRepository.findMaxChapterNumberByNovelId(novel.getId());
             if (chapterCount == null) chapterCount = 0;
-            
+
             viewCount = chapterRepository.findLatestChapterViewCountByNovelId(novel.getId());
             if (viewCount == null) viewCount = 0;
         } catch (Exception ignored) {}
@@ -242,7 +384,6 @@ public class NovelServiceImpl implements NovelService {
                 .build();
     }
 
-
     private String generateSlug(String title) {
         if (title == null) return "";
         return title.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
@@ -253,7 +394,7 @@ public class NovelServiceImpl implements NovelService {
             throw new ApiException(NovelErrorCode.NOVEL_INVALID);
         }
 
-        boolean titleExists = novelId == null 
+        boolean titleExists = novelId == null
                 ? novelRepository.existsByTitle(requestDTO.title())
                 : novelRepository.existsByTitleAndIdNot(requestDTO.title(), novelId);
         if (titleExists) {
@@ -271,120 +412,4 @@ public class NovelServiceImpl implements NovelService {
             }
         }
     }
-
-    @Override
-    public List<EnumResponseDTO> getEnums() {
-        return enumRepository.getNovelEnums();
-    }
-
-    @Override
-    public NovelPageResponseDTO searchNovels(String title, String status, String categoryName, Integer minChapters, int page, int size) {
-        NovelStatus novelStatus = null;
-        if (status != null && !status.isBlank()) {
-            try {
-                novelStatus = NovelStatus.valueOf(status.trim().toUpperCase());
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
-
-        String titleParam = (title != null && !title.isBlank()) ? title.trim() : null;
-        String categoryParam = (categoryName != null && !categoryName.isBlank()) ? categoryName.trim() : null;
-
-        Pageable pageable = PageRequest.of(page, size, org.springframework.data.domain.Sort.by("createdAt").descending());
-        
-        org.springframework.data.jpa.domain.Specification<Novel> spec = 
-                com.fpt.sba301_su26_groupproject.repository.specification.NovelSpecification.filterNovels(
-                        titleParam, novelStatus, categoryParam, minChapters
-                );
-
-        Page<Novel> novelPage = novelRepository.findAll(spec, pageable);
-
-        List<NovelResponseDTO> content = novelPage.getContent()
-                .stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
-
-        return NovelPageResponseDTO.builder()
-                .content(content)
-                .page(novelPage.getNumber())
-                .size(novelPage.getSize())
-                .totalElements(novelPage.getTotalElements())
-                .totalPages(novelPage.getTotalPages())
-                .build();
-    }
-
-    @Override
-    public NovelStatsResponseDTO getNovelStats(Long novelId, String authorEmail) {
-        Novel novel = novelRepository.findById(novelId)
-                .orElseThrow(() -> new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Không tìm thấy truyện tương ứng"));
-
-        if (!novel.getAuthor().getEmail().equals(authorEmail)) {
-            throw new ApiException(NovelErrorCode.NOVEL_UNAUTHORIZED, "Bạn không có quyền xem thống kê của truyện này");
-        }
-
-        List<Chapter> chapters = chapterRepository.findByNovelIdOrderByChapterNumberAsc(novelId);
-        List<Object[]> revenueData = chapterUnlockRepository.findRevenueByChapterGroupId(novelId);
-        
-        java.util.Map<Long, Long> revenueMap = new java.util.HashMap<>();
-        for (Object[] row : revenueData) {
-            Long chapterId = null;
-            if (row[0] instanceof Long) {
-                chapterId = (Long) row[0];
-            } else if (row[0] instanceof Number) {
-                chapterId = ((Number) row[0]).longValue();
-            } else if (row[0] != null) {
-                chapterId = Long.parseLong(row[0].toString());
-            }
-
-            if (chapterId != null) {
-                Number revenue = (Number) row[1];
-                revenueMap.put(chapterId, revenue != null ? revenue.longValue() : 0L);
-            }
-        }
-
-        long totalViews = 0;
-        long totalRevenue = 0;
-        
-        long firstChapterViews = chapters.isEmpty() ? 0 : chapters.get(0).getViewCount();
-        List<ChapterStatsDTO> chapterStatsList = new java.util.ArrayList<>();
-
-        for (Chapter chapter : chapters) {
-            long revenue = revenueMap.getOrDefault(chapter.getId(), 0L);
-            totalViews += chapter.getViewCount();
-            totalRevenue += revenue;
-            
-            double conversionRate = 0.0;
-            if (firstChapterViews > 0) {
-                conversionRate = ((double) chapter.getViewCount() / firstChapterViews) * 100.0;
-            }
-            
-            String statusStr = chapter.getStatus() == ChapterStatus.FREE ? "Free" : "VIP";
-
-            chapterStatsList.add(ChapterStatsDTO.builder()
-                    .chapterId(chapter.getId())
-                    .chapterNumber(chapter.getChapterNumber())
-                    .title(chapter.getTitle())
-                    .status(statusStr)
-                    .viewCount(chapter.getViewCount())
-                    .revenue(revenue)
-                    .conversionRate(Math.round(conversionRate * 100.0) / 100.0)
-                    .build());
-        }
-
-        double avgConversionRate = 0.0;
-        if (!chapterStatsList.isEmpty()) {
-            avgConversionRate = chapterStatsList.stream()
-                    .mapToDouble(ChapterStatsDTO::conversionRate)
-                    .average()
-                    .orElse(0.0);
-        }
-
-        return NovelStatsResponseDTO.builder()
-                .totalViews(totalViews)
-                .totalRevenue(totalRevenue)
-                .avgConversionRate(Math.round(avgConversionRate * 100.0) / 100.0)
-                .chapters(chapterStatsList)
-                .build();
-    }
 }
-

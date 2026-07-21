@@ -12,4 +12,7 @@ public interface ChapterUnlockRepository extends JpaRepository<ChapterUnlock, UU
 
     @Query("SELECT c.id, COALESCE(SUM(cu.coinsSpent), 0) FROM ChapterUnlock cu JOIN cu.chapter c WHERE c.novel.id = :novelId GROUP BY c.id")
     List<Object[]> findRevenueByChapterGroupId(@Param("novelId") Long novelId);
+
+    @Query("SELECT c.id, COUNT(cu.id) FROM ChapterUnlock cu JOIN cu.chapter c WHERE c.novel.id = :novelId GROUP BY c.id")
+    List<Object[]> findUnlockCountByChapterGroupId(@Param("novelId") Long novelId);
 }
