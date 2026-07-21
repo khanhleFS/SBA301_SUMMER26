@@ -83,17 +83,17 @@ api.interceptors.response.use(
         const consent = typeof window !== 'undefined' ? localStorage.getItem('cookieConsent') : null
         const stateRefreshToken = useAuthStore.getState().refreshToken
 
-        // Gọi refresh — nếu denied thì truyền refreshToken từ RAM, ngược lại rỗng (Cookie)
+        // Gọi refresh — gửi refreshToken từ Zustand store nếu có (hoặc fall back về cookie nếu rỗng)
         const { refreshToken } = await import('@/services/auth-service')
         const refreshRes = await refreshToken({
-          refreshToken: consent === 'denied' ? (stateRefreshToken || '') : ''
+          refreshToken: stateRefreshToken || ''
         })
         const newToken = refreshRes.accessToken
 
         // Cập nhật Access Token và Refresh Token mới vào RAM
         useAuthStore.setState({
           token: newToken,
-          refreshToken: consent === 'denied' ? refreshRes.refreshToken : null,
+          refreshToken: refreshRes.refreshToken || stateRefreshToken,
           isAuthenticated: true
         })
 

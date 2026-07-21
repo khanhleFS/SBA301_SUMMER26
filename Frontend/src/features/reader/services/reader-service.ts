@@ -72,19 +72,16 @@ export interface ChapterDetails {
   prevChapter: string | null
   nextChapter: string | null
   audioUrl: string | null
+  novelTitle?: string
   chaptersList?: ChapterSummary[]
 }
 
-export function extractUuid(slugWithId: string): string {
+/** Extracts the numeric Long ID from the end of a slug-id string (e.g. "ten-truyen-123" → "123"). */
+export function extractId(slugWithId: string): string {
   if (!slugWithId) return ''
   const parts = slugWithId.split('-')
-  if (parts.length >= 5) {
-    const possibleUuid = parts.slice(-5).join('-')
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    if (uuidRegex.test(possibleUuid)) {
-      return possibleUuid
-    }
-  }
+  const last = parts[parts.length - 1]
+  if (/^\d+$/.test(last)) return last
   return slugWithId
 }
 
@@ -93,15 +90,19 @@ export const readerService = {
     if (!novelSlugWithId) {
       throw new Error('Novel slug/ID is required to load chapter details')
     }
-    const novelId = extractUuid(novelSlugWithId)
-    const chapterId = extractUuid(chapterSlug)
+    const novelId = extractId(novelSlugWithId)
+    const chapterIdStr = extractId(chapterSlug)
 
     // 1. Get all chapters of the novel to find the chapter number and compute prev/next chapter slugs
     const chapters = await getChaptersByNovel(novelId)
     // Sort chapters by chapterNumber ascending just to be safe
     const sortedChapters = [...chapters].sort((a, b) => a.chapterNumber - b.chapterNumber)
 
-    const currentChapterIndex = sortedChapters.findIndex(c => c.id === chapterId || c.slug === chapterId || `${c.slug}-${c.id}` === chapterSlug)
+    const currentChapterIndex = sortedChapters.findIndex(c =>
+      String(c.id) === chapterIdStr ||
+      c.slug === chapterSlug ||
+      `${c.slug}-${c.id}` === chapterSlug
+    )
     if (currentChapterIndex === -1) {
       throw new Error(`Không tìm thấy chương với ID/slug: ${chapterSlug}`)
     }
@@ -146,6 +147,7 @@ export const readerService = {
       prevChapter,
       nextChapter,
       audioUrl: detail.audioUrl || null,
+      novelTitle: novel.title,
       chaptersList: sortedChapters.map(c => ({
         id: c.chapterNumber,
         slug: `${c.slug}-${c.id}`,

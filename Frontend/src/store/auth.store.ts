@@ -70,12 +70,12 @@ export const useAuthStore = create<AuthState>()(
         if (!token) {
           try {
             const { refreshToken } = await import('@/services/auth-service')
-            const tokenToUse = consent === 'denied' ? (stateRefreshToken || '') : ''
+            const tokenToUse = stateRefreshToken || ''
             const refreshRes = await refreshToken({ refreshToken: tokenToUse })
             if (refreshRes && refreshRes.accessToken) {
               set({
                 token: refreshRes.accessToken,
-                refreshToken: consent === 'denied' ? refreshRes.refreshToken : null,
+                refreshToken: refreshRes.refreshToken || stateRefreshToken,
                 isAuthenticated: true
               })
               try {
@@ -86,6 +86,7 @@ export const useAuthStore = create<AuthState>()(
                   username: profile.username ?? profile.fullName ?? currentUser?.username ?? '',
                   email: profile.email ?? currentUser?.email ?? '',
                   role: profile.role ?? currentUser?.role ?? 'USER',
+                  isAuthor: profile.isAuthor ?? currentUser?.isAuthor ?? false,
                   fullName: profile.fullName ?? currentUser?.fullName ?? '',
                   avatarUrl: profile.avatarUrl ?? currentUser?.avatarUrl ?? undefined,
                 }
@@ -113,6 +114,7 @@ export const useAuthStore = create<AuthState>()(
             username: profile.username ?? profile.fullName ?? currentUser?.username ?? '',
             email: profile.email ?? currentUser?.email ?? '',
             role: profile.role ?? currentUser?.role ?? 'USER',
+            isAuthor: profile.isAuthor ?? currentUser?.isAuthor ?? false,
             fullName: profile.fullName ?? currentUser?.fullName ?? '',
             avatarUrl: profile.avatarUrl ?? currentUser?.avatarUrl ?? undefined,
           }

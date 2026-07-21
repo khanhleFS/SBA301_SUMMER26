@@ -13,19 +13,19 @@ function DashboardContent() {
     return <DashboardSkeleton />
   }
 
-  const { chartData, platformNet, userPulse, recentTransactions } = data
-
   return (
     <div className="w-full space-y-4 sm:space-y-6">
-      <DashboardChartSection chartData={chartData} platformNet={platformNet} />
+      <DashboardChartSection
+        chartData={data.monthlyRevenueVnd}
+        platformNet={data.platformRevenueVnd}
+      />
       <section className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-12">
         <DashboardUserPulseSection
-          readersOnline={userPulse.readersOnline}
-          newSignupsToday={userPulse.newSignupsToday}
-          totalNovels={userPulse.totalNovels}
-          totalCategories={userPulse.totalCategories}
+          totalUsers={data.totalUsers}
+          totalAuthors={data.totalAuthors}
+          totalNovels={data.totalNovels}
         />
-        <DashboardTransactionsSection recentTransactions={recentTransactions} />
+        <DashboardTransactionsSection recentOrders={data.recentOrders} />
       </section>
     </div>
   )

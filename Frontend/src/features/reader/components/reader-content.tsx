@@ -8,22 +8,15 @@ import {
   ArrowLeft,
   ChevronRight,
   ChevronLeft,
-  Sun,
   AlignLeft,
   ArrowUp,
   Maximize2,
   Minimize2,
   Headphones,
-  Play,
-  Pause,
   Volume2,
-  VolumeX,
-  Sparkles,
-  Loader2,
-  RotateCcw,
-  RotateCw
 } from 'lucide-react'
 import Dock from './dock'
+import FloatingAudioPlayer from './floating-audio-player'
 import ReaderSuggestions from './reader-suggestions'
 import ChapterSelector from './chapter-selector'
 import ReaderConfigMenu from './reader-config-menu'
@@ -101,61 +94,80 @@ function CanvasArticle({ paragraphs, fontSize, fontFamily, lineHeight, textColor
     const container = containerRef.current
     if (!canvas || !container) return
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const draw = () => {
+      console.log('[CanvasArticle] draw() called, container.clientWidth =', container.clientWidth)
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
-    const fontStyle = `${fontSize}px ${fontFamily === 'serif' ? '"Georgia", "Merriweather", serif' : fontFamily === 'mono' ? 'monospace' : 'system-ui, sans-serif'}`
-    const lhNum = fontSize * (lineHeight === 'tight' ? 1.5 : lineHeight === 'normal' ? 1.85 : 2.2)
-    const padding = 16
+      const fontStyle = `${fontSize}px ${fontFamily === 'serif' ? '"Georgia", "Merriweather", serif' : fontFamily === 'mono' ? 'monospace' : 'system-ui, sans-serif'}`
+      const lhNum = fontSize * (lineHeight === 'tight' ? 1.5 : lineHeight === 'normal' ? 1.85 : 2.2)
+      const padding = 16
 
-    const parentWidth = container.clientWidth || 700
-    const maxWidth = parentWidth - padding * 2
+      const parentWidth = container.clientWidth || 700
+      const maxWidth = parentWidth - padding * 2
 
-    ctx.font = fontStyle
+      ctx.font = fontStyle
 
-    const lines: string[] = []
-    paragraphs.forEach(p => {
-      if (!p.trim()) {
-        lines.push('')
-        return
-      }
-      const words = p.split(' ')
-      let currentLine = '    '
-      for (let i = 0; i < words.length; i++) {
-        const testLine = currentLine + words[i] + ' '
-        if (ctx.measureText(testLine).width > maxWidth && i > 0) {
-          lines.push(currentLine)
-          currentLine = words[i] + ' '
-        } else {
-          currentLine = testLine
+      const lines: string[] = []
+      paragraphs.forEach(p => {
+        if (!p.trim()) {
+          lines.push('')
+          return
         }
-      }
-      lines.push(currentLine)
-      lines.push('')
+        const words = p.split(' ')
+        let currentLine = '    '
+        for (let i = 0; i < words.length; i++) {
+          const testLine = currentLine + words[i] + ' '
+          if (ctx.measureText(testLine).width > maxWidth && i > 0) {
+            lines.push(currentLine)
+            currentLine = words[i] + ' '
+          } else {
+            currentLine = testLine
+          }
+        }
+        lines.push(currentLine)
+        lines.push('')
+      })
+
+      const dpr = window.devicePixelRatio || 1
+      const totalHeight = lines.length * lhNum + padding * 2
+
+      canvas.width = parentWidth * dpr
+      canvas.height = totalHeight * dpr
+      canvas.style.width = `${parentWidth}px`
+      canvas.style.height = `${totalHeight}px`
+
+      ctx.scale(dpr, dpr)
+
+      ctx.fillStyle = bgColor
+      ctx.fillRect(0, 0, parentWidth, totalHeight)
+
+      ctx.font = fontStyle
+      ctx.fillStyle = textColor
+      ctx.textBaseline = 'top'
+
+      lines.forEach((line, idx) => {
+        if (line) {
+          ctx.fillText(line.trimEnd(), padding, padding + idx * lhNum)
+        }
+      })
+    }
+
+    // Vẽ ngay lần đầu (mount / khi paragraphs, font, theme... đổi)
+    draw()
+
+    // Theo dõi trực tiếp kích thước của container — bắt được cả trường hợp
+    // width đổi do CSS/class (vd toggle fullFrame) mà KHÔNG có prop nào của
+    // component này thay đổi. ResizeObserver tự fire lại khi transition
+    // width kết thúc nên không bị lệch canvas như cách cũ.
+    const resizeObserver = new ResizeObserver((entries) => {
+      console.log('[CanvasArticle] ResizeObserver fired, contentRect.width =', entries[0]?.contentRect.width)
+      draw()
     })
+    resizeObserver.observe(container)
+    console.log('[CanvasArticle] ResizeObserver attached, initial clientWidth =', container.clientWidth)
 
-    const dpr = window.devicePixelRatio || 1
-    const totalHeight = lines.length * lhNum + padding * 2
-
-    canvas.width = parentWidth * dpr
-    canvas.height = totalHeight * dpr
-    canvas.style.width = `${parentWidth}px`
-    canvas.style.height = `${totalHeight}px`
-
-    ctx.scale(dpr, dpr)
-
-    ctx.fillStyle = bgColor
-    ctx.fillRect(0, 0, parentWidth, totalHeight)
-
-    ctx.font = fontStyle
-    ctx.fillStyle = textColor
-    ctx.textBaseline = 'top'
-
-    lines.forEach((line, idx) => {
-      if (line) {
-        ctx.fillText(line.trimEnd(), padding, padding + idx * lhNum)
-      }
-    })
+    return () => resizeObserver.disconnect()
   }, [paragraphs, fontSize, fontFamily, lineHeight, textColor, bgColor])
 
   useEffect(() => {
@@ -287,24 +299,6 @@ function ReaderContent() {
     setDuration(audioRef.current.duration)
   }
 
-  const handleAudioSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Number(e.target.value)
-    if (audioRef.current) {
-      audioRef.current.currentTime = val
-      setCurrentTime(val)
-    }
-  }
-
-  const skipTime = (amount: number) => {
-    if (audioRef.current) {
-      let nextTime = audioRef.current.currentTime + amount
-      if (nextTime < 0) nextTime = 0
-      if (nextTime > duration) nextTime = duration
-      audioRef.current.currentTime = nextTime
-      setCurrentTime(nextTime)
-    }
-  }
-
   // AI TTS Generation call
   const handleGenerateAudio = async () => {
     if (!activeChap || isGenerating) return
@@ -328,14 +322,6 @@ function ReaderContent() {
     } finally {
       setIsGenerating(false)
     }
-  }
-
-  // Format seconds to mm:ss
-  const formatTime = (time: number) => {
-    if (isNaN(time)) return '0:00'
-    const mins = Math.floor(time / 60)
-    const secs = Math.floor(time % 60)
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`
   }
 
   useEffect(() => {
@@ -539,31 +525,56 @@ function ReaderContent() {
             } ${currentTheme.bg}`}
           style={{ borderColor: 'rgba(var(--current-text-color), 0.1)', borderOpacity: 0.1 } as any}
         >
+          <div className="mb-6">
+            <button
+              onClick={() => navigate(`/${novelSlugWithId || ''}`)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold transition-all duration-200 cursor-pointer w-fit group hover:text-primary ${currentTheme.textMuted}`}
+              style={{ borderColor: 'rgba(var(--current-text-color), 0.12)', backgroundColor: 'rgba(var(--current-text-color), 0.04)' }}
+            >
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              <span>Quay lại trang truyện</span>
+            </button>
+          </div>
+
           <div className={`flex items-center flex-wrap gap-1 text-[9px] sm:text-[10px] uppercase tracking-wider font-bold mb-8 select-none ${currentTheme.textMuted}`}>
             <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
             <span className="opacity-40">/</span>
+
             <Link to="/search" className="hover:text-primary transition-colors">Khám phá</Link>
             <span className="opacity-40">/</span>
-            <span className="hover:text-primary transition-colors cursor-pointer" onClick={() => navigate('/story')}>
-              {activeChap.author}
+
+            <span className="hover:text-primary transition-colors cursor-pointer" onClick={() => navigate(`/${novelSlugWithId || ''}`)}>
+              {activeChap.novelTitle || 'Tên Truyện'}
             </span>
             <span className="opacity-40">/</span>
+
             <span className="text-primary">{activeChap.chapterNum}</span>
           </div>
 
           <div className="flex flex-col items-center text-center mb-6">
-            <span className="text-xs uppercase tracking-widest font-bold text-primary mb-3">{activeChap.chapterNum}</span>
+            <span className="text-xs uppercase tracking-widest font-bold text-primary mb-3">
+              {activeChap.chapterNum}
+            </span>
+
             <h2 className={`font-serif text-3xl md:text-4xl font-bold leading-tight mb-4 ${currentTheme.text}`}>
               {activeChap.title}
             </h2>
+
             <div className={`flex items-center gap-3 text-xs font-semibold tracking-wide ${currentTheme.textMuted}`}>
-              <span>By {activeChap.author}</span>
+              <span>
+                By{' '}
+                <Link
+                  to={`/search?q=${encodeURIComponent(activeChap.author)}`}
+                  className="hover:text-primary hover:underline underline-offset-4 transition-all"
+                >
+                  {activeChap.author}
+                </Link>
+              </span>
               <span className="w-1 h-1 bg-current opacity-30 rounded-full" />
               <span>{activeChap.readTime}</span>
               <span className="w-1 h-1 bg-current opacity-30 rounded-full" />
               <span>{activeChap.words}</span>
             </div>
-
           </div>
 
           <div className="h-[1px] w-full bg-current opacity-10 my-6" />
@@ -608,6 +619,17 @@ function ReaderContent() {
           </div>
 
           <div className="h-[1px] w-full bg-current opacity-10 my-8" />
+
+          <div className="flex justify-start">
+            <button
+              onClick={() => navigate(`/${novelSlugWithId || ''}`)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold transition-all duration-200 cursor-pointer w-fit group hover:text-primary ${currentTheme.textMuted}`}
+              style={{ borderColor: 'rgba(var(--current-text-color), 0.12)', backgroundColor: 'rgba(var(--current-text-color), 0.04)' }}
+            >
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              <span>Quay lại trang truyện</span>
+            </button>
+          </div>
         </div>
 
         <ReaderSuggestions currentTheme={currentTheme} />
@@ -654,61 +676,53 @@ function ReaderContent() {
               className="fixed bottom-6 left-0 right-0 flex justify-center z-[100] pointer-events-none"
             >
               <div className="pointer-events-auto">
-                <Dock items={dockItems} position="bottom">
-                  {/* TTS Player inside dock */}
-                  <AnimatePresence>
-                    {isAudioOpen && (
-                      <motion.div
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: 'auto', opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
-                        className="flex items-center overflow-hidden"
-                      >
-                        <div className="w-[1px] h-8 bg-current opacity-10 mx-2 shrink-0" />
-                        <div className="flex items-center gap-3 shrink-0">
-                          {currentAudioUrl ? (
-                            <>
-                              <button
-                                onClick={handlePlayPause}
-                                className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shadow-sm shrink-0"
-                              >
-                                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-                              </button>
-                              
-                              <div className="w-24 sm:w-32 flex flex-col justify-center">
-                                <input
-                                  type="range" min="0" max={duration || 0} value={currentTime}
-                                  onChange={handleAudioSeek}
-                                  className="w-full h-1 accent-primary bg-current/15 rounded-full appearance-none cursor-pointer"
-                                />
-                              </div>
-
-                              <button
-                                onClick={handleMuteToggle}
-                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-current/5 transition-all shrink-0"
-                              >
-                                {isMuted ? <VolumeX className="w-4 h-4 text-destructive" /> : <Volume2 className="w-4 h-4 opacity-70" />}
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              onClick={handleGenerateAudio}
-                              disabled={isGenerating}
-                              className="px-3 py-1.5 rounded-full bg-primary text-on-primary text-[11px] font-bold flex items-center gap-1.5 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 shrink-0"
-                            >
-                              {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                              {isGenerating ? 'Đang sinh...' : 'Sinh giọng đọc'}
-                            </button>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Dock>
+                <Dock items={dockItems} position="bottom" />
               </div>
             </motion.div>
           )
         }
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isAudioOpen && (
+          <FloatingAudioPlayer
+            chapter={activeChap.chapterNum}
+            novel={activeChap.novelTitle}
+            cover={activeChap.cover}
+            isPlaying={isPlaying}
+            onPlayPause={handlePlayPause}
+            duration={duration}
+            currentTime={currentTime}
+            onSeek={(time) => {
+              if (audioRef.current) {
+                audioRef.current.currentTime = time
+                setCurrentTime(time)
+              }
+            }}
+            onPrevChapter={() => {
+              if (activeChap.prevChapter) {
+                setCurrentChapKey(activeChap.prevChapter)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }
+            }}
+            onNextChapter={() => {
+              if (activeChap.nextChapter) {
+                setCurrentChapKey(activeChap.nextChapter)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }
+            }}
+            hasPrevChapter={!!activeChap.prevChapter}
+            hasNextChapter={!!activeChap.nextChapter}
+            volume={volume}
+            setVolume={setVolume}
+            isMuted={isMuted}
+            onMuteToggle={handleMuteToggle}
+            isGenerating={isGenerating}
+            onGenerateAudio={handleGenerateAudio}
+            audioUrl={currentAudioUrl}
+            onClose={() => setIsAudioOpen(false)}
+          />
+        )}
       </AnimatePresence>
 
       <AnimatePresence>

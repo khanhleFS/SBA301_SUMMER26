@@ -1,4 +1,4 @@
-import { Volume, Volume2, Headphones, Play, Pause, Sparkles, Loader2, RotateCcw, RotateCw } from 'lucide-react'
+import { Volume, Volume2 } from 'lucide-react'
 
 type ThemeType = 'nocturne' | 'charcoal' | 'sepia' | 'ivory' | 'day'
 type FontType = 'serif' | 'sans' | 'mono'
@@ -30,7 +30,7 @@ export default function ReaderConfigMenu({
     'bg-white/[0.14] dark:bg-white/[0.10] backdrop-blur-sm border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_4px_14px_rgba(0,0,0,0.10)] [contain:paint]'
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-2">
       {/* 1. Theme Canvas Select */}
       <div className="space-y-1.5">
         <label className="text-[10px] font-bold uppercase tracking-wider opacity-70">Màu nền trình đọc</label>
@@ -44,9 +44,9 @@ export default function ReaderConfigMenu({
               style={{
                 backgroundColor:
                   t === 'nocturne' ? '#151419' :
-                  t === 'charcoal' ? '#1e1e24' :
-                  t === 'sepia' ? '#f4ebd4' :
-                  t === 'ivory' ? '#FAF5E6' : '#ffffff'
+                    t === 'charcoal' ? '#1e1e24' :
+                      t === 'sepia' ? '#f4ebd4' :
+                        t === 'ivory' ? '#FAF5E6' : '#ffffff'
               }}
             />
           ))}

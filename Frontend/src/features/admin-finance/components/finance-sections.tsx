@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { CheckCircle2, XCircle, Clock, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CheckCircle2, XCircle, Clock, Search, Download, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 import {
   ResponsiveContainer,
   BarChart,
@@ -108,22 +108,7 @@ interface Transaction {
   time: string
 }
 
-const MOCK_TRANSACTIONS: Transaction[] = [
-  { id: 'TXN-9021', user: '@docgia_01', fullName: 'Trần Thị Bình', method: 'Bank transfer', amount: 100000, coins: 1000, status: 'success', time: '17/07/2026 12:35' },
-  { id: 'TXN-9020', user: '@nguyenvanA', fullName: 'Nguyễn Văn A', method: 'MoMo', amount: 50000, coins: 500, status: 'success', time: '17/07/2026 12:33' },
-  { id: 'TXN-9019', user: '@bookworm99', fullName: 'Lê Minh Khoa', method: 'Bank transfer', amount: 200000, coins: 2150, status: 'pending', time: '17/07/2026 12:24' },
-  { id: 'TXN-9018', user: '@hannahreads', fullName: 'Hannah Nguyen', method: 'ZaloPay', amount: 75000, coins: 750, status: 'success', time: '17/07/2026 12:18' },
-  { id: 'TXN-9017', user: '@pham_reader', fullName: 'Phạm Đức Anh', method: 'MoMo', amount: 20000, coins: 200, status: 'failed', time: '17/07/2026 11:45' },
-  { id: 'TXN-9016', user: '@elaris_thorne', fullName: 'Elaris Thorne', method: 'Bank transfer', amount: 500000, coins: 6200, status: 'success', time: '17/07/2026 10:30' },
-  { id: 'TXN-9015', user: '@tran_author', fullName: 'Trần Văn Long', method: 'ZaloPay', amount: 100000, coins: 1000, status: 'success', time: '17/07/2026 09:15' },
-  { id: 'TXN-9014', user: '@julian_thorne', fullName: 'Julian Thorne', method: 'Bank transfer', amount: 300000, coins: 3400, status: 'success', time: '16/07/2026 18:40' },
-  { id: 'TXN-9013', user: '@lyra_thorn', fullName: 'Lyra Thorn', method: 'MoMo', amount: 50000, coins: 500, status: 'success', time: '16/07/2026 15:22' },
-  { id: 'TXN-9012', user: '@jaxon_vance', fullName: 'Jaxon Vance', method: 'Bank transfer', amount: 150000, coins: 1500, status: 'failed', time: '16/07/2026 14:10' },
-  { id: 'TXN-9011', user: '@sj_moon', fullName: 'S. J. Moon', method: 'MoMo', amount: 100000, coins: 1000, status: 'success', time: '16/07/2026 11:05' },
-  { id: 'TXN-9010', user: '@vk_vance', fullName: 'V. K. Vance', method: 'ZaloPay', amount: 50000, coins: 500, status: 'success', time: '16/07/2026 09:30' },
-]
-
-export function FinanceTransactionTable() {
+export function FinanceTransactionTable({ transactions = [] }: { transactions?: Transaction[] }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [methodFilter, setMethodFilter] = useState<string>('all')
@@ -131,7 +116,7 @@ export function FinanceTransactionTable() {
   const itemsPerPage = 5
 
   const filteredTransactions = useMemo(() => {
-    return MOCK_TRANSACTIONS.filter((txn) => {
+    return transactions.filter((txn) => {
       const matchesSearch =
         txn.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
         txn.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -142,7 +127,7 @@ export function FinanceTransactionTable() {
 
       return matchesSearch && matchesStatus && matchesMethod
     })
-  }, [searchTerm, statusFilter, methodFilter])
+  }, [transactions, searchTerm, statusFilter, methodFilter])
 
   // Pagination calculation
   const totalItems = filteredTransactions.length
@@ -207,7 +192,7 @@ export function FinanceTransactionTable() {
         {/* Filters */}
         <div className="flex flex-wrap gap-2">
           {/* Method Filter */}
-          <div className="flex items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1">
+          <div className="relative flex items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest pl-2 pr-7 py-1">
             <span className="text-[10px] font-bold text-muted-foreground uppercase">Phương thức:</span>
             <select
               value={methodFilter}
@@ -215,17 +200,18 @@ export function FinanceTransactionTable() {
                 setMethodFilter(e.target.value)
                 setCurrentPage(1)
               }}
-              className="bg-transparent text-xs text-foreground focus:outline-none"
+              className="appearance-none bg-transparent text-xs text-foreground focus:outline-none"
             >
               <option value="all">Tất cả</option>
               <option value="Bank transfer">Chuyển khoản</option>
               <option value="MoMo">Ví MoMo</option>
               <option value="ZaloPay">ZaloPay</option>
             </select>
+            <ChevronDown className="pointer-events-none absolute right-1.5 h-3 w-3 text-muted-foreground" />
           </div>
 
           {/* Status Filter */}
-          <div className="flex items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1">
+          <div className="relative flex items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest pl-2 pr-7 py-1">
             <span className="text-[10px] font-bold text-muted-foreground uppercase">Trạng thái:</span>
             <select
               value={statusFilter}
@@ -233,13 +219,14 @@ export function FinanceTransactionTable() {
                 setStatusFilter(e.target.value)
                 setCurrentPage(1)
               }}
-              className="bg-transparent text-xs text-foreground focus:outline-none"
+              className="appearance-none bg-transparent text-xs text-foreground focus:outline-none"
             >
               <option value="all">Tất cả</option>
               <option value="success">Thành công</option>
               <option value="pending">Đang xử lý</option>
               <option value="failed">Thất bại</option>
             </select>
+            <ChevronDown className="pointer-events-none absolute right-1.5 h-3 w-3 text-muted-foreground" />
           </div>
         </div>
       </div>

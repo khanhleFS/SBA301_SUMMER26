@@ -11,9 +11,6 @@ export default function GuestLayout() {
     if (user?.role === 'ADMIN') {
       return <Navigate to="/admin/dashboard" replace />
     }
-    if (user?.role === 'AUTHOR') {
-      return <Navigate to="/author/dashboard" replace />
-    }
     return <Navigate to="/" replace />
   }
 

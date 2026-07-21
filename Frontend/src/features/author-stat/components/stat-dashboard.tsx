@@ -86,23 +86,27 @@ export function StatDashboard() {
             {/* Views Card */}
             <button
               onClick={() => setActiveTab('views')}
-              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${activeTab === 'views'
-                ? 'border-primary bg-primary text-on-primary shadow-md'
-                : 'border-outline-variant/60 bg-surface hover:border-primary/40'
-                }`}
+              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${
+                activeTab === 'views'
+                  ? 'border-primary bg-primary/5 shadow-sm'
+                  : 'border-outline-variant/60 bg-surface hover:border-primary/40'
+              }`}
             >
               <div className="space-y-1">
-                <span className={`text-xs font-medium transition-colors ${activeTab === 'views' ? 'text-on-primary/80' : 'text-muted-foreground group-hover:text-primary'
-                  }`}>
+                <span className={`text-xs font-semibold transition-colors ${
+                  activeTab === 'views' ? 'text-primary' : 'text-muted-foreground'
+                }`}>
                   Tổng lượt đọc
                 </span>
-                <p className={`text-2xl font-black tracking-tight ${activeTab === 'views' ? 'text-on-primary' : 'text-on-surface'
-                  }`}>
+                <p className="text-2xl font-black tracking-tight text-on-surface">
                   {stats.totalViews.toLocaleString('vi-VN')}
                 </p>
               </div>
-              <div className={`rounded-lg p-2 transition-colors ${activeTab === 'views' ? 'bg-on-primary/10 text-on-primary' : 'bg-surface-container-high text-muted-foreground group-hover:text-primary'
-                }`}>
+              <div className={`rounded-lg p-2 transition-colors ${
+                activeTab === 'views'
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-surface-container-high text-muted-foreground group-hover:text-primary'
+              }`}>
                 <Eye className="h-5 w-5" />
               </div>
             </button>
@@ -110,23 +114,27 @@ export function StatDashboard() {
             {/* Revenue Card */}
             <button
               onClick={() => setActiveTab('revenue')}
-              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${activeTab === 'revenue'
-                ? 'border-primary bg-primary text-on-primary shadow-md'
-                : 'border-outline-variant/60 bg-surface hover:border-primary/40'
-                }`}
+              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${
+                activeTab === 'revenue'
+                  ? 'border-amber-500 bg-amber-500/5 shadow-sm'
+                  : 'border-outline-variant/60 bg-surface hover:border-amber-500/40'
+              }`}
             >
               <div className="space-y-1">
-                <span className={`text-xs font-medium transition-colors ${activeTab === 'revenue' ? 'text-on-primary/80' : 'text-muted-foreground group-hover:text-primary'
-                  }`}>
+                <span className={`text-xs font-semibold transition-colors ${
+                  activeTab === 'revenue' ? 'text-amber-600' : 'text-muted-foreground'
+                }`}>
                   Doanh thu xu
                 </span>
-                <p className={`text-2xl font-black tracking-tight ${activeTab === 'revenue' ? 'text-on-primary' : 'text-on-surface'
-                  }`}>
+                <p className="text-2xl font-black tracking-tight text-on-surface">
                   {stats.totalRevenue.toLocaleString('vi-VN')}
                 </p>
               </div>
-              <div className={`rounded-lg p-2 transition-colors ${activeTab === 'revenue' ? 'bg-on-primary/10 text-on-primary' : 'bg-surface-container-high text-muted-foreground group-hover:text-amber-500'
-                }`}>
+              <div className={`rounded-lg p-2 transition-colors ${
+                activeTab === 'revenue'
+                  ? 'bg-amber-500/10 text-amber-600'
+                  : 'bg-surface-container-high text-muted-foreground group-hover:text-amber-500'
+              }`}>
                 <Coins className="h-5 w-5" />
               </div>
             </button>
@@ -134,23 +142,27 @@ export function StatDashboard() {
             {/* Conversion Rate Card */}
             <button
               onClick={() => setActiveTab('conversion')}
-              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${activeTab === 'conversion'
-                ? 'border-primary bg-primary text-on-primary shadow-md'
-                : 'border-outline-variant/60 bg-surface hover:border-primary/40'
-                }`}
+              className={`group flex cursor-pointer items-center justify-between rounded-lg border p-4 text-left transition-all ${
+                activeTab === 'conversion'
+                  ? 'border-emerald-500 bg-emerald-500/5 shadow-sm'
+                  : 'border-outline-variant/60 bg-surface hover:border-emerald-500/40'
+              }`}
             >
               <div className="space-y-1">
-                <span className={`text-xs font-medium transition-colors ${activeTab === 'conversion' ? 'text-on-primary/80' : 'text-muted-foreground group-hover:text-primary'
-                  }`}>
-                  Tỉ lệ chuyển đổi trung bình
+                <span className={`text-xs font-semibold transition-colors ${
+                  activeTab === 'conversion' ? 'text-emerald-600' : 'text-muted-foreground'
+                }`}>
+                  Tỉ lệ mua VIP trung bình
                 </span>
-                <p className={`text-2xl font-black tracking-tight ${activeTab === 'conversion' ? 'text-on-primary' : 'text-on-surface'
-                  }`}>
+                <p className="text-2xl font-black tracking-tight text-on-surface">
                   {stats.avgConversionRate}%
                 </p>
               </div>
-              <div className={`rounded-lg p-2 transition-colors ${activeTab === 'conversion' ? 'bg-on-primary/10 text-on-primary' : 'bg-surface-container-high text-muted-foreground group-hover:text-primary'
-                }`}>
+              <div className={`rounded-lg p-2 transition-colors ${
+                activeTab === 'conversion'
+                  ? 'bg-emerald-500/10 text-emerald-600'
+                  : 'bg-surface-container-high text-muted-foreground group-hover:text-emerald-500'
+              }`}>
                 <Percent className="h-5 w-5" />
               </div>
             </button>
@@ -194,7 +206,7 @@ export function StatDashboard() {
                     <Bar dataKey="revenue" name="Xu kiếm được" fill="var(--amber-500, #f59e0b)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 ) : (
-                  <BarChart data={stats.chapters} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <BarChart data={stats.chapters.map((ch) => ch.status === 'FREE' ? { ...ch, conversionRate: 0 } : ch)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.06)" />
                     <XAxis dataKey="chapterNumber" tickLine={false} tickMargin={8} style={{ fontSize: 10, fontWeight: 500 }} />
                     <YAxis domain={[0, 100]} tickLine={false} style={{ fontSize: 10, fontWeight: 500 }} />
@@ -202,7 +214,7 @@ export function StatDashboard() {
                       contentStyle={{ background: 'var(--surface)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '6px', fontSize: '11px' }}
                       labelFormatter={(label) => `Chương ${label}`}
                     />
-                    <Bar dataKey="conversionRate" name="Tỉ lệ giữ chân (%)" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="conversionRate" name="Tỉ lệ mua VIP (%)" fill="#10b981" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 )}
               </ResponsiveContainer>
@@ -233,19 +245,22 @@ export function StatDashboard() {
                       <td className="p-3 text-center font-mono font-medium text-muted-foreground">{ch.chapterNumber}</td>
                       <td className="p-3 font-semibold text-on-surface">{ch.title}</td>
                       <td className="p-3">
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold ${ch.status === 'VIP'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-slate-100 text-slate-800'
-                          }`}>
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                          ch.status === 'FREE'
+                            ? 'bg-slate-100 text-slate-800'
+                            : ch.status === 'UNLOCKED'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}>
                           {ch.status}
                         </span>
                       </td>
                       <td className="p-3 text-right font-mono font-medium">{ch.viewCount.toLocaleString('vi-VN')}</td>
                       <td className="p-3 text-right font-mono font-medium text-amber-600">
-                        {ch.status === 'VIP' ? `${ch.revenue.toLocaleString('vi-VN')} xu` : '-'}
+                        {ch.revenue > 0 ? `${ch.revenue.toLocaleString('vi-VN')} xu` : '-'}
                       </td>
                       <td className="p-3 text-right font-mono font-medium text-emerald-600">
-                        {ch.conversionRate}%
+                        {ch.status === 'FREE' ? '-' : `${ch.conversionRate.toFixed(1)}%`}
                       </td>
                     </tr>
                   ))}

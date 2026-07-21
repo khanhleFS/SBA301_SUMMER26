@@ -207,7 +207,7 @@ export default function ChapterSelector({
                 }}
                 className={`w-full text-left px-4 py-2.5 text-xs font-bold font-sans hover:bg-current/[0.08] cursor-pointer transition-colors ${currentChapKey === chap.slug ? 'text-primary bg-primary/10' : currentTheme.text}`}
               >
-                {chap.chapterNum}: {chap.title}
+                {chap.title}
               </button>
             ))}
           </div>,

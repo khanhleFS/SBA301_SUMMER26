@@ -121,10 +121,9 @@ export interface DashboardData {
   chartData: number[]
   platformNet: number
   userPulse: {
-    readersOnline: number
-    newSignupsToday: number
-    totalNovels: number
-    totalCategories: number
+    totalUsers: number
+    totalAuthors: number
+    pendingRequests: number
   }
   recentTransactions: {
     id: string
@@ -300,12 +299,11 @@ export const MOCK_PROFILE_DATA: ProfileData = {
 
 export const MOCK_DASHBOARD_DATA: DashboardData = {
   chartData: [18, 24, 16, 29, 31, 28, 40, 36, 45, 38, 52, 49],
-  platformNet: 12543.5 * 0.25,
+  platformNet: 12543500 * 0.25,
   userPulse: {
-    readersOnline: 84,
-    newSignupsToday: 128,
-    totalNovels: 342,
-    totalCategories: 18,
+    totalUsers: 1284,
+    totalAuthors: 98,
+    pendingRequests: 18,
   },
   recentTransactions: [
     { id: 't1', user: '@docgia_01', method: 'Chuyển khoản Ngân hàng', amount: 100000, time: 'Vừa xong', status: 'success' },

@@ -1,7 +1,7 @@
 export type NovelStatus = 'ONGOING' | 'COMPLETED' | 'PAUSED' | 'DROPPED'
 
 export interface NovelResponseDTO {
-  id: string
+  id: number
   title: string
   slug: string
   description: string

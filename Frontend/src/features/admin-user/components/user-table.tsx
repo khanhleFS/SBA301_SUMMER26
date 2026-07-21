@@ -1,20 +1,21 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Search,
   Filter,
   X,
   ChevronUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle,
   Shield,
   Ban,
 } from 'lucide-react'
 import type { UserItem, UserRole, UserStatus } from '../services/user.service'
+import type { FilterRole, FilterStatus } from './user-sections'
 
 type SortKey = 'fullName' | 'joinedAt' | 'totalReads' | 'walletBalance'
 type SortDir = 'asc' | 'desc'
-type FilterRole = UserRole | 'ALL'
-type FilterStatus = UserStatus | 'ALL'
 
 const ROLE_CONFIG: Record<UserRole, { label: string; classes: string }> = {
   ADMIN: { label: 'Admin', classes: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
@@ -28,26 +29,39 @@ const STATUS_CONFIG: Record<UserStatus, { label: string; classes: string; dot: s
   pending: { label: 'Chờ duyệt', classes: 'bg-amber-500/10 text-amber-600 border-amber-500/20', dot: 'bg-amber-500' },
 }
 
-function formatReads(n: number) {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`
-  return `${n}`
-}
-
 interface UserTableSectionProps {
   users: UserItem[]
   onPromote: (user: UserItem) => void
   onToggleBan: (user: UserItem) => void
   onApprove: (user: UserItem) => void
   isMutating: boolean
+  roleFilter: FilterRole
+  setRoleFilter: (role: FilterRole) => void
+  statusFilter: FilterStatus
+  setStatusFilter: (status: FilterStatus) => void
 }
 
-export function UserTableSection({ users, onPromote, onToggleBan, onApprove, isMutating }: UserTableSectionProps) {
+export function UserTableSection({
+  users,
+  onPromote,
+  onToggleBan,
+  onApprove,
+  isMutating,
+  roleFilter,
+  setRoleFilter,
+  statusFilter,
+  setStatusFilter
+}: UserTableSectionProps) {
   const [search, setSearch] = useState('')
-  const [roleFilter, setRoleFilter] = useState<FilterRole>('ALL')
-  const [statusFilter, setStatusFilter] = useState<FilterStatus>('ALL')
   const [sortKey, setSortKey] = useState<SortKey>('joinedAt')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+
+  // Reset page về 1 mỗi khi bộ lọc bên ngoài hoặc search thay đổi
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [roleFilter, statusFilter, search])
 
   const filteredAndSorted = useMemo(() => {
     let result = [...users]
@@ -75,9 +89,16 @@ export function UserTableSection({ users, onPromote, onToggleBan, onApprove, isM
     return result
   }, [users, search, roleFilter, statusFilter, sortKey, sortDir])
 
+  // Pagination calculation
+  const totalItems = filteredAndSorted.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedUsers = filteredAndSorted.slice(startIndex, startIndex + itemsPerPage)
+
   function handleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
     else { setSortKey(key); setSortDir('desc') }
+    setCurrentPage(1)
   }
 
   function SortIcon({ col }: { col: SortKey }) {
@@ -108,35 +129,39 @@ export function UserTableSection({ users, onPromote, onToggleBan, onApprove, isM
         </div>
 
         {/* Role filter */}
-        <div className="flex items-center gap-1.5">
+        <div className="relative flex items-center">
           <select
             id="role-filter-select"
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value as FilterRole)}
-            className="h-9 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 text-xs text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary/40"
+            className="h-9 appearance-none rounded-lg border border-outline-variant bg-surface-container-lowest pl-3 pr-8 text-xs text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary/40"
           >
             <option value="ALL">Tất cả vai trò</option>
             <option value="USER">Người dùng</option>
             <option value="AUTHOR">Tác giả</option>
             <option value="ADMIN">Admin</option>
           </select>
+          <ChevronDown className="pointer-events-none absolute right-2.5 h-3.5 w-3.5 text-muted-foreground" />
         </div>
 
         {/* Status filter */}
-        <select
-          id="status-filter-select"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as FilterStatus)}
-          className="h-9 rounded-lg border border-outline-variant bg-surface-container-lowest px-2 text-xs text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary/40"
-        >
-          <option value="ALL">Tất cả trạng thái</option>
-          <option value="active">Hoạt động</option>
-          <option value="pending">Chờ duyệt</option>
-          <option value="banned">Bị cấm</option>
-        </select>
+        <div className="relative flex items-center">
+          <select
+            id="status-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as FilterStatus)}
+            className="h-9 appearance-none rounded-lg border border-outline-variant bg-surface-container-lowest pl-3 pr-8 text-xs text-on-surface font-medium focus:outline-none focus:ring-2 focus:ring-primary/40"
+          >
+            <option value="ALL">Tất cả trạng thái</option>
+            <option value="active">Hoạt động</option>
+            <option value="pending">Chờ duyệt</option>
+            <option value="banned">Bị cấm</option>
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2.5 h-3.5 w-3.5 text-muted-foreground" />
+        </div>
 
         <span className="ml-auto text-xs font-medium text-muted-foreground shrink-0">
-          {filteredAndSorted.length} người dùng
+          {totalItems} người dùng
         </span>
       </div>
 
@@ -164,14 +189,14 @@ export function UserTableSection({ users, onPromote, onToggleBan, onApprove, isM
           </thead>
 
           <tbody>
-            {filteredAndSorted.length === 0 && (
+            {paginatedUsers.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-16 text-center text-sm text-muted-foreground">
                   Không tìm thấy người dùng nào.
                 </td>
               </tr>
             )}
-            {filteredAndSorted.map((user) => {
+            {paginatedUsers.map((user) => {
               const roleConf = ROLE_CONFIG[user.role]
               const statusConf = STATUS_CONFIG[user.status]
               const canPromote = user.role === 'USER' && user.status === 'active'
@@ -182,7 +207,6 @@ export function UserTableSection({ users, onPromote, onToggleBan, onApprove, isM
                   key={user.id}
                   className="border-b border-outline-variant/30 transition-colors hover:bg-surface-container/50 last:border-0"
                 >
-                  {/* User info */}
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <img
@@ -198,33 +222,22 @@ export function UserTableSection({ users, onPromote, onToggleBan, onApprove, isM
                       </div>
                     </div>
                   </td>
-
-                  {/* Role */}
                   <td className="px-4 py-3.5">
                     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${roleConf.classes}`}>
                       {roleConf.label}
                     </span>
                   </td>
-
-                  {/* Status */}
                   <td className="px-4 py-3.5">
                     <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${statusConf.classes}`}>
                       <span className={`h-1.5 w-1.5 rounded-full ${statusConf.dot}`} />
                       {statusConf.label}
                     </span>
                   </td>
-
-
-
-                  {/* Joined */}
                   <td className="px-4 py-3.5 text-xs text-muted-foreground font-mono">
                     {new Date(user.joinedAt).toLocaleDateString('vi-VN')}
                   </td>
-
-                  {/* Actions */}
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-2">
-                      {/* Approve pending */}
                       {isPending && (
                         <button
                           id={`approve-btn-${user.id}`}
@@ -235,8 +248,6 @@ export function UserTableSection({ users, onPromote, onToggleBan, onApprove, isM
                           <CheckCircle className="h-3.5 w-3.5" /> Duyệt
                         </button>
                       )}
-
-                      {/* Promote to author */}
                       {canPromote && (
                         <button
                           id={`promote-btn-${user.id}`}
@@ -247,8 +258,6 @@ export function UserTableSection({ users, onPromote, onToggleBan, onApprove, isM
                           <Shield className="h-3.5 w-3.5" /> Lên tác giả
                         </button>
                       )}
-
-                      {/* Ban / Unban */}
                       {user.role !== 'ADMIN' && (
                         <button
                           id={`ban-btn-${user.id}`}
@@ -274,6 +283,34 @@ export function UserTableSection({ users, onPromote, onToggleBan, onApprove, isM
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Footer */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-outline-variant px-5 py-3 bg-surface-container/30">
+          <p className="text-xs text-muted-foreground">
+            Hiển thị <span className="font-semibold text-foreground">{startIndex + 1}</span> - <span className="font-semibold text-foreground">{Math.min(startIndex + itemsPerPage, totalItems)}</span> trong tổng số <span className="font-semibold text-foreground">{totalItems}</span> người dùng.
+          </p>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="rounded-md border border-outline-variant bg-surface-container-lowest p-1 hover:bg-surface-container disabled:opacity-50 disabled:pointer-events-none transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="flex items-center px-3 text-xs font-bold text-foreground">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="rounded-md border border-outline-variant bg-surface-container-lowest p-1 hover:bg-surface-container disabled:opacity-50 disabled:pointer-events-none transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

@@ -70,7 +70,7 @@ export default function DashboardLayout() {
     return <Navigate to="/" replace />
   }
 
-  if (isAuthorRoute && user?.role !== 'AUTHOR' && user?.role !== 'ADMIN') {
+  if (isAuthorRoute && !user?.isAuthor && user?.role == 'ADMIN') {
     return <Navigate to="/" replace />
   }
 

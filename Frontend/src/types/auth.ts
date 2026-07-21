@@ -3,6 +3,7 @@ export interface User {
   username: string
   email: string
   role: string
+  isAuthor?: boolean
   avatarUrl?: string
   fullName?: string
 }
@@ -21,6 +22,7 @@ export interface LoginResponseDTO {
   username: string
   email: string
   role: string
+  isAuthor?: boolean
 }
 
 export interface RegisterRequestDTO {

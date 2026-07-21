@@ -25,7 +25,8 @@ export interface ChapterItem {
   price?: number
 }
 
-export function extractUuid(slugWithId: string): string {
+/** Extracts the numeric Long ID from the end of a slug-id string (e.g. "ten-truyen-123" → "123"). */
+export function extractId(slugWithId: string): string {
   if (!slugWithId) return ''
   const parts = slugWithId.split('-')
   if (parts.length >= 5) {
@@ -44,10 +45,10 @@ export function extractUuid(slugWithId: string): string {
 
 export const storyDetailService = {
   getStoryInfo: async (storyId: string): Promise<StoryDetailInfo> => {
-    const uuid = extractUuid(storyId)
-    const novel = await getPublicNovelById(uuid)
+    const id = extractId(storyId)
+    const novel = await getPublicNovelById(id)
     return {
-      id: novel.id,
+      id: String(novel.id),
       slug: `${novel.slug}-${novel.id}`,
       title: novel.title,
       author: novel.authorName || 'Tác giả',
@@ -60,10 +61,10 @@ export const storyDetailService = {
       cover: novel.coverImageUrl || undefined
     }
   },
-  
+
   getStoryChapters: async (storyId: string): Promise<ChapterItem[]> => {
-    const uuid = extractUuid(storyId)
-    const chapters = await getChaptersByNovel(uuid)
+    const id = extractId(storyId)
+    const chapters = await getChaptersByNovel(id)
     return chapters.map((c) => ({
       id: c.chapterNumber,
       slug: `${c.slug}-${c.id}`,

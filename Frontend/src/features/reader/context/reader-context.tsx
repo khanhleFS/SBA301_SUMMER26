@@ -4,7 +4,7 @@ import { readerService, type ChapterDetails } from '../services/reader-service'
 import { upsertBookmark, getBookmark, type BookmarkResponse } from '@/services/bookmark-service'
 import { useAuthStore } from '@/store/auth.store'
 import { useThemeStore } from '@/store/theme.store'
-import { extractUuid } from '../services/reader-service'
+import { extractId } from '../services/reader-service'
 
 export type ThemeType = 'nocturne' | 'charcoal' | 'sepia' | 'ivory' | 'day'
 export type FontType = 'serif' | 'sans' | 'mono'
@@ -106,8 +106,8 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
       if (!isAuthenticated || !novelSlugWithId) return
 
       try {
-        const novelId = extractUuid(novelSlugWithId)
-        const chapterId = extractUuid(currentChapterId)
+        const novelId = extractId(novelSlugWithId)
+        const chapterId = extractId(currentChapterId)
         const existing = await getBookmark(novelId)
         bookmarkRef.current = existing
 
@@ -148,8 +148,8 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
     if (saveScrollTimerRef.current) clearTimeout(saveScrollTimerRef.current)
     saveScrollTimerRef.current = setTimeout(async () => {
       try {
-        const novelId = extractUuid(novelSlugWithId)
-        const chapterId = extractUuid(currentChapterId)
+        const novelId = extractId(novelSlugWithId)
+        const chapterId = extractId(currentChapterId)
         await upsertBookmark({ novelId, lastChapterId: chapterId || null, lastPage: scrollPercent })
       } catch (err) {
         console.warn('Could not save scroll position:', err)

@@ -109,85 +109,150 @@
     const key = deriveDynamicKey(novelId, chapterNumber, ivHex);
     const iv = CryptoJS.enc.Hex.parse(ivHex);
     const encryptedBase64 = CryptoJS.enc.Hex.parse(encryptedHex).toString(CryptoJS.enc.Base64);
+    /**
+     * 0. Bảng màu theme — PHẢI khớp với themeStyles trong reader-content.tsx (React)
+     */
+    const THEMES = {
+      nocturne: { pageBg: '#0f0e11', cardBg: '#151419', text: '#e6e1e7', border: 'rgba(255,255,255,0.1)' },
+      charcoal: { pageBg: '#16151a', cardBg: '#1e1e24', text: '#e3e1e6', border: 'rgba(255,255,255,0.1)' },
+      sepia: { pageBg: '#eae0ca', cardBg: '#f4ebd4', text: '#4f3824', border: '#d2b48c' },
+      ivory: { pageBg: '#fcf9f2', cardBg: '#FAF5E6', text: '#2C2512', border: 'rgba(0,0,0,0.1)' },
+      day: { pageBg: '#f9f6fa', cardBg: '#ffffff', text: '#1c1b1f', border: 'rgba(0,0,0,0.1)' }
+    };
 
-    const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key, {
-      iv: iv,
-      mode: CryptoJS.mode.CBC,
-      padding: CryptoJS.pad.Pkcs7
-    });
+    // Font family map — PHẢI khớp với logic trong CanvasArticle (reader-content.tsx)
+    const FONT_FAMILIES = {
+      serif: '"Georgia", "Merriweather", serif',
+      sans: 'system-ui, "Segoe UI", Arial, sans-serif',
+      mono: 'monospace'
+    };
 
-    return decrypted.toString(CryptoJS.enc.Utf8);
-  }
+    // Hệ số line-height — PHẢI khớp với lhNum trong CanvasArticle
+    const LINE_HEIGHT_RATIOS = {
+      tight: 1.5,
+      normal: 1.85,
+      loose: 2.2
+    };
 
-  /**
-   * 2. Thuật toán vẽ văn bản lên Canvas
-   */
-  function renderCanvas(text) {
-    if (!text) return;
+    /**
+     * Toàn bộ cấu hình hiển thị hiện tại — nguồn duy nhất mà renderCanvas() đọc vào.
+     * Được cập nhật bởi applyConfig() (gọi lúc load từ URL, hoặc runtime từ postMessage).
+     */
+    const CONFIG = {
+      theme: 'sepia',
+      fontSize: 18,
+      fontFamily: 'sans',
+      lineHeight: 'normal',
+      fullFrame: false
+    };
 
-    const canvas = document.getElementById('storyCanvas');
-    const ctx = canvas.getContext('2d');
+    /**
+     * Áp 1 phần hoặc toàn bộ cấu hình mới: cập nhật CSS variables (khung/HTML)
+     * và vẽ lại canvas (chữ) nếu đã có nội dung.
+     */
+    function applyConfig(partial) {
+      Object.assign(CONFIG, partial);
 
-    // Cấu hình Font và khoảng cách
-    const fontSize = 18;
-    const lineHeight = 32;
-    const padding = 15;
-    const fontStyle = `${fontSize}px "Segoe UI", Arial, sans-serif`;
+      const t = THEMES[CONFIG.theme] || THEMES.sepia;
+      const root = document.documentElement.style;
+      root.setProperty('--page-bg', t.pageBg);
+      root.setProperty('--card-bg', t.cardBg);
+      root.setProperty('--text-color', t.text);
+      root.setProperty('--border-color', t.border);
+      root.setProperty('--card-max-width', CONFIG.fullFrame ? '100%' : '800px');
 
-    const parentWidth = canvas.parentElement.clientWidth - 40; // Trừ padding container
-    const maxWidth = parentWidth - (padding * 2);
+      if (globalDecryptedText) renderCanvas(globalDecryptedText);
+    }
 
-    ctx.font = fontStyle;
+    /**
+     * 1. Hàm giải mã chuỗi HEX nhận từ Spring Boot API
+     */
+    function decryptData(encryptedHex, ivHex) {
+      if (!encryptedHex || !ivHex) return "";
+      const key = CryptoJS.enc.Utf8.parse(SECRET_KEY_STR);
+      const iv = CryptoJS.enc.Hex.parse(ivHex);
+      const encryptedBase64 = CryptoJS.enc.Hex.parse(encryptedHex).toString(CryptoJS.enc.Base64);
 
-    // Tách văn bản theo các đoạn (xuống dòng \n)
-    const paragraphs = text.split('\n');
-    const lines = [];
+      const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
 
-    paragraphs.forEach(paragraph => {
-      if (paragraph.trim() === '') {
-        lines.push(''); // Thêm dòng trống giữa các đoạn
-        return;
-      }
+      return decrypted.toString(CryptoJS.enc.Utf8);
+    }
 
-      const words = paragraph.split(' ');
-      let currentLine = '';
+    /**
+     * 2. Thuật toán vẽ văn bản lên Canvas
+     */
+    function renderCanvas(text) {
+      if (!text) return;
 
-      for (let i = 0; i < words.length; i++) {
-        const testLine = currentLine + words[i] + ' ';
-        if (ctx.measureText(testLine).width > maxWidth && i > 0) {
-          lines.push(currentLine);
-          currentLine = words[i] + ' ';
-        } else {
-          currentLine = testLine;
+      const canvas = document.getElementById('storyCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // Cấu hình Font và khoảng cách — lấy theo CONFIG hiện tại (đồng bộ với reader-config-menu)
+      const fontSize = CONFIG.fontSize;
+      const fontFamilyCss = FONT_FAMILIES[CONFIG.fontFamily] || FONT_FAMILIES.sans;
+      const lineHeight = fontSize * (LINE_HEIGHT_RATIOS[CONFIG.lineHeight] ?? LINE_HEIGHT_RATIOS.normal);
+      const padding = 15;
+      const fontStyle = `${fontSize}px ${fontFamilyCss}`;
+
+      const parentWidth = canvas.parentElement.clientWidth - 40; // Trừ padding container
+      const maxWidth = parentWidth - (padding * 2);
+
+      ctx.font = fontStyle;
+
+      // Tách văn bản theo các đoạn (xuống dòng \n)
+      const paragraphs = text.split('\n');
+      const lines = [];
+
+      paragraphs.forEach(paragraph => {
+        if (paragraph.trim() === '') {
+          lines.push(''); // Thêm dòng trống giữa các đoạn
+          return;
         }
-      }
-      lines.push(currentLine);
-    });
 
-    // Cấu hình tỷ lệ hiển thị độ phân giải cao (Màn hình Retina / Điện thoại)
-    const dpr = window.devicePixelRatio || 1;
-    const totalHeight = (lines.length * lineHeight) + (padding * 2);
+        const words = paragraph.split(' ');
+        let currentLine = '';
 
-    canvas.width = parentWidth * dpr;
-    canvas.height = totalHeight * dpr;
-    canvas.style.width = `${parentWidth}px`;
-    canvas.style.height = `${totalHeight}px`;
+        for (let i = 0; i < words.length; i++) {
+          const testLine = currentLine + words[i] + ' ';
+          if (ctx.measureText(testLine).width > maxWidth && i > 0) {
+            lines.push(currentLine);
+            currentLine = words[i] + ' ';
+          } else {
+            currentLine = testLine;
+          }
+        }
+        lines.push(currentLine);
+      });
 
-    ctx.scale(dpr, dpr);
+      // Cấu hình tỷ lệ hiển thị độ phân giải cao (Màn hình Retina / Điện thoại)
+      const dpr = window.devicePixelRatio || 1;
+      const totalHeight = (lines.length * lineHeight) + (padding * 2);
 
-    // Vẽ nền Canvas
-    ctx.fillStyle = "#fff8eb";
-    ctx.fillRect(0, 0, parentWidth, totalHeight);
+      canvas.width = parentWidth * dpr;
+      canvas.height = totalHeight * dpr;
+      canvas.style.width = `${parentWidth}px`;
+      canvas.style.height = `${totalHeight}px`;
 
-    // Vẽ chữ
-    ctx.font = fontStyle;
-    ctx.fillStyle = "#2c2c2c";
-    ctx.textBaseline = "top";
+      ctx.scale(dpr, dpr);
 
-    lines.forEach((line, index) => {
-      ctx.fillText(line.trim(), padding, padding + (index * lineHeight));
-    });
-  }
+      // Vẽ nền Canvas — lấy theo theme đang được chọn
+      const themeColors = THEMES[CONFIG.theme] || THEMES.sepia;
+      ctx.fillStyle = themeColors.cardBg;
+      ctx.fillRect(0, 0, parentWidth, totalHeight);
+
+      // Vẽ chữ
+      ctx.font = fontStyle;
+      ctx.fillStyle = themeColors.text;
+      ctx.textBaseline = "top";
+
+      lines.forEach((line, index) => {
+        ctx.fillText(line.trim(), padding, padding + (index * lineHeight));
+      });
+    }
 
   /**
    * 3. Fetch dữ liệu từ Spring Boot API
@@ -205,12 +270,12 @@
         throw new Error("Không thể tải chương truyện");
       }
 
-      const resBody = await response.json();
-      const data = resBody.result || resBody;
+        const resBody = await response.json();
+        const data = resBody.result || resBody;
 
-      if (data) {
-        // Đổi tiêu đề chương
-        document.getElementById('chapterTitle').innerText = `${data.title || 'Chương ' + chapterNumber}`;
+        if (data) {
+          // Đổi tiêu đề chương
+          document.getElementById('chapterTitle').innerText = `${data.title || 'Chương ' + chapterNumber}`;
 
         // Giải mã nội dung
         if (data.encryptedData && data.iv) {
@@ -219,37 +284,62 @@
           globalDecryptedText = data.content || "";
         }
 
-        // Vẽ lên Canvas
-        renderCanvas(globalDecryptedText);
+          // Vẽ lên Canvas
+          renderCanvas(globalDecryptedText);
+        }
+      } catch (err) {
+        document.getElementById('chapterTitle').innerText = "Lỗi: " + err.message;
       }
-    } catch (err) {
-      document.getElementById('chapterTitle').innerText = "Lỗi: " + err.message;
     }
-  }
 
-  // --- CÁC BIỆN PHÁP CHẶN THAO TÁC BỎ BỔ SUNG ---
-  document.addEventListener('contextmenu', e => e.preventDefault()); // Chặn chuột phải
-  document.addEventListener('selectstart', e => e.preventDefault()); // Chặn bôi đen
-  document.addEventListener('keydown', e => {
-    // Chặn F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S
-    if (e.key === 'F12' || 
-       (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
-       (e.ctrlKey && ['U','S'].includes(e.key.toUpperCase()))) {
-      e.preventDefault();
-    }
-  });
+    // --- CÁC BIỆN PHÁP CHẶN THAO TÁC BỎ BỔ SUNG ---
+    document.addEventListener('contextmenu', e => e.preventDefault()); // Chặn chuột phải
+    document.addEventListener('selectstart', e => e.preventDefault()); // Chặn bôi đen
+    document.addEventListener('keydown', e => {
+      // Chặn F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S
+      if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
+        (e.ctrlKey && ['U', 'S'].includes(e.key.toUpperCase()))) {
+        e.preventDefault();
+      }
+    });
 
-  // Khởi chạy tải Chương ID novel = 21, chapterNumber = 1 (hoặc mặc định)
-  window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const novelId = urlParams.get('novelId') || 21;
-    const chapterNumber = urlParams.get('chapter') || 1;
-    loadChapter(novelId, chapterNumber);
-  });
+    // Khởi chạy tải Chương ID novel = 21, chapterNumber = 1 (hoặc mặc định)
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const novelId = urlParams.get('novelId') || 21;
+      const chapterNumber = urlParams.get('chapter') || 1;
 
-  // Tự vẽ lại khi đổi kích thước màn hình
-  window.addEventListener('resize', () => renderCanvas(globalDecryptedText));
-</script>
+      // Đọc cấu hình hiển thị ban đầu từ URL, ví dụ:
+      // reader.html?novelId=21&chapter=1&theme=nocturne&fontSize=20&fontFamily=serif&lineHeight=loose&fullFrame=true
+      applyConfig({
+        theme: THEMES[urlParams.get('theme')] ? urlParams.get('theme') : CONFIG.theme,
+        fontSize: urlParams.get('fontSize') ? Number(urlParams.get('fontSize')) : CONFIG.fontSize,
+        fontFamily: FONT_FAMILIES[urlParams.get('fontFamily')] ? urlParams.get('fontFamily') : CONFIG.fontFamily,
+        lineHeight: LINE_HEIGHT_RATIOS[urlParams.get('lineHeight')] ? urlParams.get('lineHeight') : CONFIG.lineHeight,
+        fullFrame: urlParams.get('fullFrame') === 'true'
+      });
+
+      loadChapter(novelId, chapterNumber);
+    });
+
+    // Lắng nghe cấu hình mới gửi từ trang cha (React) qua postMessage, ví dụ:
+    // iframeEl.contentWindow.postMessage({
+    //   type: 'SET_READER_CONFIG',
+    //   config: { theme, fontSize, fontFamily, lineHeight, fullFrame }
+    // }, '*')
+    // Có thể gửi config đầy đủ hoặc chỉ 1 phần (partial update) — applyConfig sẽ merge vào CONFIG hiện tại.
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+      if (msg && msg.type === 'SET_READER_CONFIG' && msg.config) {
+        applyConfig(msg.config);
+      }
+    });
+
+    // Tự vẽ lại khi đổi kích thước màn hình
+    window.addEventListener('resize', () => renderCanvas(globalDecryptedText));
+  </script>
 
 </body>
+
 </html>

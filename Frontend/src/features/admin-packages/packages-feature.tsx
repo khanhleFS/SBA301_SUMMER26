@@ -1,33 +1,81 @@
 import { useState } from 'react'
-import { Plus, Edit2, Trash2, Sparkles, Coins, ShoppingBag } from 'lucide-react'
-import { MOCK_FINANCE_DATA, type PackageTier } from '../../services/mock-data'
+import { Plus, Edit2, Trash2, Check, X } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  getAllCoinPackagesAdmin,
+  createCoinPackage,
+  updateCoinPackage,
+  deleteCoinPackage,
+  toggleCoinPackageStatus
+} from '@/services/coin-package-service'
+import type { CoinCreateResponseDTO } from '@/types'
 
 export default function PackagesFeature() {
-  const [packages, setPackages] = useState<PackageTier[]>(MOCK_FINANCE_DATA.packageTiers)
+  const queryClient = useQueryClient()
   const [showModal, setShowModal] = useState(false)
-  const [editingPackage, setEditingPackage] = useState<PackageTier | null>(null)
+  const [editingPackage, setEditingPackage] = useState<CoinCreateResponseDTO | null>(null)
 
   // Form states
   const [name, setName] = useState('')
-  const [price, setPrice] = useState(0)
-  const [coin, setCoin] = useState(0)
-  const [bonus, setBonus] = useState(0)
+  const [priceVnd, setPriceVnd] = useState(20000)
+  const [baseCoins, setBaseCoins] = useState(200)
+  const [firstTimeBonus, setFirstTimeBonus] = useState(0)
+  const [isActive, setIsActive] = useState(true)
+
+  // Queries
+  const { data: packages = [], isLoading } = useQuery({
+    queryKey: ['admin-packages'],
+    queryFn: getAllCoinPackagesAdmin,
+  })
+
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: createCoinPackage,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin-packages'] })
+      setShowModal(false)
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, request }: { id: string; request: any }) => updateCoinPackage(id, request),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin-packages'] })
+      setShowModal(false)
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteCoinPackage,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin-packages'] })
+    },
+  })
+
+  const toggleMutation = useMutation({
+    mutationFn: toggleCoinPackageStatus,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin-packages'] })
+    },
+  })
 
   const openAddModal = () => {
     setEditingPackage(null)
     setName('')
-    setPrice(20)
-    setCoin(200)
-    setBonus(0)
+    setPriceVnd(20000)
+    setBaseCoins(200)
+    setFirstTimeBonus(0)
+    setIsActive(true)
     setShowModal(true)
   }
 
-  const openEditModal = (pkg: PackageTier) => {
+  const openEditModal = (pkg: CoinCreateResponseDTO) => {
     setEditingPackage(pkg)
     setName(pkg.name)
-    setPrice(pkg.price)
-    setCoin(pkg.coin)
-    setBonus(pkg.bonus)
+    setPriceVnd(pkg.priceVnd)
+    setBaseCoins(pkg.baseCoins)
+    setFirstTimeBonus(pkg.firstTimeBonus)
+    setIsActive(pkg.isActive)
     setShowModal(true)
   }
 
@@ -35,40 +83,38 @@ export default function PackagesFeature() {
     e.preventDefault()
     if (!name.trim()) return
 
+    const payload = {
+      name,
+      priceVnd: Number(priceVnd),
+      baseCoins: Number(baseCoins),
+      firstTimeBonus: Number(firstTimeBonus),
+      isActive,
+    }
+
     if (editingPackage) {
-      // Edit
-      setPackages(prev =>
-        prev.map(p =>
-          p.id === editingPackage.id
-            ? { ...p, name, price: Number(price), coin: Number(coin), bonus: Number(bonus) }
-            : p
-        )
-      )
+      updateMutation.mutate({ id: editingPackage.id, request: payload })
     } else {
-      // Add
-      const newId = packages.length > 0 ? Math.max(...packages.map(p => p.id)) + 1 : 1
-      const newPkg: PackageTier = {
-        id: newId,
-        name,
-        price: Number(price),
-        coin: Number(coin),
-        bonus: Number(bonus),
-        isPopular: false // Đặt mặc định false để tránh lỗi type nếu PackageTier yêu cầu
-      }
-      setPackages(prev => [...prev, newPkg])
+      createMutation.mutate(payload)
     }
-    setShowModal(false)
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (confirm('Bạn có chắc chắn muốn xóa gói nạp này không?')) {
-      setPackages(prev => prev.filter(p => p.id !== id))
+      deleteMutation.mutate(id)
     }
   }
 
-  // Stats
-  const totalPackages = packages.length
-  const maxBonus = packages.reduce((max, p) => (p.bonus > max ? p.bonus : max), 0)
+  const handleToggle = (id: string) => {
+    toggleMutation.mutate(id)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -95,43 +141,59 @@ export default function PackagesFeature() {
           return (
             <div
               key={pkg.id}
-              className="relative flex flex-col justify-between overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+              className={`relative flex flex-col justify-between overflow-hidden rounded-xl border p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md ${
+                pkg.isActive ? 'border-outline-variant bg-surface-container-lowest' : 'border-outline/20 bg-surface-container-low opacity-75'
+              }`}
             >
               {/* Actions ở góc trên cùng bên phải */}
-              <div className="flex justify-end gap-1 mb-1">
-                <button
-                  onClick={() => openEditModal(pkg)}
-                  className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-container hover:text-foreground transition-colors"
-                  aria-label="Sửa gói"
-                >
-                  <Edit2 className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  onClick={() => handleDelete(pkg.id)}
-                  className="rounded-md p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20 dark:hover:text-red-400 transition-colors"
-                  aria-label="Xóa gói"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+              <div className="flex justify-between items-center mb-1">
+                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                  pkg.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {pkg.isActive ? 'Hoạt động' : 'Đang ẩn'}
+                </span>
+                <div className="flex gap-0.5">
+                  <button
+                    onClick={() => handleToggle(pkg.id)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-surface-container hover:text-foreground transition-colors"
+                    title={pkg.isActive ? 'Ẩn gói' : 'Hiện gói'}
+                  >
+                    {pkg.isActive ? <X className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
+                  </button>
+                  <button
+                    onClick={() => openEditModal(pkg)}
+                    className="rounded-md p-1.5 text-muted-foreground hover:bg-surface-container hover:text-foreground transition-colors"
+                    aria-label="Sửa gói"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(pkg.id)}
+                    className="rounded-md p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20 dark:hover:text-red-400 transition-colors"
+                    aria-label="Xóa gói"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
 
-              <div className="text-center">
+              <div className="text-center mt-2">
                 <h3 className="truncate text-base font-bold text-foreground">{pkg.name}</h3>
                 <div className="mt-2 flex items-baseline justify-center">
-                  <span className="text-4xl font-black tracking-tight text-primary">{pkg.price}K</span>
+                  <span className="text-4xl font-black tracking-tight text-primary">{Math.round(pkg.priceVnd / 1000)}K</span>
                 </div>
                 <p className="mt-0.5 text-xs font-semibold text-muted-foreground">
-                  {(pkg.price * 1000).toLocaleString('vi-VN')} VNĐ
+                  {pkg.priceVnd.toLocaleString('vi-VN')} VNĐ
                 </p>
               </div>
 
               <div className="mt-5 rounded-lg bg-surface-container p-3 text-center transition-colors hover:bg-surface-container-high">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Quy đổi</p>
                 <p className="mt-0.5 text-lg font-bold text-emerald-600">
-                  {pkg.coin} <span className="text-xs font-medium">Coin</span>
+                  {pkg.baseCoins} <span className="text-xs font-medium">Coin</span>
                 </p>
-                {pkg.bonus > 0 ? (
-                  <p className="mt-0.5 text-[11px] font-bold text-amber-600">+ Tặng {pkg.bonus} Coin</p>
+                {pkg.firstTimeBonus > 0 ? (
+                  <p className="mt-0.5 text-[11px] font-bold text-amber-600">+ Tặng {pkg.firstTimeBonus} Coin</p>
                 ) : (
                   <p className="mt-0.5 select-none text-[11px] text-transparent">No bonus</p>
                 )}
@@ -167,17 +229,18 @@ export default function PackagesFeature() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase text-muted-foreground mb-1">
-                    Giá tiền (K)
+                    Giá tiền (VNĐ)
                   </label>
                   <input
                     type="number"
-                    min="1"
+                    min="1000"
+                    step="1000"
                     required
-                    value={price}
-                    onChange={e => setPrice(Number(e.target.value))}
+                    value={priceVnd}
+                    onChange={e => setPriceVnd(Number(e.target.value))}
                     className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
-                  <p className="mt-1 text-[10px] text-muted-foreground">{(price * 1000).toLocaleString('vi-VN')} VNĐ</p>
+                  <p className="mt-1 text-[10px] text-muted-foreground">Tương đương {Math.round(priceVnd / 1000)}K</p>
                 </div>
 
                 <div>
@@ -188,8 +251,8 @@ export default function PackagesFeature() {
                     type="number"
                     min="1"
                     required
-                    value={coin}
-                    onChange={e => setCoin(Number(e.target.value))}
+                    value={baseCoins}
+                    onChange={e => setBaseCoins(Number(e.target.value))}
                     className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
@@ -203,10 +266,23 @@ export default function PackagesFeature() {
                   type="number"
                   min="0"
                   required
-                  value={bonus}
-                  onChange={e => setBonus(Number(e.target.value))}
+                  value={firstTimeBonus}
+                  onChange={e => setFirstTimeBonus(Number(e.target.value))}
                   className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={isActive}
+                  onChange={e => setIsActive(e.target.checked)}
+                  className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary"
+                />
+                <label htmlFor="isActive" className="text-xs font-bold uppercase text-muted-foreground">
+                  Cho phép hoạt động
+                </label>
               </div>
 
               <div className="flex justify-end gap-2 pt-4 border-t border-outline-variant/60">
@@ -219,9 +295,10 @@ export default function PackagesFeature() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-on-primary hover:opacity-90 transition-opacity"
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                  className="rounded-lg bg-primary px-4 py-2 text-xs font-bold text-on-primary hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  Lưu thay đổi
+                  {createMutation.isPending || updateMutation.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </button>
               </div>
             </form>
