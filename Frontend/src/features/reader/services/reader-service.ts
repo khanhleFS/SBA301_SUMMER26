@@ -7,17 +7,22 @@ import { useAuthStore } from '@/store/auth.store'
 export function getJwtUserIdentifier(): string {
   try {
     const authState = useAuthStore.getState()
+    const token = authState.token || (typeof window !== 'undefined' ? (localStorage.getItem('accessToken') || localStorage.getItem('token')) : null)
+    
+    // Nếu không có Token (đã đăng xuất / logout), bắt buộc dùng GUEST_JWT
+    if (!token || !token.includes('.')) {
+      return 'GUEST_JWT'
+    }
+
     if (authState.isAuthenticated && authState.user && authState.user.email) {
       return authState.user.email
     }
-    const token = authState.token || (typeof window !== 'undefined' ? (localStorage.getItem('accessToken') || localStorage.getItem('token')) : null)
-    if (token && token.includes('.')) {
-      const payloadBase64 = token.split('.')[1]
-      const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'))
-      const payload = JSON.parse(payloadJson)
-      if (payload && (payload.sub || payload.email)) {
-        return payload.sub || payload.email
-      }
+
+    const payloadBase64 = token.split('.')[1]
+    const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'))
+    const payload = JSON.parse(payloadJson)
+    if (payload && (payload.sub || payload.email)) {
+      return payload.sub || payload.email
     }
   } catch (e) {}
   return 'GUEST_JWT'
