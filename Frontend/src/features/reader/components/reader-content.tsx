@@ -8,18 +8,12 @@ import {
   ArrowLeft,
   ChevronRight,
   ChevronLeft,
-  Sun,
   AlignLeft,
   ArrowUp,
   Maximize2,
   Minimize2,
   Headphones,
-  Play,
-  Pause,
   Volume2,
-  VolumeX,
-  Sparkles,
-  Loader2,
 } from 'lucide-react'
 import Dock from './dock'
 import FloatingAudioPlayer from './floating-audio-player'
@@ -100,61 +94,80 @@ function CanvasArticle({ paragraphs, fontSize, fontFamily, lineHeight, textColor
     const container = containerRef.current
     if (!canvas || !container) return
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const draw = () => {
+      console.log('[CanvasArticle] draw() called, container.clientWidth =', container.clientWidth)
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
-    const fontStyle = `${fontSize}px ${fontFamily === 'serif' ? '"Georgia", "Merriweather", serif' : fontFamily === 'mono' ? 'monospace' : 'system-ui, sans-serif'}`
-    const lhNum = fontSize * (lineHeight === 'tight' ? 1.5 : lineHeight === 'normal' ? 1.85 : 2.2)
-    const padding = 16
+      const fontStyle = `${fontSize}px ${fontFamily === 'serif' ? '"Georgia", "Merriweather", serif' : fontFamily === 'mono' ? 'monospace' : 'system-ui, sans-serif'}`
+      const lhNum = fontSize * (lineHeight === 'tight' ? 1.5 : lineHeight === 'normal' ? 1.85 : 2.2)
+      const padding = 16
 
-    const parentWidth = container.clientWidth || 700
-    const maxWidth = parentWidth - padding * 2
+      const parentWidth = container.clientWidth || 700
+      const maxWidth = parentWidth - padding * 2
 
-    ctx.font = fontStyle
+      ctx.font = fontStyle
 
-    const lines: string[] = []
-    paragraphs.forEach(p => {
-      if (!p.trim()) {
-        lines.push('')
-        return
-      }
-      const words = p.split(' ')
-      let currentLine = '    '
-      for (let i = 0; i < words.length; i++) {
-        const testLine = currentLine + words[i] + ' '
-        if (ctx.measureText(testLine).width > maxWidth && i > 0) {
-          lines.push(currentLine)
-          currentLine = words[i] + ' '
-        } else {
-          currentLine = testLine
+      const lines: string[] = []
+      paragraphs.forEach(p => {
+        if (!p.trim()) {
+          lines.push('')
+          return
         }
-      }
-      lines.push(currentLine)
-      lines.push('')
+        const words = p.split(' ')
+        let currentLine = '    '
+        for (let i = 0; i < words.length; i++) {
+          const testLine = currentLine + words[i] + ' '
+          if (ctx.measureText(testLine).width > maxWidth && i > 0) {
+            lines.push(currentLine)
+            currentLine = words[i] + ' '
+          } else {
+            currentLine = testLine
+          }
+        }
+        lines.push(currentLine)
+        lines.push('')
+      })
+
+      const dpr = window.devicePixelRatio || 1
+      const totalHeight = lines.length * lhNum + padding * 2
+
+      canvas.width = parentWidth * dpr
+      canvas.height = totalHeight * dpr
+      canvas.style.width = `${parentWidth}px`
+      canvas.style.height = `${totalHeight}px`
+
+      ctx.scale(dpr, dpr)
+
+      ctx.fillStyle = bgColor
+      ctx.fillRect(0, 0, parentWidth, totalHeight)
+
+      ctx.font = fontStyle
+      ctx.fillStyle = textColor
+      ctx.textBaseline = 'top'
+
+      lines.forEach((line, idx) => {
+        if (line) {
+          ctx.fillText(line.trimEnd(), padding, padding + idx * lhNum)
+        }
+      })
+    }
+
+    // Vẽ ngay lần đầu (mount / khi paragraphs, font, theme... đổi)
+    draw()
+
+    // Theo dõi trực tiếp kích thước của container — bắt được cả trường hợp
+    // width đổi do CSS/class (vd toggle fullFrame) mà KHÔNG có prop nào của
+    // component này thay đổi. ResizeObserver tự fire lại khi transition
+    // width kết thúc nên không bị lệch canvas như cách cũ.
+    const resizeObserver = new ResizeObserver((entries) => {
+      console.log('[CanvasArticle] ResizeObserver fired, contentRect.width =', entries[0]?.contentRect.width)
+      draw()
     })
+    resizeObserver.observe(container)
+    console.log('[CanvasArticle] ResizeObserver attached, initial clientWidth =', container.clientWidth)
 
-    const dpr = window.devicePixelRatio || 1
-    const totalHeight = lines.length * lhNum + padding * 2
-
-    canvas.width = parentWidth * dpr
-    canvas.height = totalHeight * dpr
-    canvas.style.width = `${parentWidth}px`
-    canvas.style.height = `${totalHeight}px`
-
-    ctx.scale(dpr, dpr)
-
-    ctx.fillStyle = bgColor
-    ctx.fillRect(0, 0, parentWidth, totalHeight)
-
-    ctx.font = fontStyle
-    ctx.fillStyle = textColor
-    ctx.textBaseline = 'top'
-
-    lines.forEach((line, idx) => {
-      if (line) {
-        ctx.fillText(line.trimEnd(), padding, padding + idx * lhNum)
-      }
-    })
+    return () => resizeObserver.disconnect()
   }, [paragraphs, fontSize, fontFamily, lineHeight, textColor, bgColor])
 
   useEffect(() => {
@@ -286,24 +299,6 @@ function ReaderContent() {
     setDuration(audioRef.current.duration)
   }
 
-  const handleAudioSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Number(e.target.value)
-    if (audioRef.current) {
-      audioRef.current.currentTime = val
-      setCurrentTime(val)
-    }
-  }
-
-  const skipTime = (amount: number) => {
-    if (audioRef.current) {
-      let nextTime = audioRef.current.currentTime + amount
-      if (nextTime < 0) nextTime = 0
-      if (nextTime > duration) nextTime = duration
-      audioRef.current.currentTime = nextTime
-      setCurrentTime(nextTime)
-    }
-  }
-
   // AI TTS Generation call
   const handleGenerateAudio = async () => {
     if (!activeChap || isGenerating) return
@@ -327,14 +322,6 @@ function ReaderContent() {
     } finally {
       setIsGenerating(false)
     }
-  }
-
-  // Format seconds to mm:ss
-  const formatTime = (time: number) => {
-    if (isNaN(time)) return '0:00'
-    const mins = Math.floor(time / 60)
-    const secs = Math.floor(time % 60)
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`
   }
 
   useEffect(() => {
