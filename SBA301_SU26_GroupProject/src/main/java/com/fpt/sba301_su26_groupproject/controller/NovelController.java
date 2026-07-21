@@ -216,12 +216,14 @@ public class NovelController {
     @Operation(summary = "Get chapters by novel")
     @GetMapping("/novels/{novelId}/chapters")
     public ResponseEntity<ApiResponse<List<ChapterResponseDTO>>> getChaptersByNovel(
-            @PathVariable String novelId) {
+            @PathVariable String novelId,
+            Authentication authentication) {
+        String userEmail = authentication == null ? null : authentication.getName();
         Long resolvedNovelId = novelService.findEntityByIdentifier(novelId).getId();
         return ResponseEntity.ok(ApiResponse.<List<ChapterResponseDTO>>builder()
                 .code(200)
                 .message("Lấy danh sách chương truyện thành công")
-                .result(chapterService.getChaptersByNovel(resolvedNovelId))
+                .result(chapterService.getChaptersByNovel(resolvedNovelId, userEmail))
                 .build());
     }
 

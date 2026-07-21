@@ -1,4 +1,4 @@
-package com.fpt.sba301_su26_groupproject.dto.request;
+package com.fpt.sba301_su26_groupproject.dto.summary;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

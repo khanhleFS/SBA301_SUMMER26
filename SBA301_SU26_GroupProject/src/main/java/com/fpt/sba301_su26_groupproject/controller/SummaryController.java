@@ -1,8 +1,8 @@
 package com.fpt.sba301_su26_groupproject.controller;
 
 import com.fpt.sba301_su26_groupproject.common.response.ApiResponse;
-import com.fpt.sba301_su26_groupproject.dto.request.ChapterSummaryRequest;
-import com.fpt.sba301_su26_groupproject.dto.response.ChapterSummaryResponse;
+import com.fpt.sba301_su26_groupproject.dto.summary.ChapterSummaryRequest;
+import com.fpt.sba301_su26_groupproject.dto.summary.ChapterSummaryResponse;
 import com.fpt.sba301_su26_groupproject.service.SummaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

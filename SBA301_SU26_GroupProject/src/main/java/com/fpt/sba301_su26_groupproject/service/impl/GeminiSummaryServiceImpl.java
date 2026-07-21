@@ -2,7 +2,7 @@ package com.fpt.sba301_su26_groupproject.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fpt.sba301_su26_groupproject.dto.response.ChapterSummaryResponse;
+import com.fpt.sba301_su26_groupproject.dto.summary.ChapterSummaryResponse;
 import com.fpt.sba301_su26_groupproject.service.SummaryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;

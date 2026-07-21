@@ -237,44 +237,6 @@ public class AuthenServiceImpl implements AuthenService {
     }
 
     @Override
-    public ProfileDTO getProfile(UUID id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            throw new ApiException(CommonErrorCode.INVALID_INPUT, "Người dùng không tồn tại");
-        }
-        return ProfileDTO.builder()
-                .fullName(user.getUsername())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .address(user.getAddress())
-                .coinBalance(user.getCoinBalance())
-                .build();
-    }
-
-    @Override
-    public void updateProfile(UUID id, ProfileDTO profile) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            throw new ApiException(CommonErrorCode.INVALID_INPUT, "Người dùng không tồn tại");
-        }
-        userRepository.findByEmail(profile.email()).ifPresent(existingUser -> {
-            if (!existingUser.getId().equals(id)) {
-                throw new ApiException(CommonErrorCode.CONFLICT, "Email đã tồn tại");
-            }
-        });
-        userRepository.findByPhone(profile.phone()).ifPresent(existingUser -> {
-            if (!existingUser.getId().equals(id)) {
-                throw new ApiException(CommonErrorCode.CONFLICT, "Số điện thoại đã tồn tại");
-            }
-        });
-        user.setUsername(profile.fullName());
-        user.setEmail(profile.email());
-        user.setPhone(profile.phone());
-        user.setAddress(profile.address());
-        userRepository.save(user);
-    }
-
-    @Override
     public boolean isEmailValid(String email) {
         return userRepository.findByEmail(email).isPresent();
     }

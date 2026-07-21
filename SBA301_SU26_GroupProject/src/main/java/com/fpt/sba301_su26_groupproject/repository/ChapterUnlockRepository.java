@@ -15,4 +15,7 @@ public interface ChapterUnlockRepository extends JpaRepository<ChapterUnlock, UU
 
     @Query("SELECT c.id, COUNT(cu.id) FROM ChapterUnlock cu JOIN cu.chapter c WHERE c.novel.id = :novelId GROUP BY c.id")
     List<Object[]> findUnlockCountByChapterGroupId(@Param("novelId") Long novelId);
+
+    @Query("SELECT cu.chapter.id FROM ChapterUnlock cu WHERE cu.user.id = :userId AND cu.chapter.novel.id = :novelId")
+    List<Long> findUnlockedChapterIdsByUserIdAndNovelId(@Param("userId") UUID userId, @Param("novelId") Long novelId);
 }

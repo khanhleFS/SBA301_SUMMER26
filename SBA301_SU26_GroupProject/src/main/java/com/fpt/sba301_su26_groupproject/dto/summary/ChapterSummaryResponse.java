@@ -1,4 +1,4 @@
-package com.fpt.sba301_su26_groupproject.dto.response;
+package com.fpt.sba301_su26_groupproject.dto.summary;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +17,3 @@ public class ChapterSummaryResponse {
     private List<String> main_events;
 
 }
-
-//TODO: record?
-//TODO: 

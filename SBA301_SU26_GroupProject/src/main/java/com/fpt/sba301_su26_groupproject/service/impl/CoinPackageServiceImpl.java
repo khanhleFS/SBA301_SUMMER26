@@ -2,23 +2,13 @@ package com.fpt.sba301_su26_groupproject.service.impl;
 
 import com.fpt.sba301_su26_groupproject.common.exception.ApiException;
 import com.fpt.sba301_su26_groupproject.common.exception.CoinPackageErrorCode;
-import com.fpt.sba301_su26_groupproject.common.exception.CommonErrorCode;
 import com.fpt.sba301_su26_groupproject.dto.coin.*;
 import com.fpt.sba301_su26_groupproject.dto.enumeration.EnumResponseDTO;
 import com.fpt.sba301_su26_groupproject.entity.CoinPackage;
-import com.fpt.sba301_su26_groupproject.entity.CoinTransaction;
-import com.fpt.sba301_su26_groupproject.entity.Enumeration.CoinTransactionType;
-import com.fpt.sba301_su26_groupproject.entity.User;
 import com.fpt.sba301_su26_groupproject.repository.CoinPackageRepository;
-import com.fpt.sba301_su26_groupproject.repository.CoinTransactionRepository;
 import com.fpt.sba301_su26_groupproject.repository.EnumRepository;
-import com.fpt.sba301_su26_groupproject.repository.UserRepository;
 import com.fpt.sba301_su26_groupproject.service.CoinPackageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +23,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
 
     private final CoinPackageRepository coinPackageRepository;
     private final EnumRepository enumRepository;
-    private final CoinTransactionRepository coinTransactionRepository;
-    private final UserRepository userRepository;
 
     private CoinCreateResponseDTO toResponse(CoinPackage pkg) {
         return CoinCreateResponseDTO.builder()
@@ -54,36 +42,6 @@ public class CoinPackageServiceImpl implements CoinPackageService {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public Page<CoinTransactionResponseDTO> getCoinHistory(String userEmail, Pageable pageable) {
-        User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ApiException(CommonErrorCode.UNAUTHORIZED, "Người dùng không tồn tại"));
-
-        Pageable sortedPageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                Sort.by(Sort.Direction.DESC, "createdAt")
-        );
-
-        return coinTransactionRepository.findByUserId(user.getId(), sortedPageable)
-                .map(tx -> {
-                    String paymentMethod = "COIN_WALLET";
-                    if (tx.getType() == CoinTransactionType.TOPUP) {
-                        paymentMethod = "ONLINE_PAYMENT";
-                    }
-                    return CoinTransactionResponseDTO.builder()
-                            .transactionId(tx.getId())
-                            .userName(user.getUsername())
-                            .packageName(tx.getCoinPackage() != null ? tx.getCoinPackage().getName() : tx.getNote())
-                            .amount(tx.getAmount())
-                            .transactionType(tx.getType().name())
-                            .paymentMethod(paymentMethod)
-                            .status("SUCCESS")
-                            .createdAt(tx.getCreatedAt())
-                            .build();
-                });
     }
 
     @Override

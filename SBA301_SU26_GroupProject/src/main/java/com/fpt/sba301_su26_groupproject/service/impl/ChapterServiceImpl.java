@@ -22,6 +22,7 @@ import com.fpt.sba301_su26_groupproject.service.TtsService;
 import com.fpt.sba301_su26_groupproject.service.UploadService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ChapterServiceImpl implements ChapterService {
+
+    @Value("${app.chapter.coin-price:5}")
+    private int chapterCoinPrice;
 
     private final ChapterRepository chapterRepository;
 
@@ -86,7 +90,7 @@ public class ChapterServiceImpl implements ChapterService {
         chapter.setSlug(generateSlug(nextChapterNum, requestDTO.title()));
         chapter.setContent(requestDTO.content());
         chapter.setStatus(requestDTO.status());
-        chapter.setCoinPrice(requestDTO.status().equals(ChapterStatus.FREE) ? 0 : requestDTO.coinPrice());
+        chapter.setCoinPrice(requestDTO.status().equals(ChapterStatus.FREE) ? 0 : chapterCoinPrice);
         chapter.setViewCount(0);
         chapter.setCreatedAt(Instant.now());
         // 8. Cập nhật thời gian update mới nhất của Truyện (để đẩy truyện lên danh sách vừa cập nhật)
@@ -98,13 +102,13 @@ public class ChapterServiceImpl implements ChapterService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ChapterResponseDTO> getChaptersByNovel(Long novelId) {
+    public List<ChapterResponseDTO> getChaptersByNovel(Long novelId, String userEmail) {
         if (!novelRepository.existsById(novelId)) {
             throw new ApiException(NovelErrorCode.NOVEL_NOT_FOUND, "Không tìm thấy truyện tương ứng.");
         }
         return chapterRepository.findByNovelIdOrderByChapterNumberAsc(novelId)
                 .stream()
-                .map(this::mapToResponseDTO)
+                .map(chapter -> mapToResponseDTO(chapter, userEmail))
                 .collect(Collectors.toList());
     }
 
@@ -195,7 +199,6 @@ public class ChapterServiceImpl implements ChapterService {
         chapter.setSlug(generateSlug(chapter.getChapterNumber(), requestDTO.title()));
         chapter.setContent(requestDTO.content());
         chapter.setStatus(requestDTO.status());
-        chapter.setCoinPrice(requestDTO.status().equals(ChapterStatus.FREE) ? 0 : requestDTO.coinPrice());
         Chapter updatedChapter = chapterRepository.save(chapter);
         return mapToResponseDTO(updatedChapter);
     }
@@ -320,6 +323,20 @@ public class ChapterServiceImpl implements ChapterService {
         String userIdentifier = (userEmail != null && !userEmail.isBlank()) ? userEmail : "GUEST_JWT";
         String contextId = userIdentifier + ":novel:" + chapter.getNovel().getId() + ":chapter:" + chapter.getChapterNumber();
         Map<String, String> encryptedMap = encryptionService.encrypt(chapter.getContent(), contextId);
+
+        ChapterStatus currentStatus = chapter.getStatus();
+        if (currentStatus == ChapterStatus.LOCKED && userEmail != null && !userEmail.isBlank()) {
+            User user = userRepository.findByEmail(userEmail).orElse(null);
+            if (user != null) {
+                boolean isAuthor = chapter.getNovel().getAuthor().getEmail().equals(userEmail);
+                boolean isAdmin = user.getRole() == com.fpt.sba301_su26_groupproject.entity.Enumeration.UserRole.ADMIN;
+                boolean isUnlocked = chapterUnlockRepository.existsByUserIdAndChapterId(user.getId(), chapter.getId());
+                if (isAuthor || isAdmin || isUnlocked) {
+                    currentStatus = ChapterStatus.UNLOCKED;
+                }
+            }
+        }
+
         return ChapterResponseDTO.builder()
                 .id(chapter.getId())
                 .novelId(chapter.getNovel().getId())
@@ -330,7 +347,7 @@ public class ChapterServiceImpl implements ChapterService {
                 .encryptedData(encryptedMap.get("encryptedData"))
                 .iv(encryptedMap.get("iv"))
                 .audioUrl(chapter.getAudioUrl())
-                .status(chapter.getStatus())
+                .status(currentStatus)
                 .coinPrice(chapter.getCoinPrice())
                 .viewCount(chapter.getViewCount())
                 .createdAt(chapter.getCreatedAt())
@@ -348,13 +365,6 @@ public class ChapterServiceImpl implements ChapterService {
         // 3. Validate status
         if (requestDTO.status() == null) {
             throw new ApiException(ChapterErrorCode.CHAPTER_STATUS_INVALID);
-        }
-
-        // 4. Validate paid chapter
-        if (!requestDTO.status().equals(ChapterStatus.FREE) &&
-                (requestDTO.coinPrice() == null || requestDTO.coinPrice() <= 0)) {
-            throw new ApiException(ChapterErrorCode.CHAPTER_INVALID,
-                    "Chương trả phí bắt buộc phải có giá coin lớn hơn 0.");
         }
     }
 

@@ -12,7 +12,7 @@ import java.util.UUID;
 public interface ChapterService {
     ChapterResponseDTO createChapter(Long novelId, ChapterRequestDTO requestDTO, String authorEmail);
 
-    List<ChapterResponseDTO> getChaptersByNovel(Long novelId);
+    List<ChapterResponseDTO> getChaptersByNovel(Long novelId, String userEmail);
 
     ChapterResponseDTO getChapterDetails(Long novelId, Long chapterId, String userEmail);
 

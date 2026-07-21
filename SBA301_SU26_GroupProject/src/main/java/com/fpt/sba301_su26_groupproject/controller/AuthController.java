@@ -45,7 +45,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "Auth APIs", description = "Authentication and user profile APIs")
+@Tag(name = "Auth APIs", description = "Authentication APIs (login, register, password management, token refresh)")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthenService authenService;
@@ -125,38 +125,6 @@ public class AuthController {
                 .code(200)
                 .message("Đặt lại mật khẩu thành công")
                 .result(result)
-                .build());
-    }
-
-    @Operation(
-            summary = "Get profile",
-            description = "Get current authenticated user's profile",
-            security = @SecurityRequirement(name = "Bearer Authentication")
-    )
-    @GetMapping("/profile")
-    public ResponseEntity<ApiResponse<ProfileDTO>> getProfile() {
-        CustomUserDetail userDetail = (CustomUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        ProfileDTO profile = authenService.getProfile(userDetail.getUser().getId());
-        return ResponseEntity.ok(ApiResponse.<ProfileDTO>builder()
-                .code(200)
-                .message("Lấy thông tin cá nhân thành công")
-                .result(profile)
-                .build());
-    }
-
-    @Operation(
-            summary = "Update profile",
-            description = "Update current authenticated user's profile",
-            security = @SecurityRequirement(name = "Bearer Authentication")
-    )
-    @PutMapping("/profile")
-    public ResponseEntity<ApiResponse<Void>> updateProfile(
-            @Valid @RequestBody ProfileDTO profileDTO) {
-        CustomUserDetail userDetail = (CustomUserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        authenService.updateProfile(userDetail.getUser().getId(), profileDTO);
-        return ResponseEntity.ok(ApiResponse.<Void>builder()
-                .code(200)
-                .message("Cập nhật thông tin cá nhân thành công")
                 .build());
     }
 

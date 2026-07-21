@@ -1,4 +1,4 @@
-package com.fpt.sba301_su26_groupproject.dto.authen;
+package com.fpt.sba301_su26_groupproject.dto.profile;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
