@@ -67,18 +67,46 @@
   </div>
 
 <script>
-  // Key giải mã (Khớp với app.security.secret-key ở Spring Boot)
-  const SECRET_KEY_STR = '12345678901234567890123456789012';
-  
   // Lưu trữ dữ liệu thô dạng cache local để phục vụ resize window
   let globalDecryptedText = "";
 
+  function getJwtUserIdentifier() {
+    try {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      if (token && token.includes('.')) {
+        const payloadBase64 = token.split('.')[1];
+        const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+        const payload = JSON.parse(payloadJson);
+        if (payload && (payload.sub || payload.email)) {
+          return payload.sub || payload.email;
+        }
+      }
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user && user.email) return user.email;
+      }
+    } catch (e) {}
+    return "GUEST_JWT";
+  }
+
   /**
-   * 1. Hàm giải mã chuỗi HEX nhận từ Spring Boot API
+   * Sinh Dynamic Key động theo JWT Token của User và bối cảnh chương (Không dùng Secret Key cố định)
+   * Công thức: SHA-256(jwtUserIdentifier + ":novel:" + novelId + ":chapter:" + chapterNumber + ":" + ivHex)
    */
-  function decryptData(encryptedHex, ivHex) {
+  function deriveDynamicKey(novelId, chapterNumber, ivHex) {
+    const userIdentifier = getJwtUserIdentifier();
+    const contextId = `${userIdentifier}:novel:${novelId}:chapter:${chapterNumber}`;
+    const seed = `${contextId}:${ivHex}`;
+    return CryptoJS.SHA256(seed);
+  }
+
+  /**
+   * 1. Hàm giải mã chuỗi HEX nhận từ Spring Boot API bằng Dynamic Key
+   */
+  function decryptData(encryptedHex, ivHex, novelId, chapterNumber) {
     if (!encryptedHex || !ivHex) return "";
-    const key = CryptoJS.enc.Utf8.parse(SECRET_KEY_STR);
+    const key = deriveDynamicKey(novelId, chapterNumber, ivHex);
     const iv = CryptoJS.enc.Hex.parse(ivHex);
     const encryptedBase64 = CryptoJS.enc.Hex.parse(encryptedHex).toString(CryptoJS.enc.Base64);
 
@@ -166,7 +194,12 @@
    */
   async function loadChapter(novelId = 1, chapterNumber = 1) {
     try {
-      const response = await fetch(`http://localhost:8080/api/novels/${novelId}/chapters/${chapterNumber}`);
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(`http://localhost:8080/api/novels/${novelId}/chapters/${chapterNumber}`, { headers });
       
       if (!response.ok) {
         throw new Error("Không thể tải chương truyện");
@@ -181,7 +214,7 @@
 
         // Giải mã nội dung
         if (data.encryptedData && data.iv) {
-          globalDecryptedText = decryptData(data.encryptedData, data.iv);
+          globalDecryptedText = decryptData(data.encryptedData, data.iv, data.novelId || novelId, data.chapterNumber || chapterNumber);
         } else {
           globalDecryptedText = data.content || "";
         }

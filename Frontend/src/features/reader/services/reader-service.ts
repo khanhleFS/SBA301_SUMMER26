@@ -2,16 +2,44 @@ import { getPublicNovelById } from '@/services/novel-service'
 import { getChaptersByNovel, getChapterDetails } from '@/services/chapter-service'
 import CryptoJS from 'crypto-js'
 
-const SECRET_KEY_STR = '12345678901234567890123456789012'
+import { useAuthStore } from '@/store/auth.store'
 
-export function decryptContent(encryptedHex?: string, ivHex?: string): string {
-  if (!encryptedHex || !ivHex) return ''
+export function getJwtUserIdentifier(): string {
   try {
-    const key = CryptoJS.enc.Utf8.parse(SECRET_KEY_STR)
-    const iv = CryptoJS.enc.Hex.parse(ivHex)
-    const encryptedBase64 = CryptoJS.enc.Hex.parse(encryptedHex).toString(CryptoJS.enc.Base64)
+    const authState = useAuthStore.getState()
+    if (authState.isAuthenticated && authState.user && authState.user.email) {
+      return authState.user.email
+    }
+    const token = authState.token || (typeof window !== 'undefined' ? (localStorage.getItem('accessToken') || localStorage.getItem('token')) : null)
+    if (token && token.includes('.')) {
+      const payloadBase64 = token.split('.')[1]
+      const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'))
+      const payload = JSON.parse(payloadJson)
+      if (payload && (payload.sub || payload.email)) {
+        return payload.sub || payload.email
+      }
+    }
+  } catch (e) {}
+  return 'GUEST_JWT'
+}
 
-    const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key, {
+export function deriveDynamicKey(novelId: string | number, chapterNumber: string | number, ivHex: string) {
+  const userIdentifier = getJwtUserIdentifier()
+  const contextId = `${userIdentifier}:novel:${novelId}:chapter:${chapterNumber}`
+  const seed = `${contextId}:${ivHex}`
+  return CryptoJS.SHA256(seed)
+}
+
+export function decryptContent(encryptedHex?: string, ivHex?: string, novelId?: string | number, chapterNumber?: string | number): string {
+  if (!encryptedHex || !ivHex || !novelId || !chapterNumber) return ''
+  try {
+    const key = deriveDynamicKey(novelId, chapterNumber, ivHex)
+    const iv = CryptoJS.enc.Hex.parse(ivHex)
+    const cipherParams = CryptoJS.lib.CipherParams.create({
+      ciphertext: CryptoJS.enc.Hex.parse(encryptedHex)
+    })
+
+    const decrypted = CryptoJS.AES.decrypt(cipherParams, key, {
       iv: iv,
       mode: CryptoJS.mode.CBC,
       padding: CryptoJS.pad.Pkcs7
@@ -95,7 +123,7 @@ export const readerService = {
 
     // Decrypt content using encryptedData + iv or fallback to plain content
     const rawText = (detail.encryptedData && detail.iv)
-      ? decryptContent(detail.encryptedData, detail.iv)
+      ? decryptContent(detail.encryptedData, detail.iv, detail.novelId, detail.chapterNumber)
       : (detail.content || '')
 
     // Split content by paragraphs (e.g. by newlines)

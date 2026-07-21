@@ -1,13 +1,13 @@
 package com.fpt.sba301_su26_groupproject.service.impl;
 
 import com.fpt.sba301_su26_groupproject.service.EncryptionService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,11 +15,8 @@ import java.util.Map;
 @Service
 public class EncryptionServiceImpl implements EncryptionService {
 
-    @Value("${app.security.secret-key:12345678901234567890123456789012}")
-    private String secretKey;
-
     @Override
-    public Map<String, String> encrypt(String plainText) {
+    public Map<String, String> encrypt(String plainText, String contextId) {
         if (plainText == null) {
             plainText = "";
         }
@@ -28,10 +25,13 @@ public class EncryptionServiceImpl implements EncryptionService {
             byte[] iv = new byte[16];
             SecureRandom random = new SecureRandom();
             random.nextBytes(iv);
+            String ivHex = bytesToHex(iv);
             IvParameterSpec ivSpec = new IvParameterSpec(iv);
 
-            // 2. Tạo KeySpec từ secretKey
-            byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+            // 2. Tạo Dynamic Key từ SHA-256(contextId + ":" + ivHex)
+            String seed = (contextId != null ? contextId : "default") + ":" + ivHex;
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] keyBytes = md.digest(seed.getBytes(StandardCharsets.UTF_8));
             SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
 
             // 3. Khởi tạo Cipher mã hóa AES/CBC/PKCS5Padding
@@ -44,7 +44,7 @@ public class EncryptionServiceImpl implements EncryptionService {
             // 5. Trả về Map chứa chuỗi HEX của Encrypted Data và IV
             Map<String, String> result = new HashMap<>();
             result.put("encryptedData", bytesToHex(encryptedBytes));
-            result.put("iv", bytesToHex(iv));
+            result.put("iv", ivHex);
 
             return result;
 
