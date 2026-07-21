@@ -73,13 +73,14 @@
   function getJwtUserIdentifier() {
     try {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-      if (token && token.includes('.')) {
-        const payloadBase64 = token.split('.')[1];
-        const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
-        const payload = JSON.parse(payloadJson);
-        if (payload && (payload.sub || payload.email)) {
-          return payload.sub || payload.email;
-        }
+      if (!token || !token.includes('.')) {
+        return "GUEST_JWT";
+      }
+      const payloadBase64 = token.split('.')[1];
+      const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+      const payload = JSON.parse(payloadJson);
+      if (payload && (payload.sub || payload.email)) {
+        return payload.sub || payload.email;
       }
       const userStr = localStorage.getItem('user');
       if (userStr) {
