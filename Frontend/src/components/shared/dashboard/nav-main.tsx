@@ -19,7 +19,6 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup className="px-4 py-6 group-data-[collapsible=icon]:px-1.5 group-data-[collapsible=icon]:py-3">
-      <SidebarGroupLabel>Admin</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.title}>

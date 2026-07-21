@@ -22,6 +22,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import Dock from './dock'
+import FloatingAudioPlayer from './floating-audio-player'
 import ReaderSuggestions from './reader-suggestions'
 import ChapterSelector from './chapter-selector'
 import ReaderConfigMenu from './reader-config-menu'
@@ -603,61 +604,53 @@ function ReaderContent() {
               className="fixed bottom-6 left-0 right-0 flex justify-center z-[100] pointer-events-none"
             >
               <div className="pointer-events-auto">
-                <Dock items={dockItems} position="bottom">
-                  {/* TTS Player inside dock */}
-                  <AnimatePresence>
-                    {isAudioOpen && (
-                      <motion.div
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: 'auto', opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
-                        className="flex items-center overflow-hidden"
-                      >
-                        <div className="w-[1px] h-8 bg-current opacity-10 mx-2 shrink-0" />
-                        <div className="flex items-center gap-3 shrink-0">
-                          {currentAudioUrl ? (
-                            <>
-                              <button
-                                onClick={handlePlayPause}
-                                className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center hover:brightness-110 active:scale-95 transition-all shadow-sm shrink-0"
-                              >
-                                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-                              </button>
-
-                              <div className="w-24 sm:w-32 flex flex-col justify-center">
-                                <input
-                                  type="range" min="0" max={duration || 0} value={currentTime}
-                                  onChange={handleAudioSeek}
-                                  className="w-full h-1 accent-primary bg-current/15 rounded-full appearance-none cursor-pointer"
-                                />
-                              </div>
-
-                              <button
-                                onClick={handleMuteToggle}
-                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-current/5 transition-all shrink-0"
-                              >
-                                {isMuted ? <VolumeX className="w-4 h-4 text-destructive" /> : <Volume2 className="w-4 h-4 opacity-70" />}
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              onClick={handleGenerateAudio}
-                              disabled={isGenerating}
-                              className="px-3 py-1.5 rounded-full bg-primary text-on-primary text-[11px] font-bold flex items-center gap-1.5 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 shrink-0"
-                            >
-                              {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                              {isGenerating ? 'Đang sinh...' : 'Sinh giọng đọc'}
-                            </button>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Dock>
+                <Dock items={dockItems} position="bottom" />
               </div>
             </motion.div>
           )
         }
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isAudioOpen && (
+          <FloatingAudioPlayer
+            chapter={activeChap.chapterNum}
+            novel={activeChap.novelTitle}
+            cover={activeChap.cover}
+            isPlaying={isPlaying}
+            onPlayPause={handlePlayPause}
+            duration={duration}
+            currentTime={currentTime}
+            onSeek={(time) => {
+              if (audioRef.current) {
+                audioRef.current.currentTime = time
+                setCurrentTime(time)
+              }
+            }}
+            onPrevChapter={() => {
+              if (activeChap.prevChapter) {
+                setCurrentChapKey(activeChap.prevChapter)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }
+            }}
+            onNextChapter={() => {
+              if (activeChap.nextChapter) {
+                setCurrentChapKey(activeChap.nextChapter)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }
+            }}
+            hasPrevChapter={!!activeChap.prevChapter}
+            hasNextChapter={!!activeChap.nextChapter}
+            volume={volume}
+            setVolume={setVolume}
+            isMuted={isMuted}
+            onMuteToggle={handleMuteToggle}
+            isGenerating={isGenerating}
+            onGenerateAudio={handleGenerateAudio}
+            audioUrl={currentAudioUrl}
+            onClose={() => setIsAudioOpen(false)}
+          />
+        )}
       </AnimatePresence>
 
       <AnimatePresence>

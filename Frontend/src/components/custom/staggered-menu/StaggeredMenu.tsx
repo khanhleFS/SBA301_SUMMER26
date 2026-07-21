@@ -26,6 +26,7 @@ export interface AuthUser {
   role: string;
   avatarUrl?: string;
   fullName?: string;
+  isAuthor?: boolean;
 }
 
 export interface StaggeredMenuProps {
@@ -240,7 +241,7 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             duration: 0.5,
             ease: 'power2.out'
           },
-          socialsStart
+          socialStart
         );
       }
       if (socialLinks.length) {
@@ -437,6 +438,15 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     };
   }, [closeOnClickAway, open, closeMenu]);
 
+  // Xử lý chèn mục "Trang tác giả" vào danh sách items nếu user là tác giả
+  const displayItems = [...(items || [])];
+  if (user?.isAuthor) {
+    displayItems.push({
+      label: 'Trang tác giả',
+      link: '/author/novels'
+    });
+  }
+
   return (
     <div
       className={`${className} staggered-menu-wrapper`}
@@ -482,8 +492,8 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
           <aside id="staggered-menu-panel" ref={panelRef} className="staggered-menu-panel" aria-hidden={!open} data-open={open || undefined} data-position={position}>
             <div className="sm-panel-inner">
               <ul className="sm-panel-list" role="list" data-numbering={displayItemNumbering || undefined}>
-                {items && items.length ? (
-                  items.map((it, idx) => (
+                {displayItems.length > 0 ? (
+                  displayItems.map((it, idx) => (
                     <li className="sm-panel-itemWrap" key={it.label + idx}>
                       <a
                         className="sm-panel-item"
@@ -591,57 +601,60 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 {/* User Row: dynamic based on auth state */}
                 {user ? (
                   /* ── LOGGED IN ── */
-                  <div className="sm-socials-link flex items-center justify-between gap-3 w-full pt-5">
-                    <div className="flex items-center gap-3">
-                      {/* Avatar Button → Profile */}
-                      <a
-                        href="/profile"
-                        className="h-9 w-9 rounded-full transition-all hover:scale-105"
-                        onClick={(e) => {
-                          e.preventDefault()
+                  <div className="sm-socials-link flex flex-col gap-3 w-full pt-4">
+                    {/* Avatar + Name + Logout row */}
+                    <div className="flex items-center justify-between gap-3 w-full">
+                      <div className="flex items-center gap-3">
+                        {/* Avatar Button → Profile */}
+                        <a
+                          href="/profile"
+                          className="h-9 w-9 rounded-full transition-all hover:scale-105 shrink-0"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            closeMenu()
+                            if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
+                            navTimeoutRef.current = window.setTimeout(() => {
+                              navigate('/profile')
+                              navTimeoutRef.current = null
+                            }, 340)
+                          }}
+                          title="Hồ sơ cá nhân"
+                        >
+                          <Avatar className="h-9 w-9">
+                            <AvatarImage src={user.avatarUrl} alt={user.username} />
+                            <AvatarFallback className="bg-primary text-on-primary font-bold text-xs">
+                              {user.username ? user.username.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
+                            </AvatarFallback>
+                          </Avatar>
+                        </a>
+                        {/* User display name + role badge */}
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-semibold text-foreground truncate max-w-[140px]">
+                            {user.username}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground capitalize">
+                            {user.isAuthor ? 'tác giả' : (user.role ? user.role.toLowerCase() : 'user')}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Logout Button */}
+                      <button
+                        onClick={() => {
                           closeMenu()
                           if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
                           navTimeoutRef.current = window.setTimeout(() => {
-                            navigate('/profile')
+                            onLogout?.()
                             navTimeoutRef.current = null
                           }, 340)
                         }}
-                        title="Hồ sơ cá nhân"
+                        className="h-8 w-8 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive flex items-center justify-center transition-colors bg-transparent border-0 outline-none cursor-pointer shrink-0"
+                        title="Đăng xuất"
                       >
-                        <Avatar className="h-9 w-9">
-                          <AvatarImage src={user.avatarUrl} alt={user.username} />
-                          <AvatarFallback className="bg-primary text-on-primary font-bold text-xs">
-                            {user.username ? user.username.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
-                          </AvatarFallback>
-                        </Avatar>
-                      </a >
-                      {/* User display name + role badge */}
-                      < div className="flex flex-col min-w-0" >
-                        <span className="text-xs font-semibold text-foreground truncate max-w-[140px]">
-                          {user.username}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground capitalize">
-                          {user.role ? user.role.toLowerCase() : 'user'}
-                        </span>
-                      </div >
-                    </div >
-
-                    {/* Logout Button */}
-                    < button
-                      onClick={() => {
-                        closeMenu()
-                        if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
-                        navTimeoutRef.current = window.setTimeout(() => {
-                          onLogout?.()
-                          navTimeoutRef.current = null
-                        }, 340)
-                      }}
-                      className="h-8 w-8 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive flex items-center justify-center transition-colors bg-transparent border-0 outline-none cursor-pointer"
-                      title="Đăng xuất"
-                    >
-                      <LogOut className="h-4 w-4" />
-                    </button >
-                  </div >
+                        <LogOut className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   /* ── NOT LOGGED IN ── */
                   <div className="sm-socials-link flex flex-col items-center gap-2 w-full pt-1">
