@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   fetchUserManagementData,
-  promoteToAuthor,
+  createAuthor,
   toggleBanUser,
   approvePendingUser,
 } from '../services/admin-user.service'
@@ -15,8 +15,8 @@ export function useUserManagement(): UserManagementContextValue {
     queryFn: fetchUserManagementData,
   })
 
-  const promoteMutation = useMutation({
-    mutationFn: promoteToAuthor,
+  const createMutation = useMutation({
+    mutationFn: createAuthor,
     onSuccess: () => { void queryClient.invalidateQueries({ queryKey: ['admin-users'] }) },
   })
 
@@ -34,11 +34,11 @@ export function useUserManagement(): UserManagementContextValue {
   const isLoading = query.isPending
   const error = query.error instanceof Error ? query.error.message : null
   const refresh = () => { void query.refetch() }
-  const isMutating = promoteMutation.isPending || banMutation.isPending || approveMutation.isPending
+  const isMutating = createMutation.isPending || banMutation.isPending || approveMutation.isPending
 
-  const promote = async (userId: string) => { await promoteMutation.mutateAsync(userId) }
+  const handleCreateAuthor = async (payload: any) => { await createMutation.mutateAsync(payload) }
   const toggleBan = async (userId: string) => { await banMutation.mutateAsync(userId) }
   const approve = async (userId: string) => { await approveMutation.mutateAsync(userId) }
 
-  return { data, isLoading, error, refresh, promote, toggleBan, approve, isMutating }
+  return { data, isLoading, error, refresh, createAuthor: handleCreateAuthor, toggleBan, approve, isMutating }
 }

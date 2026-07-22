@@ -3,7 +3,7 @@ import { UserManagementSkeleton } from './components/user-skeleton'
 import { UserManagementSections } from './components/user-sections'
 
 export default function UserManagementFeature() {
-  const { data, isLoading, promote, toggleBan, approve, isMutating } = useUserManagement()
+  const { data, isLoading, createAuthor, toggleBan, approve, isMutating } = useUserManagement()
 
   if (isLoading || !data) {
     return <UserManagementSkeleton />
@@ -12,7 +12,7 @@ export default function UserManagementFeature() {
   return (
     <UserManagementSections
       data={data}
-      onPromote={promote}
+      onCreateAuthor={createAuthor}
       onToggleBan={toggleBan}
       onApprove={approve}
       isMutating={isMutating}

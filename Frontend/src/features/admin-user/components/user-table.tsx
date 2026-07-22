@@ -7,7 +7,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle,
-  Shield,
   Ban,
 } from 'lucide-react'
 import type {
@@ -34,7 +33,6 @@ const STATUS_CONFIG: Record<UserStatus, { label: string; classes: string; dot: s
 
 export function UserTableSection({
   users,
-  onPromote,
   onToggleBan,
   onApprove,
   isMutating,
@@ -190,7 +188,6 @@ export function UserTableSection({
             {paginatedUsers.map((user) => {
               const roleConf = ROLE_CONFIG[user.role]
               const statusConf = STATUS_CONFIG[user.status]
-              const canPromote = user.role === 'USER' && user.status === 'active'
               const isPending = user.status === 'pending'
 
               return (
@@ -237,16 +234,6 @@ export function UserTableSection({
                           className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-95 disabled:opacity-50"
                         >
                           <CheckCircle className="h-3.5 w-3.5" /> Duyệt
-                        </button>
-                      )}
-                      {canPromote && (
-                        <button
-                          id={`promote-btn-${user.id}`}
-                          onClick={() => onPromote(user)}
-                          disabled={isMutating}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 text-[11px] font-bold text-violet-600 transition-all hover:bg-violet-500/20 active:scale-95 disabled:opacity-50"
-                        >
-                          <Shield className="h-3.5 w-3.5" /> Lên tác giả
                         </button>
                       )}
                       {user.role !== 'ADMIN' && (

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useLocation } from 'react-router-dom'
-import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, WalletIcon, BookOpen, LogOut, BarChart3Icon, Users, Coins, User } from "lucide-react"
+import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, WalletIcon, BookOpen, LogOut, BarChart3Icon, Users, Coins, FolderTree } from "lucide-react"
 
 import { NavMain } from "@/components/shared/dashboard/nav-main"
 import { TeamSwitcher } from "@/components/shared/dashboard/team-switcher"
@@ -41,6 +41,7 @@ const data = {
     { title: "Quản lý người dùng", url: "/admin/users", icon: <Users /> },
     { title: "Quản lý tài chính", url: "/admin/finance", icon: <WalletIcon /> },
     { title: "Quản lý gói nạp", url: "/admin/packages", icon: <Coins /> },
+    { title: "Quản lý thể loại", url: "/admin/categories", icon: <FolderTree /> },
   ],
 }
 
@@ -96,6 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       items = [
         { title: "Hồ sơ tác giả", url: "/author/me", icon: <User /> },
         { title: "Quản lý truyện", url: "/author/novels", icon: <BookOpen /> },
+        { title: "Quản lý thể loại", url: "/author/categories", icon: <FolderTree /> },
         { title: "Thống kê truyện", url: "/author/stats", icon: <BarChart3Icon /> },
       ]
       return items.map((item) => ({
@@ -103,6 +105,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         isActive: location.pathname === item.url || location.pathname.startsWith(item.url + '/'),
       }))
     }
+
 
     return items.map((item) => ({
       ...item,
