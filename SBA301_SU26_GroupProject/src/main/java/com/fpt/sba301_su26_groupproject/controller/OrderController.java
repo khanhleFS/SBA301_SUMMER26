@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,7 @@ public class OrderController {
 
     @Operation(summary = "Tạo đơn hàng mua gói coin")
     @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponseDTO>> createOrder(
             @Valid @RequestBody OrderRequestDTO request,
@@ -46,6 +48,7 @@ public class OrderController {
 
     @Operation(summary = "Lấy chi tiết đơn hàng")
     @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderResponseDTO>> getOrderById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.<OrderResponseDTO>builder()
@@ -57,6 +60,7 @@ public class OrderController {
 
     @Operation(summary = "Lấy danh sách đơn hàng của tôi")
     @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping
     public ResponseEntity<ApiResponse<List<OrderResponseDTO>>> getMyOrders(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.<List<OrderResponseDTO>>builder()
