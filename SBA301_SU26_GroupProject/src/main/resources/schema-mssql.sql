@@ -205,7 +205,7 @@ CREATE INDEX idx_users_is_active ON users(is_active);
     CREATE TABLE coin_transactions (
         id            UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
         user_id       UNIQUEIDENTIFIER NOT NULL,
-        type          NVARCHAR(30)     NOT NULL CHECK (type IN ('TOPUP','UNLOCKED_CHAPTER')),
+        type          NVARCHAR(30)     NOT NULL CHECK (type IN ('TOPUP','UNLOCKED_CHAPTER', 'AUTHOR_REVENUE')),
         amount        INT              NOT NULL,
         balance_after INT              NOT NULL,
         ref_id        UNIQUEIDENTIFIER NULL,

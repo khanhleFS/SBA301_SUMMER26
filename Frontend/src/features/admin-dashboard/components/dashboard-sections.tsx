@@ -8,7 +8,7 @@ import {
   Bar,
 } from 'recharts'
 import { Users, ArrowRight, CreditCard, UserPlus, BookOpen, CheckCircle2, Clock } from 'lucide-react'
-import type { PackageTier, DashboardChartSectionProps, DashboardUserPulseSectionProps, DashboardTransactionsSectionProps, DashboardPackagesSectionProps, PulseCardProps, PackageCardProps } from '../types/admin-dashboard.types'
+import type { DashboardChartSectionProps, DashboardUserPulseSectionProps, DashboardTransactionsSectionProps, DashboardPackagesSectionProps, PulseCardProps, PackageCardProps } from '../types/admin-dashboard.types'
 
 function formatFullVND(value: number) {
   return `${value.toLocaleString('vi-VN')} đ`
@@ -235,11 +235,10 @@ function PackageCard({ data }: PackageCardProps) {
 
   return (
     <div
-      className={`relative flex flex-col justify-between overflow-hidden rounded-xl border p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md ${
-        isPopular
+      className={`relative flex flex-col justify-between overflow-hidden rounded-xl border p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md ${isPopular
           ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
           : 'border-outline-variant bg-surface-container-lowest'
-      }`}
+        }`}
     >
       {isPopular && (
         <div className="absolute right-0 top-0 rounded-bl-xl bg-primary px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-on-primary shadow-sm flex items-center gap-1">

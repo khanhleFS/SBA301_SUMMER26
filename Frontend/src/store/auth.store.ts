@@ -64,7 +64,6 @@ export const useAuthStore = create<AuthState>()(
 
       async refreshProfile() {
         const { token, refreshToken: stateRefreshToken, _setUser, _setLoading } = get()
-        const consent = typeof window !== 'undefined' ? localStorage.getItem('cookieConsent') : null
 
         // Nếu không có token trên RAM, thử thực hiện gọi refresh token qua cookie hoặc RAM
         if (!token) {

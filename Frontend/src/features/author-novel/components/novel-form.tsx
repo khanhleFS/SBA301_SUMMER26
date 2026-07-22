@@ -6,7 +6,7 @@ import { useCreateNovel, useUpdateNovel } from '../hooks/use-author-novels'
 import { uploadImage } from '@/services/upload-service'
 import { getAllCategories } from '@/services/category-service'
 import { getNovelEnums } from '@/services/novel-service'
-import type { NovelResponseDTO, NovelStatus } from '@/types'
+import type { NovelStatus } from '@/types'
 import type { NovelFormProps } from '../types/author-novel.types'
 import { ChapterList } from './chapter-list'
 
@@ -42,7 +42,7 @@ export function NovelForm({ novel }: NovelFormProps) {
 
   // Mutation hooks
   const createMutation = useCreateNovel()
-  const updateMutation = useUpdateNovel(novel?.id || '')
+  const updateMutation = useUpdateNovel(novel?.id ? String(novel.id) : '')
 
   // Initialize form when novel data is loaded (Edit mode)
   useEffect(() => {
@@ -293,7 +293,7 @@ export function NovelForm({ novel }: NovelFormProps) {
       {/* Chapters list under form (only when editing) */}
       {isEdit && (
         <div className="border-t border-outline-variant pt-8">
-          <ChapterList novelId={novel.id} />
+          <ChapterList novelId={String(novel.id)} />
         </div>
       )}
     </div>

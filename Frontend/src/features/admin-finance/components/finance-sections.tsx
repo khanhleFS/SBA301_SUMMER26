@@ -10,10 +10,6 @@ import {
   Bar,
 } from 'recharts'
 import type {
-  CashFlowItem,
-  DepositItem,
-  KpiData,
-  TransactionItem,
   CashFlowChartProps,
   FinanceTransactionTableProps,
   FinanceKpiSectionProps,

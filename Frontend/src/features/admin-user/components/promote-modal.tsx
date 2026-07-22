@@ -1,5 +1,5 @@
 import { X, Shield, AlertTriangle } from 'lucide-react'
-import type { UserItem, PromoteModalProps } from '../types/admin-user.types'
+import type { PromoteModalProps } from '../types/admin-user.types'
 
 export function PromoteModal({ user, onConfirm, onClose, isLoading }: PromoteModalProps) {
   return (

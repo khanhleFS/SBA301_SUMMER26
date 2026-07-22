@@ -1,5 +1,5 @@
 import { Users, BookOpen, UserPlus } from 'lucide-react'
-import type { StatType, StatCardProps, UserStatsSectionProps } from '../types/admin-user.types'
+import type { StatCardProps, UserStatsSectionProps } from '../types/admin-user.types'
 
 function StatCard({ label, value, icon, iconBg, isActive, onClick }: StatCardProps) {
   return (

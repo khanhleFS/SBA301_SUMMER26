@@ -22,7 +22,6 @@ import ReaderSuggestions from './reader-suggestions'
 import ChapterSelector from './chapter-selector'
 import ReaderConfigMenu from './reader-config-menu'
 import { ReaderSkeleton } from './reader-skeleton'
-import Container from '@/components/shared/site/container'
 import { useReaderContext } from '../context/reader-context'
 import type { ThemeType, FontType, LineHeightType, ArticleProgressBarProps, CanvasArticleProps } from '../types/reader.types'
 import { generateChapterAudio, readChapter, unlockChapter } from '@/services/chapter-service'
@@ -723,7 +722,7 @@ function ReaderContent() {
                   <span className="text-lg font-extrabold text-primary flex items-center gap-1.5 bg-primary/5 px-4 py-1.5 rounded-full border border-primary/20">
                     Giá mở khóa: {activeChap.coinPrice} 🪙
                   </span>
-                  
+
                   {isAuthenticated ? (
                     <div className="flex flex-col items-center gap-2 mt-2">
                       <span className="text-xs opacity-75 font-semibold">Số dư của bạn: {user?.coinBalance ?? 0} 🪙</span>

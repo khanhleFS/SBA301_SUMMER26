@@ -104,7 +104,7 @@ export function ChapterList({ novelId }: ChapterListProps) {
                           <Edit className="h-4 w-4" />
                         </Link>
                         <button
-                          onClick={() => handleDelete(chapter.id, chapter.title)}
+                          onClick={() => handleDelete(String(chapter.id), chapter.title)}
                           className="rounded border border-red-500/20 p-1 text-red-600 hover:bg-red-600 hover:text-white transition-all active:scale-95 cursor-pointer"
                           title="Xóa chương"
                         >

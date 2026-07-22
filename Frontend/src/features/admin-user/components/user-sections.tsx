@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import type {
   UserItem,
-  UserManagementData,
   FilterRole,
   FilterStatus,
   StatType,

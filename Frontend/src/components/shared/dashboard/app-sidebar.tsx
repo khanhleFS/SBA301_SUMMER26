@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useLocation } from 'react-router-dom'
-import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, WalletIcon, BookOpen, LogOut, BarChart3Icon, Users, Coins } from "lucide-react"
+import { LayoutDashboardIcon, Check, Moon, Sun, SunMoon, AudioLinesIcon, GalleryVerticalEndIcon, TerminalIcon, WalletIcon, BookOpen, LogOut, BarChart3Icon, Users, Coins, User } from "lucide-react"
 
 import { NavMain } from "@/components/shared/dashboard/nav-main"
 import { TeamSwitcher } from "@/components/shared/dashboard/team-switcher"
@@ -96,6 +96,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       items = [
         { title: "Quản lý truyện", url: "/author/novels", icon: <BookOpen /> },
         { title: "Thống kê truyện", url: "/author/stats", icon: <BarChart3Icon /> },
+        { title: "Hồ sơ tác giả", url: "/author/me", icon: <User /> },
       ]
       return items.map((item) => ({
         ...item,

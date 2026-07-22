@@ -1,7 +1,7 @@
-import type { KpiData, KpiCardProps } from '../types/admin-finance.types'
+import type { KpiCardProps } from '../types/admin-finance.types'
 
 export default function KpiCard({ data }: KpiCardProps) {
-  const { title, subtitle, amount, growth, isPrimary, icon: Icon } = data
+  const { title, subtitle, amount, isPrimary, icon: Icon } = data
 
   const cardBg = isPrimary
     ? 'bg-primary text-on-primary border-transparent'
@@ -10,10 +10,6 @@ export default function KpiCard({ data }: KpiCardProps) {
   const iconBg = isPrimary
     ? 'bg-on-primary text-primary'
     : 'bg-primary-container text-on-primary-container'
-
-  const badgeClass = isPrimary
-    ? 'bg-on-primary text-primary'
-    : 'bg-[#e6f4ea] text-[#137333] dark:bg-[#137333]/20 dark:text-[#81c995]'
 
   return (
     <div className={`flex flex-col justify-between rounded-[1.5rem] border p-6 transition-transform duration-300 hover:-translate-y-1 ${cardBg}`}>

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchDashboardData } from '../services/dashboard.service'
-import type { DashboardData, DashboardContextValue } from '../types/admin-dashboard.types'
+import type { DashboardContextValue } from '../types/admin-dashboard.types'
 
 export function useDashboard(): DashboardContextValue {
   const query = useQuery({

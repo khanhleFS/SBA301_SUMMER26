@@ -265,18 +265,33 @@
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      const response = await fetch(`http://localhost:8080/api/novels/${novelId}/chapters/${chapterNumber}`, { headers });
       
+      // 1. Fetch all chapters for the novel
+      const chaptersResponse = await fetch(`http://localhost:8080/api/novels/${novelId}/chapters`, { headers });
+      if (!chaptersResponse.ok) {
+        throw new Error("Không thể tải danh sách chương");
+      }
+      const chaptersResBody = await chaptersResponse.json();
+      const chaptersList = chaptersResBody.result || [];
+      
+      // 2. Find target chapter by chapterNumber
+      const targetChapter = chaptersList.find(c => Number(c.chapterNumber) === Number(chapterNumber));
+      if (!targetChapter) {
+        throw new Error(`Không tìm thấy chương số ${chapterNumber}`);
+      }
+      
+      // 3. Fetch chapter details using the resolved targetChapter.id
+      const response = await fetch(`http://localhost:8080/api/novels/${novelId}/chapters/${targetChapter.id}`, { headers });
       if (!response.ok) {
         throw new Error("Không thể tải chương truyện");
       }
 
-        const resBody = await response.json();
-        const data = resBody.result || resBody;
+      const resBody = await response.json();
+      const data = resBody.result || resBody;
 
-        if (data) {
-          // Đổi tiêu đề chương
-          document.getElementById('chapterTitle').innerText = `${data.title || 'Chương ' + chapterNumber}`;
+      if (data) {
+        // Đổi tiêu đề chương
+        document.getElementById('chapterTitle').innerText = `${data.title || 'Chương ' + chapterNumber}`;
 
         // Giải mã nội dung
         if (data.encryptedData && data.iv) {
@@ -285,13 +300,13 @@
           globalDecryptedText = data.content || "";
         }
 
-          // Vẽ lên Canvas
-          renderCanvas(globalDecryptedText);
-        }
-      } catch (err) {
-        document.getElementById('chapterTitle').innerText = "Lỗi: " + err.message;
+        // Vẽ lên Canvas
+        renderCanvas(globalDecryptedText);
       }
+    } catch (err) {
+      document.getElementById('chapterTitle').innerText = "Lỗi: " + err.message;
     }
+  }
 
     // --- CÁC BIỆN PHÁP CHẶN THAO TÁC BỎ BỔ SUNG ---
     document.addEventListener('contextmenu', e => e.preventDefault()); // Chặn chuột phải

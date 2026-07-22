@@ -43,6 +43,9 @@ export default function DashboardLayout() {
     if (path === '/author/stats') {
       return 'Thống kê chương'
     }
+    if (path === '/author/me') {
+      return 'Hồ sơ tác giả'
+    }
 
     if (path.startsWith('/author/novels')) {
       if (path.includes('/chapters/new')) return 'Thêm chương mới'

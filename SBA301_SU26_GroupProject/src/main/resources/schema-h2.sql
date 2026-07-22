@@ -219,7 +219,7 @@ CREATE TABLE coin_transactions (
     id            UUID         NOT NULL DEFAULT RANDOM_UUID() PRIMARY KEY,
     user_id       UUID         NOT NULL,
     type          VARCHAR(30)  NOT NULL
-                  CHECK (type IN ('TOPUP','UNLOCKED_CHAPTER')),
+                  CHECK (type IN ('TOPUP','UNLOCKED_CHAPTER', 'AUTHOR_REVENUE')),
     amount        INT          NOT NULL,
     balance_after INT          NOT NULL,
     ref_id        UUID,

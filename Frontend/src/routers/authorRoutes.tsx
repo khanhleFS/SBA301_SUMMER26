@@ -5,6 +5,7 @@ import AuthorNovelsPage from '@/features/author-novel/novels-feature'
 import AuthorNovelDetailPage from '@/features/author-novel/novel-detail-feature'
 import AuthorChapterDetailPage from '@/features/author-novel/chapter-detail-feature'
 import AuthorStatPage from '@/features/author-stat/stat-feature'
+import AuthorProfilePage from '@/features/author-profile/profile-feature'
 
 export const authorRoutes: RouteObject[] = [
 	{
@@ -18,6 +19,7 @@ export const authorRoutes: RouteObject[] = [
 			{ path: 'novels/:novelId/chapters/new', element: <AuthorChapterDetailPage /> },
 			{ path: 'novels/:novelId/chapters/:chapterNumber', element: <AuthorChapterDetailPage /> },
 			{ path: 'stats', element: <AuthorStatPage /> },
+			{ path: 'me', element: <AuthorProfilePage /> },
 		],
 	},
 ]

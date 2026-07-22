@@ -19,7 +19,7 @@ import type { NovelRequestDTO, NovelResponseDTO, ChapterRequestDTO, ChapterRespo
 // Local mock database in memory to support CRUD preview when offline
 const inMemoryNovels: NovelResponseDTO[] = [
   {
-    id: "mock-novel-1",
+    id: 99991,
     title: "Vọng Âm Tòa Tháp Neon: Walker (Mock)",
     slug: "vong-am-toa-thap-neon-walker-1",
     description: "Trong những con phố ngập ánh đèn neon của Neo-Tokyo, Walker, một AI nổi loạn với những mảnh ký ức vụn vỡ về quá khứ con người, phải tìm cách định hướng trong mạng lưới gián điệp...",
@@ -35,11 +35,11 @@ const inMemoryNovels: NovelResponseDTO[] = [
   }
 ]
 
-const inMemoryChapters: Record<string, ChapterResponseDTO[]> = {
-  "mock-novel-1": [
+const inMemoryChapters: Record<number, ChapterResponseDTO[]> = {
+  99991: [
     {
-      id: "mock-chapter-1",
-      novelId: "mock-novel-1",
+      id: 999911,
+      novelId: 99991,
       chapterNumber: 1,
       title: "Tia lửa đầu tiên (The First Spark)",
       slug: "chuong-1-tia-lua-dau-tien-1",
@@ -52,8 +52,8 @@ const inMemoryChapters: Record<string, ChapterResponseDTO[]> = {
       updateAt: new Date().toISOString()
     },
     {
-      id: "mock-chapter-2",
-      novelId: "mock-novel-1",
+      id: 999912,
+      novelId: 99991,
       chapterNumber: 2,
       title: "Tiếng vọng trong đêm",
       slug: "chuong-2-tieng-vong-trong-dem",
@@ -100,10 +100,10 @@ export function useNovel(id: string | undefined) {
         return await getNovelById(id!)
       } catch (err) {
         console.warn('API getNovelById failed, falling back to mock data:', err)
-        const found = inMemoryNovels.find(n => n.id === id)
+        const found = inMemoryNovels.find(n => String(n.id) === id)
         if (found) return found
         return {
-          id: id!,
+          id: Number(id) || 99999,
           title: "Truyện mới (Mock)",
           slug: "truyen-moi-mock",
           description: "Mô tả truyện mới...",
@@ -162,7 +162,7 @@ export function useChapters(novelId: string | undefined) {
         return await getChaptersByNovel(novelId!)
       } catch (err) {
         console.warn('API getChaptersByNovel failed, falling back to mock data:', err)
-        return inMemoryChapters[novelId!] || []
+        return inMemoryChapters[Number(novelId)] || []
       }
     },
     enabled: !!novelId,
@@ -174,15 +174,20 @@ export function useChapterDetails(novelId: string | undefined, chapterNumber: nu
     queryKey: authorNovelKeys.chapter(novelId || '', chapterNumber || 0),
     queryFn: async () => {
       try {
-        return await getChapterDetails(novelId!, chapterNumber!)
+        const chaptersList = await getChaptersByNovel(novelId!)
+        const targetChapter = chaptersList.find(c => c.chapterNumber === chapterNumber)
+        if (!targetChapter) {
+          throw new Error(`Không tìm thấy chương số ${chapterNumber}`)
+        }
+        return await getChapterDetails(novelId!, targetChapter.id)
       } catch (err) {
         console.warn('API getChapterDetails failed, falling back to mock data:', err)
-        const list = inMemoryChapters[novelId!] || []
+        const list = inMemoryChapters[Number(novelId)] || []
         const found = list.find(c => c.chapterNumber === chapterNumber)
         if (found) return found
         return {
-          id: `mock-ch-${chapterNumber}-${Date.now()}`,
-          novelId: novelId!,
+          id: 999900 + (chapterNumber || 0),
+          novelId: Number(novelId) || 99991,
           chapterNumber: chapterNumber!,
           title: `Chương ${chapterNumber} (Mock)`,
           slug: `chuong-${chapterNumber}`,

@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Save, Loader2, ChevronDown, AlertTriangle } from 'lucide-react'
 import { useCreateChapter, useUpdateChapter } from '../hooks/use-author-novels'
-import type { ChapterResponseDTO, ChapterStatus } from '@/types'
+import type { ChapterStatus } from '@/types'
 import type { ChapterFormProps } from '../types/author-novel.types'
+import { decryptContent } from '@/features/reader/services/reader.service'
 
 const CHAPTER_STATUS_OPTIONS: { value: ChapterStatus; label: string }[] = [
   { value: 'FREE', label: 'Miễn phí (Free)' },
@@ -45,13 +46,17 @@ export function ChapterForm({ novelId, chapter, existingChapterNumbers = [] }: C
 
   // Invalidate and sync mutations
   const createMutation = useCreateChapter(novelId)
-  const updateMutation = useUpdateChapter(novelId, chapter?.id || '')
+  const updateMutation = useUpdateChapter(novelId, chapter?.id ? String(chapter.id) : '')
 
   // Initialize form fields
   useEffect(() => {
     if (chapter) {
       setTitle(chapter.title)
-      setContent(chapter.content)
+      let initialContent = chapter.content || ''
+      if (chapter.encryptedData && chapter.iv) {
+        initialContent = decryptContent(chapter.encryptedData, chapter.iv, chapter.novelId, chapter.chapterNumber) || initialContent
+      }
+      setContent(initialContent)
       setStatus(chapter.status)
       setChapterNumber(chapter.chapterNumber)
     } else if (existingChapterNumbers.length > 0) {

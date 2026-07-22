@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchFinanceData } from '../services/admin-finance.service'
-import type { FinanceData, FinanceContextValue } from '../types/admin-finance.types'
+import type { FinanceContextValue } from '../types/admin-finance.types'
 
 export function useFinance(): FinanceContextValue {
   const query = useQuery({

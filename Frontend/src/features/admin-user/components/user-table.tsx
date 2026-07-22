@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import {
   Search,
-  Filter,
   X,
   ChevronUp,
   ChevronDown,
@@ -12,7 +11,6 @@ import {
   Ban,
 } from 'lucide-react'
 import type {
-  UserItem,
   UserRole,
   UserStatus,
   FilterRole,
