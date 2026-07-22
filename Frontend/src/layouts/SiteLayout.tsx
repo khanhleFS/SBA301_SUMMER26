@@ -36,8 +36,14 @@ export default function SiteLayout({ requireAuth = false }: SiteLayoutProps) {
 		)
 	}
 
+	// Chặn ADMIN truy cập layout này
 	if (isAuthenticated && user?.role === 'ADMIN') {
 		return <Navigate to="/admin/dashboard" replace />
+	}
+
+	// Chặn AUTHOR truy cập layout này (bạn có thể đổi route '/author/dashboard' theo thực tế dự án)
+	if (isAuthenticated && user?.role === 'AUTHOR') {
+		return <Navigate to="/author/me" replace />
 	}
 
 	if (requireAuth && !isAuthenticated) {
@@ -47,11 +53,11 @@ export default function SiteLayout({ requireAuth = false }: SiteLayoutProps) {
 	return (
 		<SmoothScroll>
 			<div className="
-				min-h-screen bg-background text-foreground transition-colors duration-500
-				[--content-padding-x:1rem] 
-				[--content-max-width:1440px] 
-				sm:[--content-padding-x:1.5rem] 
-				lg:[--content-padding-x:2rem]"
+                min-h-screen bg-background text-foreground transition-colors duration-500
+                [--content-padding-x:1rem] 
+                [--content-max-width:1440px] 
+                sm:[--content-padding-x:1.5rem] 
+                lg:[--content-padding-x:2rem]"
 			>
 				<SiteHeader />
 

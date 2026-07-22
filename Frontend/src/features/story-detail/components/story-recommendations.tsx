@@ -89,7 +89,8 @@ export function StoryRecommendations() {
         <div className="grid grid-cols-2 gap-4">
           {displayList.map((rec) => (
             <Link key={rec.id} to={`/${rec.slug}-${rec.id}`} className="group block space-y-3">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-1">
+              {/* Đã thay đổi rounded-2xl thành rounded-md ở dòng dưới */}
+              <div className="relative aspect-[3/4] overflow-hidden rounded-md bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-1">
                 <img
                   src={rec.coverImageUrl || COVER_PLACEHOLDER}
                   alt={rec.title}

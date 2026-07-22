@@ -95,6 +95,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     let items = [...data.navMain]
     if (isAuthorRoute) {
       items = [
+        { title: "Hồ sơ tác giả", url: "/author/me", icon: <User /> },
         { title: "Quản lý truyện", url: "/author/novels", icon: <BookOpen /> },
         { title: "Quản lý thể loại", url: "/author/categories", icon: <FolderTree /> },
         { title: "Thống kê truyện", url: "/author/stats", icon: <BarChart3Icon /> },

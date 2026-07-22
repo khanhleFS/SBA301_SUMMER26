@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Upload, X, Loader2, Save, ArrowLeft } from 'lucide-react'
 import { useCreateNovel, useUpdateNovel } from '../hooks/use-author-novels'
-import { uploadImage } from '@/services/upload-service'
 import { getAllCategories } from '@/services/category-service'
-import { getNovelEnums } from '@/services/novel-service'
+import { getNovelEnums, uploadNovelImage } from '@/services/novel-service'
 import type { NovelStatus } from '@/types'
 import type { NovelFormProps } from '../types/author-novel.types'
 import { ChapterList } from './chapter-list'
@@ -69,7 +68,7 @@ export function NovelForm({ novel }: NovelFormProps) {
     setIsUploading(true)
     setUploadError(null)
     try {
-      const url = await uploadImage(file)
+      const url = await uploadNovelImage(file)
       setCoverImageUrl(url)
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Tải lên hình ảnh thất bại')

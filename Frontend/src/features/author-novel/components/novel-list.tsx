@@ -194,30 +194,27 @@ function NovelCard({ novel }: { novel: NovelResponseDTO }) {
           <span className="text-[10px] font-semibold text-muted-foreground">
             {novel.chapterCount ? `Chương ${novel.chapterCount}` : 'Chưa có chương'}
           </span>
-
         </div>
       </div>
 
       {/* Category Badges */}
-      {
-        novel.categories && novel.categories.length > 0 && (
-          <div className="mt-2.5 flex flex-wrap gap-1.5 border-t border-outline-variant/50 pt-2.5">
-            {novel.categories.slice(0, 4).map((cat) => (
-              <span
-                key={cat}
-                className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
-              >
-                {cat}
-              </span>
-            ))}
-            {novel.categories.length > 4 && (
-              <span className="rounded-full border border-outline-variant bg-surface-container px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                +{novel.categories.length - 4}
-              </span>
-            )}
-          </div>
-        )
-      }
-    </Link >
+      {novel.categories && novel.categories.length > 0 && (
+        <div className="mt-2.5 flex flex-wrap gap-1.5 border-t border-outline-variant/50 pt-2.5">
+          {novel.categories.slice(0, 4).map((cat) => (
+            <span
+              key={cat}
+              className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
+            >
+              {cat}
+            </span>
+          ))}
+          {novel.categories.length > 4 && (
+            <span className="rounded-full border border-outline-variant bg-surface-container px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              +{novel.categories.length - 4}
+            </span>
+          )}
+        </div>
+      )}
+    </Link>
   )
 }
