@@ -5,6 +5,7 @@
     --       This file is a reference/manual-run script only.
     -- =============================================================================
 
+<<<<<<< HEAD
     -- ---------------------------------------------------------------
     -- DROP ORDER (children before parents)
     -- ---------------------------------------------------------------
@@ -44,6 +45,49 @@
     );
     CREATE INDEX idx_users_role      ON users(role);
     CREATE INDEX idx_users_is_active ON users(is_active);
+=======
+-- ---------------------------------------------------------------
+-- DROP ORDER (children before parents)
+-- ---------------------------------------------------------------
+IF OBJECT_ID('author_payment_tickets','U') IS NOT NULL DROP TABLE author_payment_tickets;
+IF OBJECT_ID('author_profiles','U')       IS NOT NULL DROP TABLE author_profiles;
+IF OBJECT_ID('revenues','U')         IS NOT NULL DROP TABLE revenues;
+IF OBJECT_ID('coin_transactions','U') IS NOT NULL DROP TABLE coin_transactions;
+IF OBJECT_ID('chapter_unlocks','U')  IS NOT NULL DROP TABLE chapter_unlocks;
+IF OBJECT_ID('bookmarks','U')        IS NOT NULL DROP TABLE bookmarks;
+IF OBJECT_ID('payments','U')         IS NOT NULL DROP TABLE payments;
+IF OBJECT_ID('orders','U')           IS NOT NULL DROP TABLE orders;
+IF OBJECT_ID('chapters','U')         IS NOT NULL DROP TABLE chapters;
+IF OBJECT_ID('novel_categories','U') IS NOT NULL DROP TABLE novel_categories;
+IF OBJECT_ID('novels','U')           IS NOT NULL DROP TABLE novels;
+IF OBJECT_ID('coin_packages','U')    IS NOT NULL DROP TABLE coin_packages;
+IF OBJECT_ID('otps','U')             IS NOT NULL DROP TABLE otps;
+IF OBJECT_ID('categories','U')       IS NOT NULL DROP TABLE categories;
+IF OBJECT_ID('users','U')            IS NOT NULL DROP TABLE users;
+
+-- ---------------------------------------------------------------
+-- 1. users
+-- ---------------------------------------------------------------
+CREATE TABLE users (
+    id           UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+    role         NVARCHAR(20)     NOT NULL CHECK (role IN ('ADMIN','USER','AUTHOR')),
+    username     NVARCHAR(255)    NOT NULL,
+    email        NVARCHAR(255)    NOT NULL,
+    password     NVARCHAR(255)    NOT NULL,
+    phone        NVARCHAR(20)     NULL,
+    address      NVARCHAR(255)    NULL,
+    is_active    BIT              NOT NULL DEFAULT 1,
+    coin_balance INT              NOT NULL DEFAULT 0,
+    is_author    BIT              NOT NULL DEFAULT 0,
+    created_at   DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at   DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT uq_users_username UNIQUE (username),
+    CONSTRAINT uq_users_email    UNIQUE (email),
+    CONSTRAINT uq_users_phone    UNIQUE (phone)
+);
+CREATE INDEX idx_users_role      ON users(role);
+CREATE INDEX idx_users_is_active ON users(is_active);
+>>>>>>> 75a8b5c0b63d3fd9a22edb4f24f17550ae7aba4d
 
     -- ---------------------------------------------------------------
     -- 2. otps
@@ -272,5 +316,46 @@
     -- ALTER TABLE users ADD is_author BIT NOT NULL DEFAULT 0;
     -- UPDATE users SET role = 'USER', is_author = 1 WHERE role = 'AUTHOR';
 
-    -- Cập nhật tài khoản tác giả cũ (chạy trực tiếp trên DB hiện tại):
-    UPDATE users SET role = 'USER', is_author = 1 WHERE email = 'author@sba.com';
+-- Cập nhật tài khoản tác giả cũ (chạy trực tiếp trên DB hiện tại):
+UPDATE users SET role = 'USER', is_author = 1 WHERE email = 'author@sba.com';
+
+-- =============================================================================
+-- Author Profiles & Payment Tickets
+-- =============================================================================
+IF OBJECT_ID('author_payment_tickets','U') IS NOT NULL DROP TABLE author_payment_tickets;
+IF OBJECT_ID('author_profiles','U')       IS NOT NULL DROP TABLE author_profiles;
+
+CREATE TABLE author_profiles (
+    id                  UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+    user_id             UNIQUEIDENTIFIER NOT NULL,
+    pen_name            NVARCHAR(255)    NOT NULL,
+    bio                 NVARCHAR(MAX)    NULL,
+    author_coin_balance INT              NOT NULL DEFAULT 0,
+    total_novels        BIGINT           NOT NULL DEFAULT 0,
+    total_chapters      BIGINT           NOT NULL DEFAULT 0,
+    total_views         BIGINT           NOT NULL DEFAULT 0,
+    bank_name           NVARCHAR(100)    NULL,
+    bank_account_number NVARCHAR(100)    NULL,
+    bank_account_holder NVARCHAR(255)    NULL,
+    status              NVARCHAR(20)     NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','APPROVED','REJECTED','SUSPENDED')),
+    created_at          DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at          DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT uq_author_profiles_user UNIQUE (user_id),
+    CONSTRAINT fk_ap_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE author_payment_tickets (
+    id                UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+    author_profile_id UNIQUEIDENTIFIER NOT NULL,
+    month_year        NVARCHAR(20)     NOT NULL,
+    total_coins       INT              NOT NULL,
+    coin_rate         INT              NOT NULL DEFAULT 1000,
+    amount_vnd        INT              NOT NULL,
+    status            NVARCHAR(20)     NOT NULL DEFAULT 'UNPAID' CHECK (status IN ('UNPAID','PAID','CANCELLED')),
+    paid_at           DATETIME2        NULL,
+    transaction_ref   NVARCHAR(100)    NULL,
+    created_at        DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at        DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT fk_apt_author FOREIGN KEY (author_profile_id) REFERENCES author_profiles(id) ON DELETE CASCADE
+);
+
