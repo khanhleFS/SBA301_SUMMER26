@@ -5,7 +5,7 @@ import Dashboard from '@/features/admin-dashboard/dashboard-feature'
 import FinancePage from '@/features/admin-finance/finance-feature'
 import UserManagementPage from '@/features/admin-user/user-feature'
 import PackagesPage from '@/features/admin-packages/packages-feature'
-// import CategoryManagementPage from '@/features/category-management/category-feature'
+import CategoryManagementPage from '@/features/category-management/category-feature'
 
 export const adminRoutes: RouteObject[] = [
 	{
@@ -18,7 +18,7 @@ export const adminRoutes: RouteObject[] = [
 			{ path: 'finance', element: <FinancePage /> },
 			{ path: 'users', element: <UserManagementPage /> },
 			{ path: 'packages', element: <PackagesPage /> },
-			// { path: 'categories', element: <CategoryManagementPage /> },
+			{ path: 'categories', element: <CategoryManagementPage /> },
 		],
 	},
 ]
