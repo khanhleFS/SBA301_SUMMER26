@@ -145,6 +145,7 @@ public class AuthenServiceImpl implements AuthenService {
                     tokenBlacklistService.blacklistToken(jwt, remainingTimeMs);
                 }
             } catch (Exception e) {
+                throw new ApiException(CommonErrorCode.UNAUTHORIZED, "Token không hợp lệ hoặc đã hết hạn");
             }
         }
     }
