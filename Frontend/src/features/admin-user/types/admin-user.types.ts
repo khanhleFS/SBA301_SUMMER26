@@ -43,7 +43,7 @@ export interface UserManagementContextValue {
   isLoading: boolean
   error: string | null
   refresh: () => void
-  promote: (userId: string) => Promise<void>
+  createAuthor: (payload: CreateAuthorPayload) => Promise<void>
   toggleBan: (userId: string) => Promise<void>
   approve: (userId: string) => Promise<void>
   isMutating: boolean
@@ -61,7 +61,7 @@ export type SortDir = 'asc' | 'desc'
 
 export interface UserManagementSectionsProps {
   data: UserManagementData
-  onPromote: (userId: string) => Promise<void>
+  onCreateAuthor: (payload: CreateAuthorPayload) => Promise<void>
   onToggleBan: (userId: string) => Promise<void>
   onApprove: (userId: string) => Promise<void>
   isMutating: boolean
@@ -88,7 +88,6 @@ export interface UserStatsSectionProps {
 
 export interface UserTableSectionProps {
   users: UserItem[]
-  onPromote: (user: UserItem) => void
   onToggleBan: (user: UserItem) => void
   onApprove: (user: UserItem) => void
   isMutating: boolean
@@ -98,11 +97,17 @@ export interface UserTableSectionProps {
   setStatusFilter: (status: FilterStatus) => void
 }
 
-export interface PromoteModalProps {
-  user: UserItem
-  onConfirm: () => void
-  onClose: () => void
-  isLoading: boolean
+export interface CreateAuthorPayload {
+  username?: string
+  email?: string
+  password?: string
+  phone?: string
+  address?: string
+  penName?: string
+  bio?: string
+  bankName?: string
+  bankAccountNumber?: string
+  bankAccountHolder?: string
 }
 
 export interface BanModalProps {

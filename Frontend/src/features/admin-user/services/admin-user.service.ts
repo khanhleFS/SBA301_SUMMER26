@@ -45,27 +45,11 @@ export async function fetchUserManagementData(): Promise<UserManagementData> {
 }
 
 /**
- * Promote user to author (set isAuthor = true).
- * PUT /api/auth/admin/users/{userId}/author-status?isAuthor=true (Admin only)
+ * Create a new author account.
+ * POST /api/admin/authors
  */
-export async function promoteToAuthor(userId: string): Promise<UserItem> {
-  await api.put(`/auth/admin/users/${userId}/author-status`, null, {
-    params: { isAuthor: true },
-  })
-  const data = await fetchUserManagementData()
-  return data.users.find((u) => u.id === userId) ?? ({ id: userId } as UserItem)
-}
-
-/**
- * Revoke author status.
- * PUT /api/auth/admin/users/{userId}/author-status?isAuthor=false (Admin only)
- */
-export async function revokeAuthorStatus(userId: string): Promise<UserItem> {
-  await api.put(`/auth/admin/users/${userId}/author-status`, null, {
-    params: { isAuthor: false },
-  })
-  const data = await fetchUserManagementData()
-  return data.users.find((u) => u.id === userId) ?? ({ id: userId } as UserItem)
+export async function createAuthor(payload: any): Promise<void> {
+  await api.post('/admin/authors', payload)
 }
 
 /**
