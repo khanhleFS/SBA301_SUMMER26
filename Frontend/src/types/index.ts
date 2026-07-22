@@ -6,4 +6,6 @@ export * from './novel'
 export * from './payment'
 export * from './auth'
 export * from './profile'
+export * from './author'
+
 
