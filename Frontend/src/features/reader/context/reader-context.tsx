@@ -76,78 +76,70 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
   const isAuthLoading = useAuthStore(s => s.isLoading)
 
+  const [savedBookmarkProgress, setSavedBookmarkProgress] = useState(0)
+
   // Fetch chapter + restore scroll position từ bookmark
   useEffect(() => {
     if (isAuthLoading) return
 
     setIsLoading(true)
     setScrollProgress(0)
+    setSavedBookmarkProgress(0)
 
     readerService.getChapter(currentChapterId, novelSlugWithId).then(async chapter => {
       setActiveChapter(chapter)
-      setIsLoading(false)
 
-      if (!isAuthenticated || !novelSlugWithId) return
+      if (isAuthenticated && novelSlugWithId) {
+        try {
+          const novelId = extractId(novelSlugWithId)
+          const chapterId = extractId(currentChapterId)
+          const existing = await getBookmark(novelId)
+          bookmarkRef.current = existing
 
-      try {
-        const novelId = extractId(novelSlugWithId)
-        const chapterId = extractId(currentChapterId)
-        const existing = await getBookmark(novelId)
-        bookmarkRef.current = existing
-
-        if (existing) {
-          if (existing.lastChapterId !== chapterId) {
-            await upsertBookmark({ novelId, lastChapterId: chapterId || null, lastPage: 0 })
-          } else {
-            const savedPercent = existing.lastPage ?? 0
-            if (savedPercent > 0) {
-              setTimeout(() => {
-                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight
-                window.scrollTo({ top: (savedPercent / 100) * height, behavior: 'smooth' })
-                setScrollProgress(savedPercent)
-              }, 400)
+          if (existing) {
+            if (existing.lastChapterId != null && String(existing.lastChapterId) !== String(chapterId)) {
+              await upsertBookmark({ novelId, lastChapterId: chapterId || null, readingProgressPercent: 0, lastPage: 0 })
+              setSavedBookmarkProgress(0)
+            } else {
+              const savedPercent = existing.readingProgressPercent ?? existing.lastPage ?? 0
+              setSavedBookmarkProgress(savedPercent)
+              setScrollProgress(savedPercent)
             }
           }
+        } catch (err) {
+          console.warn('Could not sync reading progress:', err)
         }
-      } catch (err) {
-        console.warn('Could not sync reading progress:', err)
       }
+      setIsLoading(false)
     }).catch(error => {
       console.error('Failed to load chapter', error)
       setIsLoading(false)
     })
   }, [currentChapterId, novelSlugWithId, isAuthenticated, isAuthLoading, refreshTrigger])
 
-  // Debounced scroll listener — lưu vị trí scroll vào bookmark mỗi 1.5 giây
-  const handleScrollSave = useCallback(() => {
+  // Debounced scroll listener — lưu vị trí scroll (từ article) vào bookmark mỗi 1.5 giây
+  const scrollProgressRef = useRef(scrollProgress)
+  scrollProgressRef.current = scrollProgress
+
+  useEffect(() => {
     if (!isAuthenticated || !novelSlugWithId || !bookmarkRef.current) return
-
-    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight
-    const scrollPercent = height > 0
-      ? Math.round((document.documentElement.scrollTop / height) * 100)
-      : 0
-
-    setScrollProgress(scrollPercent)
 
     if (saveScrollTimerRef.current) clearTimeout(saveScrollTimerRef.current)
     saveScrollTimerRef.current = setTimeout(async () => {
       try {
         const novelId = extractId(novelSlugWithId)
         const chapterId = extractId(currentChapterId)
-        await upsertBookmark({ novelId, lastChapterId: chapterId || null, lastPage: scrollPercent })
+        await upsertBookmark({
+          novelId,
+          lastChapterId: chapterId || null,
+          readingProgressPercent: scrollProgressRef.current,
+          lastPage: scrollProgressRef.current,
+        })
       } catch (err) {
         console.warn('Could not save scroll position:', err)
       }
     }, 1500)
-  }, [isAuthenticated, novelSlugWithId, currentChapterId])
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScrollSave, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', handleScrollSave)
-      if (saveScrollTimerRef.current) clearTimeout(saveScrollTimerRef.current)
-    }
-  }, [handleScrollSave])
+  }, [scrollProgress, isAuthenticated, novelSlugWithId, currentChapterId])
 
   // 2. Reader → Global: when user picks a theme inside Reader Config, sync app mode to match
   const themeModeRef = useRef(themeMode)
@@ -176,6 +168,8 @@ export function ReaderProvider({ children, initialChapterId = 'chuong-1-tia-lua-
       activeChapter,
       isLoading,
       scrollProgress,
+      setScrollProgress,
+      savedBookmarkProgress,
       reloadChapter,
       theme,
       setTheme,

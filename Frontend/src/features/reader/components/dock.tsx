@@ -1,5 +1,4 @@
-import React from 'react'
-import type { DockItemType, DockProps } from '../types/reader.types'
+import type { DockProps } from '../types/reader.types'
 
 export default function Dock({ items, className = '', children }: DockProps) {
   return (
@@ -13,7 +12,11 @@ export default function Dock({ items, className = '', children }: DockProps) {
           key={index}
           onClick={item.onClick}
           title={item.label}
-          className={`relative group w-10 h-10 flex items-center justify-center rounded-full bg-primary text-on-primary border border-white/10 cursor-pointer hover:brightness-110 active:scale-95 transition-all shrink-0 ${item.className ?? ''}`}
+          className={`relative group w-10 h-10 flex items-center justify-center rounded-full border cursor-pointer transition-all shrink-0 active:scale-95 ${
+            item.active
+              ? 'bg-primary text-on-primary border-primary ring-2 ring-primary/40 shadow-md'
+              : 'bg-primary text-on-primary border-white/10 hover:brightness-110'
+          } ${item.className ?? ''}`}
           aria-label={item.label}
         >
           {item.icon}

@@ -16,11 +16,13 @@ import {
   Volume2,
 } from 'lucide-react'
 import Dock from './dock'
+import BookmarkModal from './bookmark-modal'
 import FloatingAudioPlayer from './floating-audio-player'
 import ReaderSuggestions from './reader-suggestions'
 import ChapterSelector from './chapter-selector'
 import ReaderConfigMenu from './reader-config-menu'
 import { ReaderSkeleton } from './reader-skeleton'
+import Container from '@/components/shared/site/container'
 import { useReaderContext } from '../context/reader-context'
 import type { ThemeType, FontType, LineHeightType, ArticleProgressBarProps, CanvasArticleProps } from '../types/reader.types'
 import { generateChapterAudio, readChapter, unlockChapter } from '@/services/chapter-service'
@@ -187,6 +189,45 @@ function CanvasArticle({ paragraphs, fontSize, fontFamily, lineHeight, textColor
   )
 }
 
+function calculateArticleProgress(element: HTMLElement | null): number {
+  if (!element) return 0
+  const latestScrollY = window.scrollY || document.documentElement.scrollTop
+  const rect = element.getBoundingClientRect()
+  const elementTop = rect.top + latestScrollY
+  const elementHeight = rect.height
+  const viewportHeight = window.innerHeight
+
+  const startScroll = elementTop - 80
+  const endScroll = elementTop + elementHeight - viewportHeight
+
+  if (endScroll <= startScroll) {
+    return latestScrollY > startScroll ? 100 : 0
+  }
+
+  const currentProgress = (latestScrollY - startScroll) / (endScroll - startScroll)
+  const clamped = Math.max(0, Math.min(1, currentProgress))
+  return Math.round(clamped * 100)
+}
+
+function calculateScrollTopForProgress(element: HTMLElement | null, savedPercent: number): number {
+  if (!element) return 0
+  const latestScrollY = window.scrollY || document.documentElement.scrollTop
+  const rect = element.getBoundingClientRect()
+  const elementTop = rect.top + latestScrollY
+  const elementHeight = rect.height
+  const viewportHeight = window.innerHeight
+
+  const startScroll = elementTop - 80
+  const endScroll = elementTop + elementHeight - viewportHeight
+
+  if (endScroll <= startScroll) {
+    return startScroll
+  }
+
+  const ratio = Math.max(0, Math.min(100, savedPercent)) / 100
+  return startScroll + ratio * (endScroll - startScroll)
+}
+
 function ReaderContent() {
   const navigate = useNavigate()
   const { novelSlugWithId } = useParams<{ novelSlugWithId: string }>()
@@ -197,6 +238,8 @@ function ReaderContent() {
     activeChapter: activeChap,
     isLoading,
     scrollProgress,
+    setScrollProgress,
+    savedBookmarkProgress,
     reloadChapter,
     theme,
     setTheme,
@@ -250,6 +293,7 @@ function ReaderContent() {
   }, [currentChapKey, novelSlugWithId, navigate])
 
   const [showSettings, setShowSettings] = useState(false)
+  const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false)
   const [mobileOverlayActive, setMobileOverlayActive] = useState(false)
   const [showDock, setShowDock] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -399,6 +443,45 @@ function ReaderContent() {
     }
   }, [currentChapKey])
 
+  // Sync article scroll progress into ReaderContext using exact ArticleProgressBar math
+  useEffect(() => {
+    const updateArticleProgress = () => {
+      if (articleContentRef.current) {
+        const p = calculateArticleProgress(articleContentRef.current)
+        setScrollProgress(p)
+      }
+    }
+
+    window.addEventListener('scroll', updateArticleProgress, { passive: true })
+    updateArticleProgress()
+    return () => window.removeEventListener('scroll', updateArticleProgress)
+  }, [setScrollProgress, activeChap])
+
+  // Restore saved bookmark scroll position in article when chapter loads
+  const hasRestoredBookmarkRef = useRef(false)
+
+  useEffect(() => {
+    hasRestoredBookmarkRef.current = false
+  }, [currentChapKey])
+
+  useEffect(() => {
+    if (!activeChap || isLoading || hasRestoredBookmarkRef.current) return
+
+    if (savedBookmarkProgress > 0) {
+      hasRestoredBookmarkRef.current = true
+      // Retry scroll restoration after DOM layout finishes rendering
+      const timers = [100, 300, 600].map(delay =>
+        setTimeout(() => {
+          if (articleContentRef.current) {
+            const targetY = calculateScrollTopForProgress(articleContentRef.current, savedBookmarkProgress)
+            window.scrollTo({ top: targetY, behavior: 'smooth' })
+          }
+        }, delay)
+      )
+      return () => timers.forEach(clearTimeout)
+    }
+  }, [activeChap, isLoading, savedBookmarkProgress])
+
   useEffect(() => {
     if (!activeChap) return
 
@@ -496,7 +579,13 @@ function ReaderContent() {
     {
       icon: <Bookmark className="size-5 text-on-primary" />,
       label: 'Đánh dấu',
-      onClick: () => alert('Đã đánh dấu chương này thành công!')
+      active: isBookmarkModalOpen,
+      onClick: () => {
+        if (isMobile) {
+          setMobileOverlayActive(false)
+        }
+        setIsBookmarkModalOpen(prev => !prev)
+      }
     },
     {
       icon: <Headphones className="size-5 text-on-primary" />,
@@ -541,6 +630,18 @@ function ReaderContent() {
       <ArticleProgressBar targetRef={articleContentRef} />
 
       <div className="w-full h-full">
+        {/* Top Back Button — Outside reading card, aligned with reading container */}
+        <div className={`mb-4 max-w-[780px] w-full sm:w-[95%] mx-auto px-4 sm:px-0 transition-all duration-300 ${fullFrame ? 'max-w-none px-4 sm:px-8' : ''}`}>
+          <button
+            onClick={() => navigate(`/${novelSlugWithId || ''}`)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold transition-all duration-200 cursor-pointer w-fit group hover:text-primary ${currentTheme.textMuted}`}
+            style={{ borderColor: 'rgba(var(--current-text-color), 0.12)', backgroundColor: 'rgba(var(--current-text-color), 0.04)' }}
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Quay lại trang truyện</span>
+          </button>
+        </div>
+
         <div
           ref={readingContainerRef}
           className={`mx-auto transition-all duration-300 relative ${fullFrame
@@ -549,17 +650,6 @@ function ReaderContent() {
             } ${currentTheme.bg}`}
           style={{ borderColor: 'rgba(var(--current-text-color), 0.1)', borderOpacity: 0.1 } as any}
         >
-          <div className="mb-6">
-            <button
-              onClick={() => navigate(`/${novelSlugWithId || ''}`)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold transition-all duration-200 cursor-pointer w-fit group hover:text-primary ${currentTheme.textMuted}`}
-              style={{ borderColor: 'rgba(var(--current-text-color), 0.12)', backgroundColor: 'rgba(var(--current-text-color), 0.04)' }}
-            >
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              <span>Quay lại trang truyện</span>
-            </button>
-          </div>
-
           <div className={`flex items-center flex-wrap gap-1 text-[9px] sm:text-[10px] uppercase tracking-wider font-bold mb-8 select-none ${currentTheme.textMuted}`}>
             <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
             <span className="opacity-40">/</span>
@@ -692,19 +782,18 @@ function ReaderContent() {
               currentTheme={currentTheme}
             />
           </div>
+        </div>
 
-          <div className="h-[1px] w-full bg-current opacity-10 my-8" />
-
-          <div className="flex justify-start">
-            <button
-              onClick={() => navigate(`/${novelSlugWithId || ''}`)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold transition-all duration-200 cursor-pointer w-fit group hover:text-primary ${currentTheme.textMuted}`}
-              style={{ borderColor: 'rgba(var(--current-text-color), 0.12)', backgroundColor: 'rgba(var(--current-text-color), 0.04)' }}
-            >
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              <span>Quay lại trang truyện</span>
-            </button>
-          </div>
+        {/* Quay lại trang truyện — Outside reading card, aligned with reading container */}
+        <div className={`my-8 max-w-[780px] w-full sm:w-[95%] mx-auto px-4 sm:px-0 transition-all duration-300 ${fullFrame ? 'max-w-none px-4 sm:px-8' : ''}`}>
+          <button
+            onClick={() => navigate(`/${novelSlugWithId || ''}`)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold transition-all duration-200 cursor-pointer w-fit group hover:text-primary ${currentTheme.textMuted}`}
+            style={{ borderColor: 'rgba(var(--current-text-color), 0.12)', backgroundColor: 'rgba(var(--current-text-color), 0.04)' }}
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Quay lại trang truyện</span>
+          </button>
         </div>
 
         <ReaderSuggestions currentTheme={currentTheme} />
@@ -799,6 +888,16 @@ function ReaderContent() {
           />
         )}
       </AnimatePresence>
+
+      {/* Bookmark Modal */}
+      <BookmarkModal
+        isOpen={isBookmarkModalOpen}
+        onClose={() => setIsBookmarkModalOpen(false)}
+        novelSlugWithId={novelSlugWithId}
+        activeChapter={activeChap}
+        scrollProgress={scrollProgress}
+        currentTheme={currentTheme}
+      />
 
       <AnimatePresence>
         {

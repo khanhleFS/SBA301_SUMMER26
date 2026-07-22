@@ -40,8 +40,16 @@ public class Bookmark {
 
     @NotNull
     @ColumnDefault("0")
-    @Column(name = "last_page", nullable = false)
-    private Integer lastPage;
+    @Column(name = "reading_progress_percent", nullable = false)
+    private Integer readingProgressPercent = 0;
+
+    public void setReadingProgressPercent(Integer readingProgressPercent) {
+        if (readingProgressPercent == null) {
+            this.readingProgressPercent = 0;
+        } else {
+            this.readingProgressPercent = Math.max(0, Math.min(100, readingProgressPercent));
+        }
+    }
 
     @NotNull
     @ColumnDefault("getdate()")

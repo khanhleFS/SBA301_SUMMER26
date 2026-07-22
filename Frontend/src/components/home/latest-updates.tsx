@@ -4,7 +4,16 @@ import Container from "@/components/shared/site/container"
 import SplitText from "@/components/custom/split-text/SplitText"
 import { useTopNovels } from "@/hooks/useTopNovels"
 
-const PLACEHOLDER = 'https://placehold.co/400x533/E6E1E5/4F378A?text=Novel'
+const PLACEHOLDER = 'https://picsum.photos/seed/novel-cover/400/600'
+
+function truncateTitle(title?: string | null, maxWords = 3): string {
+  if (!title) return ''
+  const words = title.trim().split(/\s+/)
+  if (words.length > maxWords) {
+    return words.slice(0, maxWords).join(' ') + '...'
+  }
+  return title
+}
 
 export default function LatestUpdates() {
   const { data: novels = [], isLoading } = useTopNovels(6)
@@ -68,6 +77,10 @@ export default function LatestUpdates() {
                       src={novel.coverImageUrl || PLACEHOLDER}
                       alt={novel.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null
+                        e.currentTarget.src = PLACEHOLDER
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     {category && (
@@ -86,7 +99,7 @@ export default function LatestUpdates() {
                       splitType="words"
                       textAlign="center"
                     >
-                      {novel.title}
+                      {truncateTitle(novel.title, 3)}
                     </SplitText>
                     <div className="flex items-center justify-center gap-2 text-[10px] md:text-xs font-bold">
                       <SplitText

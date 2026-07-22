@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import useSubmit from '@/hooks/useSubmit'
 import { useAuth } from '@/lib/auth'
 import { loginUser } from '@/services/auth-service'
 
 export default function LoginFeature() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -30,6 +31,30 @@ export default function LoginFeature() {
         accessToken,
         refreshToken
       )
+
+      const fromState = (location.state as any)?.from
+      let target = ''
+      if (typeof fromState === 'string' && fromState) {
+        target = fromState
+      } else if (fromState?.pathname) {
+        target = `${fromState.pathname}${fromState.search || ''}${fromState.hash || ''}`
+      }
+
+      const isAuthPage = (p: string) =>
+        ['/login', '/register', '/forgot-password', '/verify-otp'].some(path => p.startsWith(path))
+
+      if (!target || isAuthPage(target)) {
+        const lastVisited = typeof window !== 'undefined' ? sessionStorage.getItem('lastVisitedPath') : null
+        if (lastVisited && !isAuthPage(lastVisited)) {
+          target = lastVisited
+        }
+      }
+
+      if (target && !isAuthPage(target)) {
+        navigate(target, { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
     } catch (err: any) {
       setError(err?.message || 'Email hoặc mật khẩu không chính xác.')
     }

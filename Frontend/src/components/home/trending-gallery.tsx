@@ -12,10 +12,14 @@ export default function TrendingGallery({ onReady }: TrendingGalleryProps) {
   const { data: novels = [], isLoading } = useTopNovels(8)
 
   const items = novels.length > 0
-    ? novels.map((n) => ({
-        image: n.coverImageUrl || PLACEHOLDER,
-        text: n.title,
-      }))
+    ? novels.map((n) => {
+        const words = n.title.trim().split(/\s+/)
+        const truncated = words.length > 3 ? words.slice(0, 3).join(' ') + '...' : n.title
+        return {
+          image: n.coverImageUrl || PLACEHOLDER,
+          text: truncated,
+        }
+      })
     : [
         { image: PLACEHOLDER, text: 'Đang tải...' },
         { image: PLACEHOLDER, text: 'Đang tải...' },

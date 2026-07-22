@@ -1,5 +1,6 @@
 import { api } from '@/lib/api'
-import type { ProfileData, ProfileDTO, ResetPasswordRequestDTO, CollectionItem, CollectionStory } from '@/types'
+import type { ProfileDTO, ResetPasswordRequestDTO } from '@/types'
+import type { ProfileData, CollectionItem, CollectionStory } from '../types/profile.types'
 import { getMyBookmarks } from '@/services/bookmark-service'
 
 
@@ -17,9 +18,9 @@ export async function fetchProfileData(): Promise<ProfileData> {
       const bookmarks = await getMyBookmarks()
 
       const toStory = (b: typeof bookmarks[0], hideProgress: boolean): CollectionStory => {
-        // Đối với danh mục Đang đọc, progress = b.lastPage (vị trí cuộn trang % trong chapter)
-        const progress = hideProgress ? 0 : (b.lastPage ?? 0)
-        
+        // Đối với danh mục Đang đọc, progress = b.readingProgressPercent (vị trí cuộn trang % trong chapter)
+        const progress = hideProgress ? 0 : (b.readingProgressPercent ?? b.lastPage ?? 0)
+
         // Nếu là tab Đang đọc và có chapter slug, trỏ trực tiếp tới chapter. Ngược lại trỏ tới novel details
         const targetPath = (!hideProgress && b.lastChapterSlug)
           ? `/${b.novelSlug}-${b.novelId}/${b.lastChapterSlug}`
@@ -28,12 +29,12 @@ export async function fetchProfileData(): Promise<ProfileData> {
         // Thiết lập meta text mô tả vị trí cuộn trang hiện tại
         let metaText = `${b.totalChapters} chương`
         if (!hideProgress && b.lastChapterNumber != null) {
-          metaText = `Chương ${b.lastChapterNumber} (${progress > 0 ? `Đang đọc ${progress}%` : 'Bắt đầu đọc'})`
+          metaText = `Chương ${b.lastChapterNumber}`
         }
 
         return {
           id: b.id,
-          novelId: b.novelId,
+          novelId: String(b.novelId),
           title: b.novelTitle,
           meta: metaText,
           progress,

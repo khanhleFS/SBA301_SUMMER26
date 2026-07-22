@@ -2,7 +2,7 @@
 
 import React, { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Sun, Moon, LogOut, SunMoon, Check, LogIn, UserPlus } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { gsap } from 'gsap';
@@ -356,6 +356,7 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const navTimeoutRef = useRef<number | null>(null);
 
@@ -664,7 +665,7 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         closeMenu()
                         if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current)
                         navTimeoutRef.current = window.setTimeout(() => {
-                          navigate('/login', { replace: true })
+                          navigate('/login', { state: { from: location } })
                           navTimeoutRef.current = null
                         }, 340)
                       }}

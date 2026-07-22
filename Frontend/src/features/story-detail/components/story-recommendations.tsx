@@ -3,7 +3,16 @@ import { Eye, Loader2, BookOpen } from 'lucide-react'
 import { useStoryDetailContext } from '../context/story-detail-context'
 import { useTopNovels } from '@/hooks/useTopNovels'
 
-const COVER_PLACEHOLDER = 'https://placehold.co/400x600/1a1a1a/ededed?text=Cover'
+const COVER_PLACEHOLDER = 'https://picsum.photos/seed/novel-cover/400/600'
+
+function truncateTitle(title?: string | null, maxWords = 3): string {
+  if (!title) return ''
+  const words = title.trim().split(/\s+/)
+  if (words.length > maxWords) {
+    return words.slice(0, maxWords).join(' ') + '...'
+  }
+  return title
+}
 
 export function StoryRecommendations() {
   const { storyInfo } = useStoryDetailContext()
@@ -12,8 +21,12 @@ export function StoryRecommendations() {
   if (!storyInfo) return null
 
   // Recommend other stories (excluding current story)
-  const recommendations = topNovels.filter((s) => s.slug !== storyInfo.slug)
-  const displayList = recommendations.length > 0 ? recommendations.slice(0, 4) : topNovels.slice(0, 4)
+  const recommendations = topNovels.filter((s) => {
+    if (String(s.id) === String(storyInfo.id)) return false
+    if (s.slug && storyInfo.slug && s.slug === storyInfo.slug) return false
+    return true
+  })
+  const displayList = recommendations.slice(0, 4)
 
   if (isLoading) {
     return (
@@ -37,14 +50,22 @@ export function StoryRecommendations() {
           {displayList.map((rec) => (
             <Link key={rec.id} to={`/${rec.slug}-${rec.id}`} className="group block space-y-3">
               <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-1">
-                <img src={rec.coverImageUrl || COVER_PLACEHOLDER} alt={rec.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <img
+                  src={rec.coverImageUrl || COVER_PLACEHOLDER}
+                  alt={rec.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null
+                    e.currentTarget.src = COVER_PLACEHOLDER
+                  }}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute top-3 right-3 bg-primary text-on-primary px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
                   {rec.categories?.[0] || 'Khác'}
                 </div>
               </div>
               <div className="space-y-1 text-center">
-                <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{rec.title}</h3>
+                <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{truncateTitle(rec.title, 3)}</h3>
                 <div className="flex items-center justify-center gap-3 text-[10px] font-bold">
                   <div className="flex items-center gap-1 text-primary">
                     <span>Chương {rec.chapterCount || 0}</span>
@@ -69,14 +90,22 @@ export function StoryRecommendations() {
           {displayList.map((rec) => (
             <Link key={rec.id} to={`/${rec.slug}-${rec.id}`} className="group block space-y-3">
               <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-1">
-                <img src={rec.coverImageUrl || COVER_PLACEHOLDER} alt={rec.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <img
+                  src={rec.coverImageUrl || COVER_PLACEHOLDER}
+                  alt={rec.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null
+                    e.currentTarget.src = COVER_PLACEHOLDER
+                  }}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute top-3 right-3 bg-primary text-on-primary px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
                   {rec.categories?.[0] || 'Khác'}
                 </div>
               </div>
               <div className="space-y-1 text-center">
-                <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{rec.title}</h3>
+                <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">{truncateTitle(rec.title, 3)}</h3>
                 <div className="flex items-center justify-center gap-3 text-[10px] font-bold">
                   <div className="flex items-center gap-1 text-primary">
                     <Eye className="h-3 w-3" />

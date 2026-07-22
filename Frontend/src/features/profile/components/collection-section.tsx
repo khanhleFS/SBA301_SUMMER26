@@ -80,23 +80,32 @@ function CollectionStoryItem({
           alt={story.title}
           className="h-full w-full object-cover"
           src={story.coverUrl}
+          onError={(e) => {
+            e.currentTarget.onerror = null
+            e.currentTarget.src = 'https://picsum.photos/seed/novel-cover/400/600'
+          }}
         />
       </span>
       <span className="flex min-w-0 flex-1 flex-col justify-center">
         <span className="truncate text-sm font-bold text-on-surface transition-colors group-hover:text-primary">
           {story.title}
         </span>
-        {!story.hideProgress && (
-          <span className="mt-2 h-1 w-full bg-outline/15">
-            <span
-              className="block h-full bg-primary"
-              style={{ width: `${story.progress}%` }}
-            />
-          </span>
-        )}
         <span className="mt-1.5 truncate text-[11px] font-semibold text-on-surface-variant">
           {story.meta}
         </span>
+        {!story.hideProgress && (
+          <div className="mt-2 flex items-center gap-2">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-outline/15">
+              <div
+                className="h-full bg-primary transition-all duration-300 rounded-full"
+                style={{ width: `${Math.max(3, Math.min(100, story.progress))}%` }}
+              />
+            </div>
+            <span className="text-[11px] font-bold text-primary shrink-0 bg-primary/10 px-1.5 py-0.5 rounded-md">
+              {Math.round(story.progress)}%
+            </span>
+          </div>
+        )}
       </span>
       {isCompleted && !story.hideProgress && (
         <CheckCircle2 className="self-center h-6 w-6 shrink-0 fill-primary text-on-primary" />

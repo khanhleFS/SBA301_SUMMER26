@@ -2,11 +2,12 @@ import { Link } from 'react-router-dom'
 import { ArrowUpDown, ChevronLeft, ChevronsLeft, ChevronsRight, ChevronRight, Lock, Bookmark, Eye, Coins, X, Loader2 } from 'lucide-react'
 import SpotlightCard from '@/components/custom/spot-light-card/SpotlightCard'
 import { useStoryDetailContext } from '../context/story-detail-context'
-import { MOCK_USER_READ_STATE } from '@/services/mock-data'
 import { useMemo, useState, useEffect } from 'react'
 import type { ChapterItem, StoryChaptersProps } from '../types/story-detail.types'
 import { unlockChapter } from '@/services/chapter-service'
 import { useAuthStore } from '@/store/auth.store'
+import { getBookmark, type BookmarkResponse } from '@/services/bookmark-service'
+import { extractId } from '@/features/reader/services/reader.service'
 
 export function StoryChapters({
   storySlug,
@@ -26,6 +27,10 @@ export function StoryChapters({
   const [isBuying, setIsBuying] = useState(false)
   const [buyError, setBuyError] = useState<string | null>(null)
   const [purchaseResult, setPurchaseResult] = useState<{ coinsSpent: number; remainingCoins: number } | null>(null)
+
+  // Real bookmark state from API
+  const [realBookmark, setRealBookmark] = useState<BookmarkResponse | null>(null)
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated)
 
   // Reset trang về 1 khi danh sách gốc thay đổi (ví dụ: đổi chiều sort)
   useEffect(() => {
@@ -54,8 +59,8 @@ export function StoryChapters({
     setBuyError(null)
 
     try {
-      const novelId = storyInfo.id
-      const result = await unlockChapter(novelId, chapterToBuy.id)
+      const novelId = storyInfo!.id
+      const result = await unlockChapter(novelId, Number(chapterToBuy.id))
 
       // Refresh auth store to update remaining coin balance
       await useAuthStore.getState().refreshProfile()
@@ -63,7 +68,7 @@ export function StoryChapters({
       // Mở khóa chapter sau khi mua thành công
       setPurchasedChapterIds((prev) => {
         const next = new Set(prev)
-        next.add(chapterToBuy.id)
+        next.add(Number(chapterToBuy.id))
         return next
       })
 
@@ -79,16 +84,24 @@ export function StoryChapters({
     }
   }
 
+  // Fetch real bookmark when authenticated
+  useEffect(() => {
+    if (!isAuthenticated || !storyInfo) return
+    const novelId = extractId(String(storyInfo.id)) || String(storyInfo.id)
+    getBookmark(novelId).then(bm => setRealBookmark(bm)).catch(() => setRealBookmark(null))
+  }, [isAuthenticated, storyInfo])
+
   if (!storyInfo) return null
 
-  const storyIdNum = Number(storyInfo.id)
-  const bookmarkedChapterId = MOCK_USER_READ_STATE.bookmarks[storyIdNum]
-  const isBookmarked = !!bookmarkedChapterId
+  const isBookmarked = isAuthenticated && !!realBookmark
+  const bookmarkedChapterId = realBookmark?.lastChapterId ?? null
+  const bookmarkedChapterNum = realBookmark?.lastChapterNumber ?? null
+  const bookmarkedChapterTitle = realBookmark?.lastChapterTitle ?? null
 
-  const bookmarkedChapter = chapters.find((c) => c.id === bookmarkedChapterId)
-  const readProgress = bookmarkedChapterId
-    ? Math.min(100, Math.round((bookmarkedChapterId / storyInfo.chaptersCount) * 100))
-    : 0
+  const bookmarkedChapter = bookmarkedChapterId
+    ? chapters.find((c) => String(c.id) === String(bookmarkedChapterId))
+    : null
+  const readProgress = realBookmark?.readingProgressPercent ?? 0
 
   return (
     <>
@@ -102,7 +115,7 @@ export function StoryChapters({
                 <h3 className="text-lg font-serif font-bold text-foreground">Bạn đang đọc dở</h3>
               </div>
               <p className="text-sm font-semibold text-on-surface-variant">
-                Chương đang đọc: <span className="text-primary">{bookmarkedChapter?.title || `Chương ${bookmarkedChapterId}`}</span>
+                Chương đang đọc: <span className="text-primary">{bookmarkedChapter?.title || bookmarkedChapterTitle || (bookmarkedChapterNum ? `Chương ${bookmarkedChapterNum}` : 'Không rõ')}</span>
               </p>
               <div className="w-full">
                 <div className="flex items-center justify-between mb-1">
@@ -114,7 +127,7 @@ export function StoryChapters({
                 </div>
               </div>
             </div>
-            <Link to={`/${storySlug}/${bookmarkedChapter?.slug || `${storyInfo.slug}-chapter-${bookmarkedChapterId}`}`} className="px-6 py-3 bg-primary hover:bg-primary/90 text-on-primary rounded-full font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20 cursor-pointer shrink-0 ml-8 text-sm text-center">
+            <Link to={bookmarkedChapter?.slug ? `/${storySlug}/${bookmarkedChapter.slug}` : `/${storySlug}`} className="px-6 py-3 bg-primary hover:bg-primary/90 text-on-primary rounded-full font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20 cursor-pointer shrink-0 ml-8 text-sm text-center">
               <Bookmark className="h-4 w-4 fill-on-primary" />
               Tiếp tục đọc
             </Link>
@@ -136,9 +149,9 @@ export function StoryChapters({
 
         <div className="divide-y divide-outline/5">
           {displayChapters.map((chap) => {
-            const isCurrentBookmark = chap.id === bookmarkedChapterId
+            const isCurrentBookmark = bookmarkedChapterId !== null && String(chap.id) === String(bookmarkedChapterId)
             // Chapter được coi là khóa chỉ khi isLocked = true VÀ chưa được mua trong phiên này
-            const isLocked = chap.isLocked && !purchasedChapterIds.has(chap.id)
+            const isLocked = chap.isLocked && !purchasedChapterIds.has(Number(chap.id))
 
             const rowClassName = `px-6 py-4 transition-colors flex items-center justify-between group ${isCurrentBookmark ? 'bg-primary/5 hover:bg-primary/10' : ''
               } ${isLocked ? 'cursor-default' : 'hover:bg-surface-container cursor-pointer'}`

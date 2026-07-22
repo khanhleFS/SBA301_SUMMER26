@@ -175,7 +175,7 @@ CREATE TABLE bookmarks (
     novel_id        BIGINT    NOT NULL,
     last_chapter_id BIGINT,
     is_favorite     BOOLEAN   NOT NULL DEFAULT FALSE,
-    last_page       INT       NOT NULL DEFAULT 0,
+    reading_progress_percent INT NOT NULL DEFAULT 0,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id)         REFERENCES users(id)    ON DELETE CASCADE,

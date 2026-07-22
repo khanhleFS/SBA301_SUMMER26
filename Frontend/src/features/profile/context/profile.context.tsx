@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { ProfileData, ProfileContextValue } from '../types/profile.types'
+import type { ProfileContextValue } from '../types/profile.types'
 import { fetchProfileData } from '../services/profile.service'
 
 export function useProfile(): ProfileContextValue {

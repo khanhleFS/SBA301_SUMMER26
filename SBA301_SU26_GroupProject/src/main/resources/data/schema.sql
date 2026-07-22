@@ -157,7 +157,7 @@ CREATE TABLE bookmarks (
     novel_id UNIQUEIDENTIFIER NOT NULL,
     last_chapter_id UNIQUEIDENTIFIER,
     is_favorite BIT NOT NULL DEFAULT 0,
-    last_page INT DEFAULT 0,
+    reading_progress_percent INT DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME NOT NULL DEFAULT GETDATE(),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

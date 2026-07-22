@@ -1,4 +1,5 @@
-import { Outlet, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Outlet, Navigate, useLocation } from 'react-router-dom'
 import SiteHeader from '../components/shared/site/site-header'
 import SiteFooter from '../components/shared/site/site-footer'
 import SmoothScroll from '../components/shared/SmoothScroll'
@@ -17,6 +18,15 @@ interface SiteLayoutProps {
  */
 export default function SiteLayout({ requireAuth = false }: SiteLayoutProps) {
 	const { isAuthenticated, isLoading, user } = useAuth()
+	const location = useLocation()
+
+	useEffect(() => {
+		const fullPath = `${location.pathname}${location.search}${location.hash}`
+		const isAuthPage = ['/login', '/register', '/forgot-password', '/verify-otp'].some(p => location.pathname.startsWith(p))
+		if (!isAuthPage) {
+			sessionStorage.setItem('lastVisitedPath', fullPath)
+		}
+	}, [location])
 
 	if (isLoading) {
 		return (
@@ -31,7 +41,7 @@ export default function SiteLayout({ requireAuth = false }: SiteLayoutProps) {
 	}
 
 	if (requireAuth && !isAuthenticated) {
-		return <Navigate to="/login" replace />
+		return <Navigate to="/login" replace state={{ from: location }} />
 	}
 
 	return (

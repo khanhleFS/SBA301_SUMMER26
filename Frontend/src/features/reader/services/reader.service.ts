@@ -43,13 +43,13 @@ export function decryptContent(encryptedHex?: string, ivHex?: string, novelId?: 
   }
 }
 
-/** Extracts the numeric Long ID from the end of a slug-id string (e.g. "ten-truyen-123" → "123"). */
-export function extractId(slugWithId: string): string {
-  if (!slugWithId) return ''
-  const parts = slugWithId.split('-')
+export function extractId(slugWithId?: string | number | null): string {
+  if (slugWithId === undefined || slugWithId === null || slugWithId === '') return ''
+  const str = String(slugWithId)
+  const parts = str.split('-')
   const last = parts[parts.length - 1]
   if (/^\d+$/.test(last)) return last
-  return slugWithId
+  return str
 }
 
 export const readerService = {

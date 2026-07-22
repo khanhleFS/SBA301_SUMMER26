@@ -39,6 +39,10 @@ export function ReadingStoryCard({ story, userReadState }: SearchCardProps) {
             className="h-full w-full object-cover"
             src={story.imgUrl}
             loading="lazy"
+            onError={(e) => {
+              e.currentTarget.onerror = null
+              e.currentTarget.src = 'https://picsum.photos/seed/novel-cover/400/600'
+            }}
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center bg-primary/10">
@@ -100,6 +104,10 @@ export function SearchCard({ story, userReadState }: SearchCardProps) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               src={story.imgUrl}
               loading="lazy"
+              onError={(e) => {
+                e.currentTarget.onerror = null
+                e.currentTarget.src = 'https://picsum.photos/seed/novel-cover/400/600'
+              }}
             />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-primary-container/10 via-surface-container-high to-surface-container-highest flex flex-col items-center justify-center p-0.5 transition-transform duration-500 group-hover:scale-105">
@@ -149,7 +157,7 @@ export function SearchCard({ story, userReadState }: SearchCardProps) {
               {/* Row 2: title (start) — chapter (end) */}
               <div className="flex items-baseline justify-between gap-4">
                 <Link to={`/${story.slug}`} className="flex-grow min-w-0">
-                  <h4 className="font-serif text-xl font-bold text-primary hover:underline leading-snug break-words">
+                  <h4 className="font-serif text-xl font-bold text-primary hover:underline leading-snug truncate line-clamp-1">
                     {story.title}
                   </h4>
                 </Link>
@@ -247,8 +255,8 @@ export function SearchCard({ story, userReadState }: SearchCardProps) {
             {/* MOBILE LAYOUT */}
             <div className="flex sm:hidden flex-col gap-0.5 w-full justify-center">
               <div className="flex justify-between items-start gap-2 w-full">
-                <Link to={`/${story.slug}`} className="flex-grow">
-                  <h4 className="font-serif text-[10px] font-bold text-primary hover:underline leading-tight break-words">
+                <Link to={`/${story.slug}`} className="flex-grow min-w-0">
+                  <h4 className="font-serif text-[10px] font-bold text-primary hover:underline leading-tight truncate line-clamp-1">
                     {story.title}
                   </h4>
                 </Link>

@@ -43,6 +43,8 @@ export interface ReaderContextType {
   activeChapter: ChapterDetails | null
   isLoading: boolean
   scrollProgress: number
+  setScrollProgress: (progress: number) => void
+  savedBookmarkProgress: number
   reloadChapter: () => void
   
   // Reader settings
@@ -129,11 +131,14 @@ export interface DockItemType {
   label: string
   onClick: () => void
   active?: boolean
+  className?: string
 }
 
 export interface DockProps {
   items: DockItemType[]
+  className?: string
   position?: 'bottom' | 'top'
+  children?: React.ReactNode
 }
 
 export interface ChapterSelectorProps {

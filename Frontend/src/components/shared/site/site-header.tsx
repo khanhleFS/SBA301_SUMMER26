@@ -151,7 +151,7 @@ export default function SiteHeader() {
             </Link>
           ) : (
             <button
-              onClick={() => navigate('/login', { replace: true })}
+              onClick={() => navigate('/login', { state: { from: location } })}
               className="hidden sm:flex items-center justify-center h-10 w-10 rounded-full hover:bg-muted transition-colors text-foreground"
               title="Đăng nhập"
             >

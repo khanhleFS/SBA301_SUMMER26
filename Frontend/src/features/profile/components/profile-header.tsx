@@ -1,20 +1,15 @@
-import { useNavigate } from 'react-router-dom'
-import { LogOut } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { BookOpen } from 'lucide-react'
 import { useProfile } from '../context/profile.context'
-import { useAuth } from '@/lib/auth'
+import { useAuthStore } from '@/store/auth.store'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 
 export function ProfileHeader() {
   const { data } = useProfile()
-  const { logout } = useAuth()
-  const navigate = useNavigate()
+  const authUser = useAuthStore(s => s.user)
   const user = data?.user
-
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login', { replace: true })
-  }
+  const isAuthor = authUser?.isAuthor || authUser?.role === 'ADMIN'
 
   return (
     <section className="mb-8 flex items-center justify-between gap-4">
@@ -34,15 +29,17 @@ export function ProfileHeader() {
         </div>
       </div>
 
-      {/* Logout Button */}
-      <button
-        onClick={handleLogout}
-        className="hover:bg-destructive/10 text-error hover:text-destructive flex items-center justify-center gap-3 transition-colors bg-transparent border-0 outline-none cursor-pointer flex-shrink-0"
-        title="Đăng xuất"
-      >
-        <p className='text-error text-sm font-medium'>Đăng xuất</p>
-        <LogOut className="h-5 w-5" />
-      </button>
+      {/* Author Dashboard Link — only shown if user is an author */}
+      {isAuthor && (
+        <Link
+          to="/author/dashboard"
+          className="flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all text-sm font-bold flex-shrink-0"
+          title="Trang dành cho tác giả"
+        >
+          <BookOpen className="h-4 w-4" />
+          <span className="hidden sm:inline">Trang tác giả</span>
+        </Link>
+      )}
     </section>
   )
 }

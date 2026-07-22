@@ -1,12 +1,42 @@
-import { Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import Container from '@/components/shared/site/container'
 import { useTopNovels } from '@/hooks/useTopNovels'
-
+import { extractId } from '../services/reader.service'
 import type { ReaderSuggestionsProps } from '../types/reader.types'
 
+const PLACEHOLDER = 'https://picsum.photos/seed/novel-cover/400/600'
+
+function truncateTitle(title?: string | null, maxWords = 3): string {
+  if (!title) return ''
+  const words = title.trim().split(/\s+/)
+  if (words.length > maxWords) {
+    return words.slice(0, maxWords).join(' ') + '...'
+  }
+  return title
+}
+
 export default function ReaderSuggestions({ currentTheme }: ReaderSuggestionsProps) {
-  // Fetch top 4 novels from the shared Zustand store
-  const { data: displayList = [], isLoading } = useTopNovels(4)
+  const { novelSlugWithId } = useParams<{ novelSlugWithId: string }>()
+  const currentNovelId = novelSlugWithId ? extractId(novelSlugWithId) : ''
+
+  // Fetch top 10 novels to have enough candidates after filtering out current novel
+  const { data: allNovels = [], isLoading } = useTopNovels(10)
+
+  // Filter out currently open novel
+  const displayList = allNovels.filter(n => {
+    if (!novelSlugWithId) return true
+    const nId = extractId(n.id)
+    const nSlugId = extractId(n.slug)
+    if (
+      n.slug === novelSlugWithId ||
+      String(n.id) === String(currentNovelId) ||
+      (nId && nId === currentNovelId) ||
+      (nSlugId && nSlugId === currentNovelId)
+    ) {
+      return false
+    }
+    return true
+  }).slice(0, 4)
 
   if (isLoading || displayList.length === 0) {
     return null
@@ -32,9 +62,13 @@ export default function ReaderSuggestions({ currentTheme }: ReaderSuggestionsPro
           >
             <div className="relative aspect-[3/4] overflow-hidden rounded-xl md:rounded-[32px] bg-secondary/30 border border-black/5 dark:border-white/5 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 group-hover:-translate-y-2">
               <img
-                src={novel.coverImageUrl || 'https://placehold.co/400x533/E6E1E5/4F378A?text=No+Cover'}
+                src={novel.coverImageUrl || PLACEHOLDER}
                 alt={novel.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                onError={(e) => {
+                  e.currentTarget.onerror = null
+                  e.currentTarget.src = PLACEHOLDER
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               {novel.categories && novel.categories.length > 0 && (
@@ -46,7 +80,7 @@ export default function ReaderSuggestions({ currentTheme }: ReaderSuggestionsPro
 
             <div className="space-y-1 text-center">
               <h3 className={`text-base md:text-xl font-bold group-hover:text-primary transition-colors line-clamp-1 ${currentTheme.text}`}>
-                {novel.title}
+                {truncateTitle(novel.title, 3)}
               </h3>
               <div className="flex items-center justify-center gap-2 text-[10px] md:text-xs font-bold">
                 <span className="text-primary inline-block">Chương {novel.chapterCount}</span>

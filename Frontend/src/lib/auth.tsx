@@ -57,7 +57,15 @@ export function GuestOnly({ children }: { children: React.ReactNode }) {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace state={{ from: location }} />
+    const fromState = (location.state as any)?.from
+    let target = '/'
+    if (typeof fromState === 'string' && fromState) {
+      target = fromState
+    } else if (fromState?.pathname) {
+      target = `${fromState.pathname}${fromState.search || ''}${fromState.hash || ''}`
+    }
+    const isAuthPage = ['/login', '/register', '/forgot-password', '/verify-otp'].some(p => target.startsWith(p))
+    return <Navigate to={isAuthPage ? '/' : target} replace />
   }
 
   return <>{children}</>

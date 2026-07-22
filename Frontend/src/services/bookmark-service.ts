@@ -4,25 +4,27 @@ import { api } from '@/lib/api'
 
 export interface BookmarkResponse {
   id: string
-  novelId: string
+  novelId: string | number
   novelTitle: string
   novelSlug: string
   coverImageUrl: string | null
   authorName: string | null
-  lastChapterId: string | null
+  lastChapterId: string | number | null
   lastChapterNumber: number | null
   lastChapterTitle: string | null
   lastChapterSlug: string | null
   totalChapters: number
   isFavorite: boolean
-  lastPage: number
+  readingProgressPercent: number | null
+  lastPage?: number | null
   createdAt: string
   updatedAt: string
 }
 
 export interface BookmarkRequest {
-  novelId: string
-  lastChapterId?: string | null
+  novelId: string | number
+  lastChapterId?: string | number | null
+  readingProgressPercent?: number | null
   lastPage?: number | null
   isFavorite?: boolean | null
 }

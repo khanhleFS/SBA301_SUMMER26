@@ -1,17 +1,39 @@
-import { Navigate, Outlet, Link } from 'react-router-dom'
+import { Navigate, Outlet, Link, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import AuthGalleryPlaceholder from '@/components/custom/auth-gallery-placeholder/AuthGalleryPlaceholder'
 import { useAuth } from '@/lib/auth'
 
 export default function GuestLayout() {
   const { isAuthenticated, user } = useAuth()
+  const location = useLocation()
 
-  // If user is already authenticated, redirect based on role
+  // If user is already authenticated, redirect back to previous page or appropriate target
   if (isAuthenticated) {
     if (user?.role === 'ADMIN') {
       return <Navigate to="/admin/dashboard" replace />
     }
-    return <Navigate to="/" replace />
+
+    const fromState = (location.state as any)?.from
+    let target = ''
+    if (typeof fromState === 'string' && fromState) {
+      target = fromState
+    } else if (fromState?.pathname) {
+      target = `${fromState.pathname}${fromState.search || ''}${fromState.hash || ''}`
+    }
+
+    const isAuthPage = (p: string) =>
+      ['/login', '/register', '/forgot-password', '/verify-otp'].some(path => p.startsWith(path))
+
+    if (!target || isAuthPage(target)) {
+      const lastVisited = typeof window !== 'undefined' ? sessionStorage.getItem('lastVisitedPath') : null
+      if (lastVisited && !isAuthPage(lastVisited)) {
+        target = lastVisited
+      } else {
+        target = '/'
+      }
+    }
+
+    return <Navigate to={target} replace />
   }
 
   return (

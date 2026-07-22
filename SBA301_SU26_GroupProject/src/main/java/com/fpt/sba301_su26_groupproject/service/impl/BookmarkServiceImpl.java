@@ -58,7 +58,7 @@ public class BookmarkServiceImpl implements BookmarkService {
             b.setUser(user);
             b.setNovel(novel);
             b.setIsFavorite(false);
-            b.setLastPage(0);
+            b.setReadingProgressPercent(0);
             b.setCreatedAt(Instant.now());
             return b;
         });
@@ -69,8 +69,8 @@ public class BookmarkServiceImpl implements BookmarkService {
         if (lastChapter != null) {
             bookmark.setLastChapter(lastChapter);
         }
-        if (request.lastPage() != null) {
-            bookmark.setLastPage(request.lastPage());
+        if (request.readingProgressPercent() != null) {
+            bookmark.setReadingProgressPercent(request.readingProgressPercent());
         }
         bookmark.setUpdatedAt(Instant.now());
 
@@ -151,7 +151,7 @@ public class BookmarkServiceImpl implements BookmarkService {
                 .lastChapterSlug(lastChapter != null ? lastChapter.getSlug() + "-" + lastChapter.getId() : null)
                 .totalChapters(totalChapters)
                 .isFavorite(bookmark.getIsFavorite())
-                .lastPage(bookmark.getLastPage())
+                .readingProgressPercent(bookmark.getReadingProgressPercent())
                 .createdAt(bookmark.getCreatedAt())
                 .updatedAt(bookmark.getUpdatedAt())
                 .build();
