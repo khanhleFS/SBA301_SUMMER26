@@ -101,14 +101,16 @@ export async function searchNovels(params: {
   page?: number
   size?: number
 }): Promise<NovelPageResponseDTO> {
-  const response = await api.get('/novels', { params: {
-    q: params.q || undefined,
-    category: params.category || undefined,
-    status: params.status || undefined,
-    minChapters: params.minChapters || undefined,
-    page: params.page ?? 0,
-    size: params.size ?? 20,
-  }})
+  const response = await api.get('/novels', {
+    params: {
+      q: params.q || undefined,
+      category: params.category || undefined,
+      status: params.status || undefined,
+      minChapters: params.minChapters || undefined,
+      page: params.page ?? 0,
+      size: params.size ?? 20,
+    }
+  })
   if (response.data && response.data.code === 200) {
     return response.data.result
   }
@@ -139,3 +141,26 @@ export async function getNovelStats(novelId: number | string): Promise<{
   throw new Error(response.data?.message || 'Không thể tải thống kê truyện')
 }
 
+/**
+ * Uploads a novel cover/image (Author access required).
+ * Endpoint: POST /author/novels/upload-image
+ * @param file The image file to upload.
+ * @returns Promise resolving to the Cloudinary image URL.
+ */
+export async function uploadNovelImage(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('file', file) // Đảm bảo key 'file' khớp với backend requirement
+
+  const response = await api.post('/author/novels/upload-image', formData, {
+    headers: {
+      'Content-Type': undefined, // Xóa default 'application/json', để Axios tự set multipart/form-data với boundary
+    },
+  })
+
+  // Theo chuẩn ApiResponse<String> của backend
+  if (response.data && response.data.code === 200) {
+    return response.data.result
+  }
+
+  throw new Error(response.data?.message || 'Upload ảnh truyện thất bại')
+}

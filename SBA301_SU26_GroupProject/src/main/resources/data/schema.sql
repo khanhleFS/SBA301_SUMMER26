@@ -198,7 +198,7 @@ CREATE INDEX idx_payments_created_at ON payments(created_at);
 CREATE TABLE coin_transactions (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     user_id UNIQUEIDENTIFIER NOT NULL,
-    type NVARCHAR(20) NOT NULL CHECK (type IN ('TOPUP', 'UNLOCKED_CHAPTER')),
+    type NVARCHAR(20) NOT NULL CHECK (type IN ('TOPUP', 'UNLOCKED_CHAPTER', 'UNLOCKED_CHAPTER')),
     amount INT NOT NULL,
     balance_after INT NOT NULL CHECK (balance_after >= 0),
     ref_id UNIQUEIDENTIFIER,

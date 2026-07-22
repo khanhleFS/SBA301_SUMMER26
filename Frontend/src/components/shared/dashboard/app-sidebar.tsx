@@ -94,9 +94,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     let items = [...data.navMain]
     if (isAuthorRoute) {
       items = [
+        { title: "Hồ sơ tác giả", url: "/author/me", icon: <User /> },
         { title: "Quản lý truyện", url: "/author/novels", icon: <BookOpen /> },
         { title: "Thống kê truyện", url: "/author/stats", icon: <BarChart3Icon /> },
-        { title: "Hồ sơ tác giả", url: "/author/me", icon: <User /> },
       ]
       return items.map((item) => ({
         ...item,
