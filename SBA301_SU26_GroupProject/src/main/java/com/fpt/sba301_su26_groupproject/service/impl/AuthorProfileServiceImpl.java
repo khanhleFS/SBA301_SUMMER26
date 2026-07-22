@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -130,23 +131,9 @@ public class AuthorProfileServiceImpl implements AuthorProfileService {
         AuthorProfile profile = authorProfileRepository.findByUserEmail(userEmail)
                 .orElseThrow(() -> new ApiException(CommonErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy hồ sơ tác giả cho tài khoản này."));
 
-        List<Novel> novels = novelRepository.findByAuthorId(profile.getUser().getId());
-        long totalNovels = novels.size();
-
-        long totalChapters = 0;
-        long totalViews = 0;
-
-        for (Novel novel : novels) {
-            long chapterCount = chapterRepository.countByNovelId(novel.getId());
-            totalChapters += chapterCount;
-
-            long novelViews = novel.getViewCount() != null ? novel.getViewCount() : 0;
-            Long chapterViews = chapterRepository.sumChapterViewCountByNovelId(novel.getId());
-            if (chapterViews != null) {
-                novelViews += chapterViews;
-            }
-            totalViews += novelViews;
-        }
+        long totalNovels = profile.getTotalNovels() != null ? profile.getTotalNovels() : 0L;
+        long totalChapters = profile.getTotalChapters() != null ? profile.getTotalChapters() : 0L;
+        long totalViews = profile.getTotalViews() != null ? profile.getTotalViews() : 0L;
 
         List<AuthorPaymentTicketDTO> tickets = ticketService.getMyTickets(userEmail);
         int estimatedVnd = profile.getAuthorCoinBalance() * 1000;
@@ -170,6 +157,9 @@ public class AuthorProfileServiceImpl implements AuthorProfileService {
                 .penName(profile.getPenName())
                 .bio(profile.getBio())
                 .authorCoinBalance(profile.getAuthorCoinBalance())
+                .totalNovels(profile.getTotalNovels())
+                .totalChapters(profile.getTotalChapters())
+                .totalViews(profile.getTotalViews())
                 .bankName(profile.getBankName())
                 .bankAccountNumber(profile.getBankAccountNumber())
                 .bankAccountHolder(profile.getBankAccountHolder())

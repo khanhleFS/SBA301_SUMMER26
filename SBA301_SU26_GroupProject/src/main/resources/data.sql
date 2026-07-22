@@ -30,8 +30,8 @@ INSERT INTO users (id, role, username, email, password, phone, address, is_activ
 -- -------------------------------------------------------------------------
 -- 1b. Author Profiles & Payment Tickets
 -- -------------------------------------------------------------------------
-INSERT INTO author_profiles (id, user_id, pen_name, bio, author_coin_balance, bank_name, bank_account_number, bank_account_holder, status, created_at, updated_at) VALUES
-('5c2d3e4f-6a7b-8c9d-0e1f-2a3b4c5d6e7f', '70eb648d-5444-5a43-bde1-06f8dab7d62a', 'Nguyen Nhat Anh', 'Tác giả chuyên sáng tác các bộ truyện kỳ ảo và học đường.', 1500, 'Vietcombank', '10123456789', 'NGUYEN NHAT ANH', 'APPROVED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO author_profiles (id, user_id, pen_name, bio, author_coin_balance, total_novels, total_chapters, total_views, bank_name, bank_account_number, bank_account_holder, status, created_at, updated_at) VALUES
+('5c2d3e4f-6a7b-8c9d-0e1f-2a3b4c5d6e7f', '70eb648d-5444-5a43-bde1-06f8dab7d62a', 'Nguyen Nhat Anh', 'Tác giả chuyên sáng tác các bộ truyện kỳ ảo và học đường.', 1500, 21, 21, 29890, 'Vietcombank', '10123456789', 'NGUYEN NHAT ANH', 'APPROVED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO author_payment_tickets (id, author_profile_id, month_year, total_coins, coin_rate, amount_vnd, status, paid_at, transaction_ref, created_at, updated_at) VALUES
 ('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', '5c2d3e4f-6a7b-8c9d-0e1f-2a3b4c5d6e7f', '06/2026', 1000, 1000, 1000000, 'PAID', CURRENT_TIMESTAMP, 'FT261750012345', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

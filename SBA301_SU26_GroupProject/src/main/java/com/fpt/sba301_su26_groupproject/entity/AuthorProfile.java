@@ -42,6 +42,24 @@ public class AuthorProfile extends BaseEntity {
     @Builder.Default
     private Integer authorCoinBalance = 0;
 
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "total_novels", nullable = false)
+    @Builder.Default
+    private Long totalNovels = 0L;
+
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "total_chapters", nullable = false)
+    @Builder.Default
+    private Long totalChapters = 0L;
+
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "total_views", nullable = false)
+    @Builder.Default
+    private Long totalViews = 0L;
+
     @Size(max = 100)
     @Nationalized
     @Column(name = "bank_name")

@@ -16,6 +16,7 @@ import com.fpt.sba301_su26_groupproject.repository.NovelCategoryRepository;
 import com.fpt.sba301_su26_groupproject.repository.NovelRepository;
 import com.fpt.sba301_su26_groupproject.repository.UserRepository;
 import com.fpt.sba301_su26_groupproject.repository.ChapterUnlockRepository;
+import com.fpt.sba301_su26_groupproject.repository.AuthorProfileRepository;
 import com.fpt.sba301_su26_groupproject.service.NovelService;
 import com.fpt.sba301_su26_groupproject.dto.novel.NovelStatsResponseDTO;
 import com.fpt.sba301_su26_groupproject.dto.novel.ChapterStatsDTO;
@@ -44,6 +45,7 @@ public class NovelServiceImpl implements NovelService {
     private final EnumRepository enumRepository;
     private final ChapterRepository chapterRepository;
     private final ChapterUnlockRepository chapterUnlockRepository;
+    private final AuthorProfileRepository authorProfileRepository;
 
     @Override
     @Transactional
@@ -73,6 +75,11 @@ public class NovelServiceImpl implements NovelService {
         if (requestDTO.categoryIds() != null && !requestDTO.categoryIds().isEmpty()) {
             assignCategoriesToNovel(savedNovel, requestDTO.categoryIds());
         }
+
+        authorProfileRepository.findByUserId(author.getId()).ifPresent(ap -> {
+            ap.setTotalNovels((ap.getTotalNovels() != null ? ap.getTotalNovels() : 0L) + 1);
+            authorProfileRepository.save(ap);
+        });
 
         return mapToResponseDTO(savedNovel);
     }

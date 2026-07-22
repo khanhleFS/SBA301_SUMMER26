@@ -99,6 +99,12 @@ public class ChapterServiceImpl implements ChapterService {
         novel.setUpdatedAt(Instant.now());
         novelRepository.save(novel);
         Chapter savedChapter = chapterRepository.save(chapter);
+
+        authorProfileRepository.findByUserId(novel.getAuthor().getId()).ifPresent(ap -> {
+            ap.setTotalChapters((ap.getTotalChapters() != null ? ap.getTotalChapters() : 0L) + 1);
+            authorProfileRepository.save(ap);
+        });
+
         return mapToResponseDTO(savedChapter);
     }
 
@@ -160,12 +166,18 @@ public class ChapterServiceImpl implements ChapterService {
             }
         }
         
-        // Tăng view count của chương truyện
+        // Tăng view count của chương truyện, truyện và hồ sơ tác giả
         chapter.setViewCount(chapter.getViewCount() + 1);
         chapterRepository.save(chapter);
-        
-        // Cập nhật view count của truyện (Novel) nếu cần thiết (không yêu cầu nhưng là best practice)
-        // Hiện tại chỉ tăng chapter view.
+
+        Novel novel = chapter.getNovel();
+        novel.setViewCount((novel.getViewCount() != null ? novel.getViewCount() : 0) + 1);
+        novelRepository.save(novel);
+
+        authorProfileRepository.findByUserId(novel.getAuthor().getId()).ifPresent(ap -> {
+            ap.setTotalViews((ap.getTotalViews() != null ? ap.getTotalViews() : 0L) + 1);
+            authorProfileRepository.save(ap);
+        });
         
         return mapToResponseDTO(chapter, userEmail);
     }
