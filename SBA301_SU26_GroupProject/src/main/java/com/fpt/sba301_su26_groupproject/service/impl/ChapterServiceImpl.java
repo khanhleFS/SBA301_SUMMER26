@@ -58,6 +58,8 @@ public class ChapterServiceImpl implements ChapterService {
 
     private final EncryptionService encryptionService;
 
+    private final AuthorProfileRepository authorProfileRepository;
+
     @Override
     @Transactional
     public ChapterResponseDTO createChapter(Long novelId, ChapterRequestDTO requestDTO, String authorEmail) {
@@ -263,9 +265,9 @@ public class ChapterServiceImpl implements ChapterService {
             throw new ApiException(ChapterErrorCode.CHAPTER_FREE, "Chương này miễn phí, không cần mở khóa.");
         }
 
-        // Kiểm tra xem user có phải tác giả hoặc admin không (không cần mua)
-        if (user.getRole() == UserRole.ADMIN || chapter.getNovel().getAuthor().getEmail().equals(userEmail)) {
-            throw new ApiException(ChapterErrorCode.CHAPTER_ALREADY_UNLOCKED, "Bạn là Admin hoặc Tác giả của bộ truyện này, bạn có quyền đọc miễn phí mà không cần mở khóa.");
+        // Kiểm tra xem user có phải tác giả hoặc admin không (không mua chapter)
+        if (user.getRole() == UserRole.ADMIN || user.getRole() == UserRole.AUTHOR || chapter.getNovel().getAuthor().getEmail().equals(userEmail)) {
+            throw new ApiException(ChapterErrorCode.CHAPTER_ALREADY_UNLOCKED, "Tài khoản Admin hoặc Tác giả không thực hiện mua chương trả phí.");
         }
 
         // Kiểm tra xem user đã mở khóa chương này chưa
@@ -274,17 +276,17 @@ public class ChapterServiceImpl implements ChapterService {
             throw new ApiException(ChapterErrorCode.CHAPTER_ALREADY_UNLOCKED, "Chương đã được mở khóa trước đó.");
         }
 
-        // Kiểm tra số dư coin
+        // Kiểm tra số dư coin của Độc giả
         Integer cost = chapter.getCoinPrice();
         if (user.getCoinBalance() < cost) {
             throw new ApiException(ChapterErrorCode.INSUFFICIENT_COINS, "Số dư coin không đủ để mở khóa chương.");
         }
 
-        // Thực hiện trừ coin
+        // 1. Thực hiện trừ coin của Độc giả
         user.setCoinBalance(user.getCoinBalance() - cost);
         userRepository.save(user);
 
-        // Lưu bản ghi mở khóa
+        // 2. Lưu bản ghi mở khóa
         ChapterUnlock unlock = new ChapterUnlock();
         unlock.setUser(user);
         unlock.setChapter(chapter);
@@ -292,7 +294,7 @@ public class ChapterServiceImpl implements ChapterService {
         unlock.setUnlockedAt(Instant.now());
         ChapterUnlock savedUnlock = chapterUnlockRepository.save(unlock);
 
-        // Lưu lịch sử giao dịch coin
+        // 3. Lưu lịch sử giao dịch coin của Độc giả
         CoinTransaction transaction = new CoinTransaction();
         transaction.setUser(user);
         transaction.setType(CoinTransactionType.UNLOCKED_CHAPTER);
@@ -303,6 +305,29 @@ public class ChapterServiceImpl implements ChapterService {
         transaction.setCoinPackage(null);
         transaction.setCreatedAt(Instant.now());
         coinTransactionRepository.save(transaction);
+
+        // 4. Trích % coin cho Tác giả (Tỉ lệ mặc định: 70% số coin bán chapter)
+        User authorUser = chapter.getNovel().getAuthor();
+        if (authorUser != null) {
+            authorProfileRepository.findByUserId(authorUser.getId()).ifPresent(authorProfile -> {
+                int authorEarned = Math.max(1, (int) Math.floor(cost * 0.70));
+                authorProfile.setAuthorCoinBalance(authorProfile.getAuthorCoinBalance() + authorEarned);
+                authorProfileRepository.save(authorProfile);
+
+                // Log giao dịch thu nhập cho Tác giả
+                CoinTransaction authorTx = new CoinTransaction();
+                authorTx.setUser(authorUser);
+                authorTx.setType(CoinTransactionType.AUTHOR_REVENUE);
+                authorTx.setAmount(authorEarned);
+                authorTx.setBalanceAfter(authorProfile.getAuthorCoinBalance());
+                authorTx.setRefId(savedUnlock.getId());
+                authorTx.setNote("Thu nhập từ lượt mua chương " + chapter.getChapterNumber() + " - " + chapter.getNovel().getTitle());
+                authorTx.setCreatedAt(Instant.now());
+                coinTransactionRepository.save(authorTx);
+
+                log.info("[Author Revenue] Tác giả {} nhận {} coin từ độc giả {}", authorProfile.getPenName(), authorEarned, user.getEmail());
+            });
+        }
 
         return ChapterUnlockResponseDTO.builder()
                 .chapterId(chapter.getId())

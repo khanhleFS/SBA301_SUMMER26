@@ -5,6 +5,8 @@
 -- =========================================================================
 
 -- Clear existing data
+DELETE FROM author_payment_tickets;
+DELETE FROM author_profiles;
 DELETE FROM orders;
 DELETE FROM revenues;
 DELETE FROM chapter_unlocks;
@@ -23,8 +25,17 @@ DELETE FROM users;
 -- -------------------------------------------------------------------------
 INSERT INTO users (id, role, username, email, password, phone, address, is_active, coin_balance, is_author, created_at, updated_at) VALUES
                                                                                                                              ('0befe623-b3a2-5045-8ec9-e6cb48b43cec', 'ADMIN', 'System Administrator', 'admin@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0901234567', '123 Admin Street, Hanoi', 1, 0, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                                                                             ('70eb648d-5444-5a43-bde1-06f8dab7d62a', 'USER', 'Nguyen Nhat Anh', 'author@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0912345678', '456 Author Boulevard, HCM City', 1, 1500, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                                                                                                                             ('70eb648d-5444-5a43-bde1-06f8dab7d62a', 'AUTHOR', 'Nguyen Nhat Anh', 'author@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0912345678', '456 Author Boulevard, HCM City', 1, 0, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
                                                                                                                              ('98bc5d00-38e0-54b1-8499-03ec52fb016a', 'USER', 'Tran Binh Minh', 'user@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0987654321', '789 Reader Lane, Da Nang', 1, 350, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- -------------------------------------------------------------------------
+-- 1b. Author Profiles & Payment Tickets
+-- -------------------------------------------------------------------------
+INSERT INTO author_profiles (id, user_id, pen_name, bio, author_coin_balance, bank_name, bank_account_number, bank_account_holder, status, created_at, updated_at) VALUES
+('5c2d3e4f-6a7b-8c9d-0e1f-2a3b4c5d6e7f', '70eb648d-5444-5a43-bde1-06f8dab7d62a', 'Nguyen Nhat Anh', 'Tác giả chuyên sáng tác các bộ truyện kỳ ảo và học đường.', 1500, 'Vietcombank', '10123456789', 'NGUYEN NHAT ANH', 'APPROVED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO author_payment_tickets (id, author_profile_id, month_year, total_coins, coin_rate, amount_vnd, status, paid_at, transaction_ref, created_at, updated_at) VALUES
+('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', '5c2d3e4f-6a7b-8c9d-0e1f-2a3b4c5d6e7f', '06/2026', 1000, 1000, 1000000, 'PAID', CURRENT_TIMESTAMP, 'FT261750012345', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- -------------------------------------------------------------------------
 -- 2. Categories

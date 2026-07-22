@@ -8,6 +8,8 @@
 -- ---------------------------------------------------------------
 -- DROP ORDER (children before parents)
 -- ---------------------------------------------------------------
+IF OBJECT_ID('author_payment_tickets','U') IS NOT NULL DROP TABLE author_payment_tickets;
+IF OBJECT_ID('author_profiles','U')       IS NOT NULL DROP TABLE author_profiles;
 IF OBJECT_ID('revenues','U')         IS NOT NULL DROP TABLE revenues;
 IF OBJECT_ID('coin_transactions','U') IS NOT NULL DROP TABLE coin_transactions;
 IF OBJECT_ID('chapter_unlocks','U')  IS NOT NULL DROP TABLE chapter_unlocks;
@@ -27,7 +29,7 @@ IF OBJECT_ID('users','U')            IS NOT NULL DROP TABLE users;
 -- ---------------------------------------------------------------
 CREATE TABLE users (
     id           UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
-    role         NVARCHAR(20)     NOT NULL CHECK (role IN ('ADMIN','USER')),
+    role         NVARCHAR(20)     NOT NULL CHECK (role IN ('ADMIN','USER','AUTHOR')),
     username     NVARCHAR(255)    NOT NULL,
     email        NVARCHAR(255)    NOT NULL,
     password     NVARCHAR(255)    NOT NULL,
@@ -274,3 +276,41 @@ ALTER TABLE payments ADD CONSTRAINT FK_payments_orders FOREIGN KEY (order_id) RE
 
 -- Cập nhật tài khoản tác giả cũ (chạy trực tiếp trên DB hiện tại):
 UPDATE users SET role = 'USER', is_author = 1 WHERE email = 'author@sba.com';
+
+-- =============================================================================
+-- Author Profiles & Payment Tickets
+-- =============================================================================
+IF OBJECT_ID('author_payment_tickets','U') IS NOT NULL DROP TABLE author_payment_tickets;
+IF OBJECT_ID('author_profiles','U')       IS NOT NULL DROP TABLE author_profiles;
+
+CREATE TABLE author_profiles (
+    id                  UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+    user_id             UNIQUEIDENTIFIER NOT NULL,
+    pen_name            NVARCHAR(255)    NOT NULL,
+    bio                 NVARCHAR(MAX)    NULL,
+    author_coin_balance INT              NOT NULL DEFAULT 0,
+    bank_name           NVARCHAR(100)    NULL,
+    bank_account_number NVARCHAR(100)    NULL,
+    bank_account_holder NVARCHAR(255)    NULL,
+    status              NVARCHAR(20)     NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','APPROVED','REJECTED','SUSPENDED')),
+    created_at          DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at          DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT uq_author_profiles_user UNIQUE (user_id),
+    CONSTRAINT fk_ap_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE author_payment_tickets (
+    id                UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+    author_profile_id UNIQUEIDENTIFIER NOT NULL,
+    month_year        NVARCHAR(20)     NOT NULL,
+    total_coins       INT              NOT NULL,
+    coin_rate         INT              NOT NULL DEFAULT 1000,
+    amount_vnd        INT              NOT NULL,
+    status            NVARCHAR(20)     NOT NULL DEFAULT 'UNPAID' CHECK (status IN ('UNPAID','PAID','CANCELLED')),
+    paid_at           DATETIME2        NULL,
+    transaction_ref   NVARCHAR(100)    NULL,
+    created_at        DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at        DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT fk_apt_author FOREIGN KEY (author_profile_id) REFERENCES author_profiles(id) ON DELETE CASCADE
+);
+
