@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,8 +30,8 @@ public class AuthorDashboardController {
 
     @Operation(summary = "Lấy hồ sơ Tác giả cá nhân")
     @GetMapping("/profile")
-    public ResponseEntity<ApiResponse<AuthorProfileResponseDTO>> getMyProfile(
-            @AuthenticationPrincipal String userEmail) {
+    public ResponseEntity<ApiResponse<AuthorProfileResponseDTO>> getMyProfile(Authentication authentication) {
+        String userEmail = authentication.getName();
         AuthorProfileResponseDTO result = authorProfileService.getMyAuthorProfile(userEmail);
         return ResponseEntity.ok(ApiResponse.<AuthorProfileResponseDTO>builder()
                 .code(200)
@@ -44,7 +44,8 @@ public class AuthorDashboardController {
     @PutMapping("/profile")
     public ResponseEntity<ApiResponse<AuthorProfileResponseDTO>> updateMyProfile(
             @Valid @RequestBody AuthorProfileRequestDTO requestDTO,
-            @AuthenticationPrincipal String userEmail) {
+            Authentication authentication) {
+        String userEmail = authentication.getName();
         AuthorProfileResponseDTO result = authorProfileService.updateMyAuthorProfile(requestDTO, userEmail);
         return ResponseEntity.ok(ApiResponse.<AuthorProfileResponseDTO>builder()
                 .code(200)
@@ -55,8 +56,8 @@ public class AuthorDashboardController {
 
     @Operation(summary = "Lấy tổng quan Author Dashboard", description = "Bao gồm thống kê truyện, views, ví coin tác giả và tickets gần nhất")
     @GetMapping("/dashboard")
-    public ResponseEntity<ApiResponse<AuthorDashboardDTO>> getDashboard(
-            @AuthenticationPrincipal String userEmail) {
+    public ResponseEntity<ApiResponse<AuthorDashboardDTO>> getDashboard(Authentication authentication) {
+        String userEmail = authentication.getName();
         AuthorDashboardDTO result = authorProfileService.getAuthorDashboard(userEmail);
         return ResponseEntity.ok(ApiResponse.<AuthorDashboardDTO>builder()
                 .code(200)
@@ -67,8 +68,8 @@ public class AuthorDashboardController {
 
     @Operation(summary = "Lấy danh sách Ticket quyết toán doanh thu hàng tháng")
     @GetMapping("/tickets")
-    public ResponseEntity<ApiResponse<List<AuthorPaymentTicketDTO>>> getMyTickets(
-            @AuthenticationPrincipal String userEmail) {
+    public ResponseEntity<ApiResponse<List<AuthorPaymentTicketDTO>>> getMyTickets(Authentication authentication) {
+        String userEmail = authentication.getName();
         List<AuthorPaymentTicketDTO> result = authorPaymentTicketService.getMyTickets(userEmail);
         return ResponseEntity.ok(ApiResponse.<List<AuthorPaymentTicketDTO>>builder()
                 .code(200)

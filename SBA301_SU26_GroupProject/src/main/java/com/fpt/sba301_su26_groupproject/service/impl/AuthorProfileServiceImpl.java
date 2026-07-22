@@ -137,11 +137,15 @@ public class AuthorProfileServiceImpl implements AuthorProfileService {
         long totalViews = 0;
 
         for (Novel novel : novels) {
-            Integer chapterCount = chapterRepository.findMaxChapterNumberByNovelId(novel.getId());
-            if (chapterCount != null) totalChapters += chapterCount;
+            long chapterCount = chapterRepository.countByNovelId(novel.getId());
+            totalChapters += chapterCount;
 
-            Integer viewCount = chapterRepository.findLatestChapterViewCountByNovelId(novel.getId());
-            if (viewCount != null) totalViews += viewCount;
+            long novelViews = novel.getViewCount() != null ? novel.getViewCount() : 0;
+            Long chapterViews = chapterRepository.sumChapterViewCountByNovelId(novel.getId());
+            if (chapterViews != null) {
+                novelViews += chapterViews;
+            }
+            totalViews += novelViews;
         }
 
         List<AuthorPaymentTicketDTO> tickets = ticketService.getMyTickets(userEmail);
