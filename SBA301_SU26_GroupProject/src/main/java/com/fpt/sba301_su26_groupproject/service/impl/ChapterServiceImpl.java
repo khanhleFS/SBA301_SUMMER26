@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChapterServiceImpl implements ChapterService {
 
-    @Value("${app.chapter.coin-price:5}")
+    @Value("${app.chapter.coin-price:10}")
     private int chapterCoinPrice;
 
     private final ChapterRepository chapterRepository;
