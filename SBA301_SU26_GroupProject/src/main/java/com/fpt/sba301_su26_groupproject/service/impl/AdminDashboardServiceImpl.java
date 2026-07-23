@@ -12,8 +12,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,8 +56,8 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         }
 
         // === Weekly revenue (current week: Monday to Sunday) ===
-        java.time.LocalDate today = java.time.LocalDate.now();
-        java.time.LocalDate monday = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+        LocalDate today = LocalDate.now();
+        LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDateTime startOfWeek = monday.atStartOfDay();
         LocalDateTime endOfWeek = monday.plusDays(7).atStartOfDay();
 
