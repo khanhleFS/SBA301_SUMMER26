@@ -8,6 +8,4 @@ import java.util.Optional;
 
 @Repository
 public interface RefreshTokenRedisRepository extends CrudRepository<RefreshTokenRedis, String> {
-    Optional<RefreshTokenRedis> findByToken(String token);
-    void deleteByToken(String token);
 }

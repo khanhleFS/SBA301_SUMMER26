@@ -32,8 +32,6 @@ public class AuthorProfileServiceImpl implements AuthorProfileService {
 
     private final AuthorProfileRepository authorProfileRepository;
     private final UserRepository userRepository;
-    private final NovelRepository novelRepository;
-    private final ChapterRepository chapterRepository;
     private final AuthorPaymentTicketService ticketService;
     private final PasswordEncoder passwordEncoder;
 

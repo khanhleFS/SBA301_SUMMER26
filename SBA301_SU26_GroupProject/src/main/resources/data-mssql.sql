@@ -1009,6 +1009,11 @@ SET author_coin_balance = 2340,
     updated_at          = CURRENT_TIMESTAMP
 WHERE user_id = '70eb648d-5444-5a43-bde1-06f8dab7d62a';
 
+-- Cập nhật tất cả các chương dùng xu (LOCKED) thành 10 xu
+UPDATE chapters
+SET coin_price = 10
+WHERE status = 'LOCKED' OR coin_price > 0;
+
 -- -------------------------------------------------------------------------
 -- S7. Verify thống kê sau khi seed
 -- -------------------------------------------------------------------------

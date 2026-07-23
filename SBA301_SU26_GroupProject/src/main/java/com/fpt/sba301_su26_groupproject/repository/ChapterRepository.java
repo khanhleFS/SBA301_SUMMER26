@@ -23,12 +23,12 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     @Query("SELECT c.viewCount FROM Chapter c WHERE c.novel.id = :novelId AND c.chapterNumber = (SELECT MAX(c2.chapterNumber) FROM Chapter c2 WHERE c2.novel.id = :novelId)")
     Integer findLatestChapterViewCountByNovelId(@Param("novelId") Long novelId);
 
-    @Query("SELECT COUNT(c) FROM Chapter c WHERE c.novel.id = :novelId")
-    long countByNovelId(@Param("novelId") Long novelId);
-
-    @Query("SELECT COALESCE(SUM(c.viewCount), 0) FROM Chapter c WHERE c.novel.id = :novelId")
-    Long sumChapterViewCountByNovelId(@Param("novelId") Long novelId);
-
-    @Query("SELECT COUNT(c) FROM Chapter c WHERE c.novel.author.id = :authorUserId")
-    long countByAuthorUserId(@Param("authorUserId") UUID authorUserId);
+//    @Query("SELECT COUNT(c) FROM Chapter c WHERE c.novel.id = :novelId")
+//    long countByNovelId(@Param("novelId") Long novelId);
+//
+//    @Query("SELECT COALESCE(SUM(c.viewCount), 0) FROM Chapter c WHERE c.novel.id = :novelId")
+//    Long sumChapterViewCountByNovelId(@Param("novelId") Long novelId);
+//
+//    @Query("SELECT COUNT(c) FROM Chapter c WHERE c.novel.author.id = :authorUserId")
+//    long countByAuthorUserId(@Param("authorUserId") UUID authorUserId);
 }

@@ -689,6 +689,8 @@ INSERT INTO revenues (id, novel_id, author_id, total_coins_earned, free_chapter_
 INSERT INTO revenues (id, novel_id, author_id, total_coins_earned, free_chapter_count, total_chapter_count, author_share_percent, author_coins, calculated_at) VALUES ('cd385c57-2e3c-5e12-b2c8-a8a58b5e308c', '95f34a48-9034-5c66-8615-ec00064f3fc2', '70eb648d-5444-5a43-bde1-06f8dab7d62a', 375, 5, 20, 70.00, 262, CURRENT_TIMESTAMP);
 INSERT INTO revenues (id, novel_id, author_id, total_coins_earned, free_chapter_count, total_chapter_count, author_share_percent, author_coins, calculated_at) VALUES ('53ead51c-876d-5745-805d-0cc05219a334', '519dc999-cf18-57de-8858-45cf18b794e2', '70eb648d-5444-5a43-bde1-06f8dab7d62a', 375, 5, 27, 70.00, 262, CURRENT_TIMESTAMP);
 INSERT INTO revenues (id, novel_id, author_id, total_coins_earned, free_chapter_count, total_chapter_count, author_share_percent, author_coins, calculated_at) VALUES ('5a587bd4-c09e-535a-a6f9-41ab88e46b93', '8d2c6065-4d66-5d7f-8349-b8381f337f23', '70eb648d-5444-5a43-bde1-06f8dab7d62a', 375, 5, 29, 70.00, 262, CURRENT_TIMESTAMP);
+-- Cập nhật tất cả các chương dùng xu (LOCKED) thành 10 xu
+UPDATE chapters SET coin_price = 10 WHERE status = 'LOCKED' OR coin_price > 0;
 
 -- -------------------------------------------------------------------------
 -- 12. Verify (H2 compatible)
