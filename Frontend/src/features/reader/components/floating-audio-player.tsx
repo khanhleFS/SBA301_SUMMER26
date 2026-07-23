@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useDragControls } from 'framer-motion'
 import {
   Play,
   Pause,
@@ -38,6 +38,7 @@ export default function FloatingAudioPlayer({
   onClose
 }: FloatingAudioPlayerProps) {
   const trackRef = useRef<HTMLDivElement>(null)
+  const dragControls = useDragControls()
 
   const formatTime = (time: number) => {
     if (isNaN(time) || time === Infinity) return '0:00'
@@ -52,8 +53,10 @@ export default function FloatingAudioPlayer({
   const displayChapter = chapter
   const displayNovel = novel
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  const handleSeekPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!trackRef.current || !duration || !audioUrl) return
+    // Prevent this from bubbling to framer-motion's drag listener
+    e.stopPropagation()
     const rect = trackRef.current.getBoundingClientRect()
 
     const updateProgress = (clientX: number) => {
@@ -63,6 +66,7 @@ export default function FloatingAudioPlayer({
     }
 
     updateProgress(e.clientX)
+    ;(e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId)
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       updateProgress(moveEvent.clientX)
@@ -80,13 +84,15 @@ export default function FloatingAudioPlayer({
   return (
     <motion.div
       drag
+      dragControls={dragControls}
+      dragListener={false}
       dragMomentum={false}
       dragElastic={0.1}
       dragTransition={{ power: 0.1, timeConstant: 200 }}
       initial={{ opacity: 0, scale: 0.95, y: 100 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 100 }}
-      className="fixed bottom-6 left-4 sm:left-10 z-[110] bg-surface backdrop-blur-md rounded-[28px] p-4 pr-5 flex gap-4 w-[92%] max-w-[410px] shadow-[0_24px_50px_rgba(0,0,0,0.5)] border border-white/10 select-none cursor-grab active:cursor-grabbing text-white"
+      className="fixed bottom-6 left-4 sm:left-10 z-[110] bg-surface backdrop-blur-md rounded-[28px] p-4 pr-5 flex gap-4 w-[92%] max-w-[410px] shadow-[0_24px_50px_rgba(0,0,0,0.5)] border border-white/10 select-none text-white"
     >
       <button
         onClick={onClose}
@@ -96,11 +102,15 @@ export default function FloatingAudioPlayer({
         <X className="w-4 h-4" />
       </button>
 
-      <div className="bg-[#1e1e1e] w-[100px] h-[135px] rounded-md flex items-center justify-center shrink-0 shadow-lg  overflow-hidden">
+      {/* Drag handle: cover image area */}
+      <div
+        className="bg-[#1e1e1e] w-[100px] h-[135px] rounded-md flex items-center justify-center shrink-0 shadow-lg overflow-hidden cursor-grab active:cursor-grabbing"
+        onPointerDown={(e) => dragControls.start(e)}
+      >
         {cover ? (
-          <img src={cover} alt={displayNovel} className="w-full h-full object-cover" />
+          <img src={cover} alt={displayNovel} className="w-full h-full object-cover pointer-events-none" />
         ) : (
-          <Music className="w-8 h-8 text-[#1db954] opacity-80" />
+          <Music className="w-8 h-8 text-[#1db954] opacity-80 pointer-events-none" />
         )}
       </div>
 
@@ -108,8 +118,12 @@ export default function FloatingAudioPlayer({
       <div className="flex flex-col flex-1 w-full justify-center min-h-[100px] min-w-0 gap-1.5">
 
         {/* Thêm pr-7 đủ chỗ né nút X, leading-[1.3] để không mất nét chữ dưới */}
-        <div className="flex flex-col min-w-0 pr-7">
-          <h4 className="text-on-surface font-bold text-xs tracking-wide truncate leading-[1.3]" title={displayNovel}>
+        {/* Title row also acts as a drag handle */}
+        <div
+          className="flex flex-col min-w-0 pr-7 cursor-grab active:cursor-grabbing"
+          onPointerDown={(e) => dragControls.start(e)}
+        >
+          <h4 className="text-on-surface font-bold text-xs tracking-wide truncate leading-[1.3] pointer-events-none" title={displayNovel}>
             {displayNovel} - {displayChapter}
           </h4>
         </div>
@@ -119,7 +133,7 @@ export default function FloatingAudioPlayer({
             <div className="mt-2">
               <div
                 className="w-full h-3 flex items-center cursor-pointer group touch-none"
-                onPointerDown={handlePointerDown}
+                onPointerDown={handleSeekPointerDown}
                 ref={trackRef}
               >
                 <div className="w-full h-[4px] bg-on-surface/20 rounded-full relative">

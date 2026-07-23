@@ -61,9 +61,6 @@ function CashFlowChart({ cashFlow, cashFlowMonth }: CashFlowChartProps) {
               Tháng
             </button>
           </div>
-          <button className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-surface-container">
-            Xuất báo cáo
-          </button>
         </div>
       </div>
 

@@ -3,10 +3,12 @@ import { storyDetailService, extractId } from '../services/story-detail.service'
 import type { StoryDetailInfo, ChapterItem, StoryDetailContextType } from '../types/story-detail.types'
 import { getBookmark, upsertBookmark, removeBookmark } from '@/services/bookmark-service'
 import { useAuthStore } from '@/store/auth.store'
+import { useErrorHandler } from '@/lib/error-handler'
 
 const StoryDetailContext = createContext<StoryDetailContextType | undefined>(undefined)
 
 export function StoryDetailProvider({ children, storyId }: { children: ReactNode, storyId: string }) {
+  const { addToast } = useErrorHandler()
   const [storyInfo, setStoryInfo] = useState<StoryDetailInfo | null>(null)
   const [chapters, setChapters] = useState<ChapterItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -61,7 +63,14 @@ export function StoryDetailProvider({ children, storyId }: { children: ReactNode
 
   // Toggle bookmark (add / remove from library)
   const toggleLibrary = useCallback(async () => {
-    if (!isAuthenticated) return
+    if (!isAuthenticated) {
+      addToast({
+        title: 'Yêu cầu đăng nhập',
+        message: 'Vui lòng đăng nhập để lưu truyện vào danh sách yêu thích.',
+        variant: 'warning'
+      })
+      return
+    }
 
     const novelId = extractId(storyId)
     if (!novelId) return

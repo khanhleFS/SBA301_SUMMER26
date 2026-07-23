@@ -70,8 +70,9 @@ export function DashboardChartSection({ chartData, platformNet }: DashboardChart
 
       <div className="flex min-h-[6rem] flex-col items-start justify-center rounded-xl border border-primary bg-primary p-5 text-white shadow-sm lg:col-span-3">
         <div className="w-full">
-          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-on-primary">Doanh thu ròng (25%)</div>
-          <div className="mt-4 text-4xl font-bold leading-none sm:text-5xl text-on-primary">{formatFullVND(Math.round(platformNet))}</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-on-primary">Doanh thu nạp</div>
+          <div className="mt-3 text-4xl font-bold leading-tight sm:text-5xl text-on-primary">{formatShortVND(Math.round(platformNet))}</div>
+          <div className="mt-1 text-xs text-on-primary/70 font-medium">{formatFullVND(Math.round(platformNet))}</div>
         </div>
       </div>
     </section >
@@ -131,12 +132,6 @@ export function DashboardTransactionsSection({
         <div className="flex h-[40px] items-center justify-between gap-3 border-b border-outline-variant pb-3">
           <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Giao dịch gần đây</div>
 
-          <button
-            onClick={() => { }}
-            className="inline-flex items-center gap-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-[11px] font-bold text-primary transition-colors hover:bg-surface-container"
-          >
-            Xem tất cả <ArrowRight className="h-3.5 w-3.5" />
-          </button>
         </div>
 
         {/* DANH SÁCH */}
@@ -236,8 +231,8 @@ function PackageCard({ data }: PackageCardProps) {
   return (
     <div
       className={`relative flex flex-col justify-between overflow-hidden rounded-xl border p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md ${isPopular
-          ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
-          : 'border-outline-variant bg-surface-container-lowest'
+        ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+        : 'border-outline-variant bg-surface-container-lowest'
         }`}
     >
       {isPopular && (
