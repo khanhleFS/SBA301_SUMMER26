@@ -51,6 +51,24 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             monthlyRevenueVnd.add(sum != null ? sum.longValue() : 0L);
         }
 
+        // === Weekly revenue (current week: Monday to Sunday) ===
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate monday = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+        LocalDateTime startOfWeek = monday.atStartOfDay();
+        LocalDateTime endOfWeek = monday.plusDays(7).atStartOfDay();
+
+        List<Order> weeklyOrders = orderRepository.findCompletedOrdersBetween(startOfWeek, endOfWeek);
+        long[] weeklyArr = new long[7];
+        for (Order o : weeklyOrders) {
+            if (o.getCreatedAt() != null) {
+                int dayIdx = o.getCreatedAt().getDayOfWeek().getValue() - 1; // 1 (Mon) -> 0 ... 7 (Sun) -> 6
+                if (dayIdx >= 0 && dayIdx < 7) {
+                    weeklyArr[dayIdx] += o.getAmountVnd();
+                }
+            }
+        }
+        List<Long> weeklyRevenueVnd = java.util.Arrays.stream(weeklyArr).boxed().toList();
+
         // === Recent 5 COMPLETED orders ===
         List<Order> recentOrders = orderRepository.findTop5CompletedOrders(PageRequest.of(0, 5));
         List<AdminDashboardResponseDTO.RecentOrderDTO> recentOrderDTOs = recentOrders.stream()
@@ -71,6 +89,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .totalRevenueVnd(totalRevenueVnd)
                 .platformRevenueVnd(platformRevenueVnd)
                 .monthlyRevenueVnd(monthlyRevenueVnd)
+                .weeklyRevenueVnd(weeklyRevenueVnd)
                 .recentOrders(recentOrderDTOs)
                 .build();
     }

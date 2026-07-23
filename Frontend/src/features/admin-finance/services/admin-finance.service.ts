@@ -65,9 +65,13 @@ export async function fetchFinanceData(): Promise<FinanceData> {
     value: v,
   }))
 
-  // --- Weekly placeholder (7 days) ---
+  // --- Weekly chart (7 days: T2 - CN) ---
+  const weekly: number[] = dash.weeklyRevenueVnd ?? []
   const DAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
-  const cashFlow: CashFlowItem[] = DAY_LABELS.map((label) => ({ label, value: 0 }))
+  const cashFlow: CashFlowItem[] = DAY_LABELS.map((label, index) => ({
+    label,
+    value: weekly[index] ?? 0,
+  }))
 
   // --- Recent deposits from dashboard recentOrders ---
   const recentOrders: any[] = dash.recentOrders ?? []

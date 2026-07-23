@@ -26,6 +26,9 @@ public record AdminDashboardResponseDTO(
         @Schema(description = "Doanh thu theo từng tháng trong năm hiện tại (index 0 = Tháng 1)")
         List<Long> monthlyRevenueVnd,
 
+        @Schema(description = "Doanh thu nạp ví theo 7 ngày trong tuần hiện tại (T2 đến CN)")
+        List<Long> weeklyRevenueVnd,
+
         @Schema(description = "5 giao dịch gần đây nhất")
         List<RecentOrderDTO> recentOrders
 ) {

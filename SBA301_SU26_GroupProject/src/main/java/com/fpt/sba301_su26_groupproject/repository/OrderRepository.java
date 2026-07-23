@@ -38,6 +38,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
         """, nativeQuery = true)
     List<Object[]> getMonthlyRevenue(@Param("year") int year);
 
+    @Query("SELECT o FROM Order o WHERE o.status = 'COMPLETED' AND o.createdAt >= :startOfWeek AND o.createdAt <= :endOfWeek")
+    List<Order> findCompletedOrdersBetween(@Param("startOfWeek") java.time.LocalDateTime startOfWeek, @Param("endOfWeek") java.time.LocalDateTime endOfWeek);
+
     @Query("SELECT o FROM Order o JOIN FETCH o.user WHERE o.status = 'COMPLETED' ORDER BY o.createdAt DESC")
     List<Order> findTop5CompletedOrders(org.springframework.data.domain.Pageable pageable);
 }

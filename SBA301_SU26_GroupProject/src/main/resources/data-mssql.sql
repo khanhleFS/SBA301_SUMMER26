@@ -724,6 +724,301 @@ UNION ALL SELECT 'Bookmarks', COUNT(*) FROM bookmarks
 UNION ALL SELECT 'Revenues', COUNT(*) FROM revenues;
 
 -- =============================================================================
+-- STATISTICAL SEED DATA: Admin Dashboard & Author Stats
+-- Mục đích: Cung cấp dữ liệu thực cho biểu đồ doanh số Admin (12 tháng 2026)
+--           và thống kê chương tác giả (lượt đọc, doanh thu xu, tỉ lệ VIP).
+-- =============================================================================
+
+-- -------------------------------------------------------------------------
+-- S1. Reader accounts bổ sung (9 users) để tạo orders phong phú
+-- -------------------------------------------------------------------------
+INSERT INTO users (id, role, username, email, password, phone, address, is_active, coin_balance, is_author, created_at, updated_at) VALUES
+('aa000001-bbbb-cccc-dddd-ee0000000001', 'USER', N'Le Van Nam',      'user2@sba.com',  '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0911111111', N'Hanoi',      1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('aa000002-bbbb-cccc-dddd-ee0000000002', 'USER', N'Pham Thi Hoa',    'user3@sba.com',  '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0922222222', N'HCM City',   1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('aa000003-bbbb-cccc-dddd-ee0000000003', 'USER', N'Nguyen Van Tuan', 'user4@sba.com',  '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0933333333', N'Da Nang',    1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('aa000004-bbbb-cccc-dddd-ee0000000004', 'USER', N'Tran Thi Mai',    'user5@sba.com',  '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0944444444', N'Can Tho',    1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('aa000005-bbbb-cccc-dddd-ee0000000005', 'USER', N'Hoang Van Long',  'user6@sba.com',  '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0955555555', N'Hai Phong',  1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('aa000006-bbbb-cccc-dddd-ee0000000006', 'USER', N'Vo Thi Lan',      'user7@sba.com',  '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0966666666', N'Hue',        1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('aa000007-bbbb-cccc-dddd-ee0000000007', 'USER', N'Bui Thanh Hung',  'user8@sba.com',  '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0977777777', N'Vung Tau',   1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('aa000008-bbbb-cccc-dddd-ee0000000008', 'USER', N'Dang Thi Kim',    'user9@sba.com',  '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0988888888', N'Nha Trang',  1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('aa000009-bbbb-cccc-dddd-ee0000000009', 'USER', N'Ngo Van Kiet',    'user10@sba.com', '$2a$12$Uwo2BFDsFLkNsdRON/ZvWe4ZNGrRFW113PStx/cKKOV3z0Xs7rgtu', '0999999999', N'Binh Duong', 1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- -------------------------------------------------------------------------
+-- S2. Orders COMPLETED phân bổ theo tháng 2026
+--     → Admin: Doanh số nạp tiền, biểu đồ 12 tháng, Doanh thu ròng 25%
+--     Coin packages: 001 = 10.000đ | 002 = 100.000đ | 003 = 500.000đ
+-- -------------------------------------------------------------------------
+
+-- Tháng 1/2026 ≈ 710.000đ
+INSERT INTO orders (id, user_id, coin_package_id, amount_vnd, coins, quantity, status, created_at, updated_at) VALUES
+('0d010001-0000-0000-0000-000000000000', '98bc5d00-38e0-54b1-8499-03ec52fb016a', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-01-05 09:00:00', '2026-01-05 09:00:00'),
+('0d010002-0000-0000-0000-000000000000', 'aa000001-bbbb-cccc-dddd-ee0000000001', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-01-10 14:00:00', '2026-01-10 14:00:00'),
+('0d010003-0000-0000-0000-000000000000', 'aa000002-bbbb-cccc-dddd-ee0000000002', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-01-15 11:00:00', '2026-01-15 11:00:00'),
+('0d010004-0000-0000-0000-000000000000', 'aa000003-bbbb-cccc-dddd-ee0000000003', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-01-22 10:00:00', '2026-01-22 10:00:00');
+
+-- Tháng 2/2026 ≈ 820.000đ
+INSERT INTO orders (id, user_id, coin_package_id, amount_vnd, coins, quantity, status, created_at, updated_at) VALUES
+('0d020001-0000-0000-0000-000000000000', 'aa000004-bbbb-cccc-dddd-ee0000000004', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-02-04 09:30:00', '2026-02-04 09:30:00'),
+('0d020002-0000-0000-0000-000000000000', 'aa000005-bbbb-cccc-dddd-ee0000000005', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-02-09 16:00:00', '2026-02-09 16:00:00'),
+('0d020003-0000-0000-0000-000000000000', 'aa000006-bbbb-cccc-dddd-ee0000000006', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-02-13 10:00:00', '2026-02-13 10:00:00'),
+('0d020004-0000-0000-0000-000000000000', 'aa000007-bbbb-cccc-dddd-ee0000000007', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-02-20 14:00:00', '2026-02-20 14:00:00'),
+('0d020005-0000-0000-0000-000000000000', 'aa000001-bbbb-cccc-dddd-ee0000000001', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-02-26 11:00:00', '2026-02-26 11:00:00');
+
+-- Tháng 3/2026 ≈ 1.320.000đ
+INSERT INTO orders (id, user_id, coin_package_id, amount_vnd, coins, quantity, status, created_at, updated_at) VALUES
+('0d030001-0000-0000-0000-000000000000', 'aa000002-bbbb-cccc-dddd-ee0000000002', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-03-02 10:00:00', '2026-03-02 10:00:00'),
+('0d030002-0000-0000-0000-000000000000', 'aa000008-bbbb-cccc-dddd-ee0000000008', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-03-06 14:00:00', '2026-03-06 14:00:00'),
+('0d030003-0000-0000-0000-000000000000', 'aa000003-bbbb-cccc-dddd-ee0000000003', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-03-10 09:00:00', '2026-03-10 09:00:00'),
+('0d030004-0000-0000-0000-000000000000', 'aa000009-bbbb-cccc-dddd-ee0000000009', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-03-14 11:30:00', '2026-03-14 11:30:00'),
+('0d030005-0000-0000-0000-000000000000', 'aa000004-bbbb-cccc-dddd-ee0000000004', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-03-18 15:00:00', '2026-03-18 15:00:00'),
+('0d030006-0000-0000-0000-000000000000', 'aa000005-bbbb-cccc-dddd-ee0000000005', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-03-22 10:00:00', '2026-03-22 10:00:00'),
+('0d030007-0000-0000-0000-000000000000', 'aa000006-bbbb-cccc-dddd-ee0000000006', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-03-28 16:00:00', '2026-03-28 16:00:00');
+
+-- Tháng 4/2026 ≈ 1.210.000đ
+INSERT INTO orders (id, user_id, coin_package_id, amount_vnd, coins, quantity, status, created_at, updated_at) VALUES
+('0d040001-0000-0000-0000-000000000000', 'aa000007-bbbb-cccc-dddd-ee0000000007', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-04-03 10:00:00', '2026-04-03 10:00:00'),
+('0d040002-0000-0000-0000-000000000000', '98bc5d00-38e0-54b1-8499-03ec52fb016a', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-04-08 14:00:00', '2026-04-08 14:00:00'),
+('0d040003-0000-0000-0000-000000000000', 'aa000008-bbbb-cccc-dddd-ee0000000008', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-04-12 09:00:00', '2026-04-12 09:00:00'),
+('0d040004-0000-0000-0000-000000000000', 'aa000009-bbbb-cccc-dddd-ee0000000009', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-04-16 15:00:00', '2026-04-16 15:00:00'),
+('0d040005-0000-0000-0000-000000000000', 'aa000001-bbbb-cccc-dddd-ee0000000001', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-04-20 10:30:00', '2026-04-20 10:30:00'),
+('0d040006-0000-0000-0000-000000000000', 'aa000002-bbbb-cccc-dddd-ee0000000002', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-04-26 11:00:00', '2026-04-26 11:00:00');
+
+-- Tháng 5/2026 ≈ 1.720.000đ
+INSERT INTO orders (id, user_id, coin_package_id, amount_vnd, coins, quantity, status, created_at, updated_at) VALUES
+('0d050001-0000-0000-0000-000000000000', 'aa000003-bbbb-cccc-dddd-ee0000000003', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-05-03 09:00:00', '2026-05-03 09:00:00'),
+('0d050002-0000-0000-0000-000000000000', 'aa000004-bbbb-cccc-dddd-ee0000000004', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-05-07 14:00:00', '2026-05-07 14:00:00'),
+('0d050003-0000-0000-0000-000000000000', 'aa000005-bbbb-cccc-dddd-ee0000000005', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-05-10 10:00:00', '2026-05-10 10:00:00'),
+('0d050004-0000-0000-0000-000000000000', 'aa000006-bbbb-cccc-dddd-ee0000000006', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-05-14 16:00:00', '2026-05-14 16:00:00'),
+('0d050005-0000-0000-0000-000000000000', 'aa000007-bbbb-cccc-dddd-ee0000000007', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-05-19 09:30:00', '2026-05-19 09:30:00'),
+('0d050006-0000-0000-0000-000000000000', 'aa000008-bbbb-cccc-dddd-ee0000000008', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-05-22 11:00:00', '2026-05-22 11:00:00'),
+('0d050007-0000-0000-0000-000000000000', 'aa000009-bbbb-cccc-dddd-ee0000000009', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-05-26 14:30:00', '2026-05-26 14:30:00'),
+('0d050008-0000-0000-0000-000000000000', '98bc5d00-38e0-54b1-8499-03ec52fb016a', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-05-29 10:00:00', '2026-05-29 10:00:00');
+
+-- Tháng 6/2026 ≈ 2.110.000đ
+INSERT INTO orders (id, user_id, coin_package_id, amount_vnd, coins, quantity, status, created_at, updated_at) VALUES
+('0d060001-0000-0000-0000-000000000000', 'aa000001-bbbb-cccc-dddd-ee0000000001', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-06-02 09:00:00', '2026-06-02 09:00:00'),
+('0d060002-0000-0000-0000-000000000000', 'aa000002-bbbb-cccc-dddd-ee0000000002', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-06-05 14:00:00', '2026-06-05 14:00:00'),
+('0d060003-0000-0000-0000-000000000000', 'aa000003-bbbb-cccc-dddd-ee0000000003', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-06-08 10:00:00', '2026-06-08 10:00:00'),
+('0d060004-0000-0000-0000-000000000000', 'aa000004-bbbb-cccc-dddd-ee0000000004', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-06-11 16:00:00', '2026-06-11 16:00:00'),
+('0d060005-0000-0000-0000-000000000000', 'aa000005-bbbb-cccc-dddd-ee0000000005', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-06-14 09:30:00', '2026-06-14 09:30:00'),
+('0d060006-0000-0000-0000-000000000000', 'aa000006-bbbb-cccc-dddd-ee0000000006', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-06-17 11:00:00', '2026-06-17 11:00:00'),
+('0d060007-0000-0000-0000-000000000000', 'aa000007-bbbb-cccc-dddd-ee0000000007', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-06-20 14:00:00', '2026-06-20 14:00:00'),
+('0d060008-0000-0000-0000-000000000000', 'aa000008-bbbb-cccc-dddd-ee0000000008', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-06-23 10:00:00', '2026-06-23 10:00:00'),
+('0d060009-0000-0000-0000-000000000000', '98bc5d00-38e0-54b1-8499-03ec52fb016a', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-06-27 15:30:00', '2026-06-27 15:30:00');
+
+-- Tháng 7/2026 ≈ 1.320.000đ (tháng hiện tại, chưa kết thúc)
+INSERT INTO orders (id, user_id, coin_package_id, amount_vnd, coins, quantity, status, created_at, updated_at) VALUES
+('0d070001-0000-0000-0000-000000000000', 'aa000009-bbbb-cccc-dddd-ee0000000009', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-07-02 09:00:00', '2026-07-02 09:00:00'),
+('0d070002-0000-0000-0000-000000000000', 'aa000001-bbbb-cccc-dddd-ee0000000001', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-07-06 14:00:00', '2026-07-06 14:00:00'),
+('0d070003-0000-0000-0000-000000000000', 'aa000002-bbbb-cccc-dddd-ee0000000002', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-07-09 10:00:00', '2026-07-09 10:00:00'),
+('0d070004-0000-0000-0000-000000000000', 'aa000003-bbbb-cccc-dddd-ee0000000003', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-07-12 16:00:00', '2026-07-12 16:00:00'),
+('0d070005-0000-0000-0000-000000000000', 'aa000004-bbbb-cccc-dddd-ee0000000004', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-07-15 11:00:00', '2026-07-15 11:00:00'),
+('0d070006-0000-0000-0000-000000000000', 'aa000005-bbbb-cccc-dddd-ee0000000005', '11111111-0000-0000-0000-000000000001',  10000, 100,  1, 'COMPLETED', '2026-07-18 09:30:00', '2026-07-18 09:30:00'),
+-- Tuần hiện tại (20/07/2026 - 26/07/2026: T2 - CN)
+('0d070007-0000-0000-0000-000000000000', 'aa000006-bbbb-cccc-dddd-ee0000000006', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-07-20 14:00:00', '2026-07-20 14:00:00'), -- T2
+('0d070008-0000-0000-0000-000000000000', 'aa000001-bbbb-cccc-dddd-ee0000000001', '11111111-0000-0000-0000-000000000002', 200000, 1100, 2, 'COMPLETED', '2026-07-21 10:00:00', '2026-07-21 10:00:00'), -- T3
+('0d070009-0000-0000-0000-000000000000', 'aa000002-bbbb-cccc-dddd-ee0000000002', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-07-22 15:30:00', '2026-07-22 15:30:00'), -- T4
+('0d070010-0000-0000-0000-000000000000', 'aa000003-bbbb-cccc-dddd-ee0000000003', '11111111-0000-0000-0000-000000000002', 100000, 550,  1, 'COMPLETED', '2026-07-23 09:00:00', '2026-07-23 09:00:00'), -- T5
+('0d070011-0000-0000-0000-000000000000', 'aa000004-bbbb-cccc-dddd-ee0000000004', '11111111-0000-0000-0000-000000000002', 300000, 1650, 3, 'COMPLETED', '2026-07-24 11:00:00', '2026-07-24 11:00:00'), -- T6
+('0d070012-0000-0000-0000-000000000000', 'aa000005-bbbb-cccc-dddd-ee0000000005', '11111111-0000-0000-0000-000000000003', 500000, 3000, 1, 'COMPLETED', '2026-07-25 16:00:00', '2026-07-25 16:00:00'), -- T7
+('0d070013-0000-0000-0000-000000000000', 'aa000007-bbbb-cccc-dddd-ee0000000007', '11111111-0000-0000-0000-000000000002', 200000, 1100, 2, 'COMPLETED', '2026-07-26 20:00:00', '2026-07-26 20:00:00'); -- CN
+
+-- -------------------------------------------------------------------------
+-- S3. Chapter Unlocks cho Author Stats
+--     Novel 1 = Shadow Academy, VIP chapters 6-20 (coin_price 20-40)
+--     Dùng subquery để tránh hardcode chapter_id tự tăng.
+--     Phân phối dần giảm mô phỏng hành vi đọc thực tế.
+-- -------------------------------------------------------------------------
+
+-- Ch 6 (5 users unlock → cao nhất)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00060001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 6), 25, DATEADD(DAY, -20, CURRENT_TIMESTAMP)),
+('00060002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 6), 25, DATEADD(DAY, -18, CURRENT_TIMESTAMP)),
+('00060003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 6), 25, DATEADD(DAY, -17, CURRENT_TIMESTAMP)),
+('00060004-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 6), 25, DATEADD(DAY, -16, CURRENT_TIMESTAMP)),
+('00060005-0000-0000-0000-000000000001', 'aa000005-bbbb-cccc-dddd-ee0000000005', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 6), 25, DATEADD(DAY, -15, CURRENT_TIMESTAMP));
+
+-- Ch 7 (5 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00070001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 7), 30, DATEADD(DAY, -19, CURRENT_TIMESTAMP)),
+('00070002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 7), 30, DATEADD(DAY, -17, CURRENT_TIMESTAMP)),
+('00070003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 7), 30, DATEADD(DAY, -16, CURRENT_TIMESTAMP)),
+('00070004-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 7), 30, DATEADD(DAY, -14, CURRENT_TIMESTAMP)),
+('00070005-0000-0000-0000-000000000001', 'aa000005-bbbb-cccc-dddd-ee0000000005', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 7), 30, DATEADD(DAY, -13, CURRENT_TIMESTAMP));
+
+-- Ch 8 (4 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00080001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 8), 35, DATEADD(DAY, -18, CURRENT_TIMESTAMP)),
+('00080002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 8), 35, DATEADD(DAY, -16, CURRENT_TIMESTAMP)),
+('00080003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 8), 35, DATEADD(DAY, -15, CURRENT_TIMESTAMP)),
+('00080004-0000-0000-0000-000000000001', 'aa000006-bbbb-cccc-dddd-ee0000000006', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 8), 35, DATEADD(DAY, -14, CURRENT_TIMESTAMP));
+
+-- Ch 9 (4 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00090001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 9), 40, DATEADD(DAY, -17, CURRENT_TIMESTAMP)),
+('00090002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 9), 40, DATEADD(DAY, -15, CURRENT_TIMESTAMP)),
+('00090003-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 9), 40, DATEADD(DAY, -13, CURRENT_TIMESTAMP)),
+('00090004-0000-0000-0000-000000000001', 'aa000006-bbbb-cccc-dddd-ee0000000006', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 9), 40, DATEADD(DAY, -12, CURRENT_TIMESTAMP));
+
+-- Ch 10 (4 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00100001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 10), 20, DATEADD(DAY, -16, CURRENT_TIMESTAMP)),
+('00100002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 10), 20, DATEADD(DAY, -14, CURRENT_TIMESTAMP)),
+('00100003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 10), 20, DATEADD(DAY, -12, CURRENT_TIMESTAMP)),
+('00100004-0000-0000-0000-000000000001', 'aa000007-bbbb-cccc-dddd-ee0000000007', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 10), 20, DATEADD(DAY, -11, CURRENT_TIMESTAMP));
+
+-- Ch 11 (4 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00110001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 11), 25, DATEADD(DAY, -15, CURRENT_TIMESTAMP)),
+('00110002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 11), 25, DATEADD(DAY, -13, CURRENT_TIMESTAMP)),
+('00110003-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 11), 25, DATEADD(DAY, -11, CURRENT_TIMESTAMP)),
+('00110004-0000-0000-0000-000000000001', 'aa000007-bbbb-cccc-dddd-ee0000000007', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 11), 25, DATEADD(DAY, -10, CURRENT_TIMESTAMP));
+
+-- Ch 12 (3 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00120001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 12), 30, DATEADD(DAY, -14, CURRENT_TIMESTAMP)),
+('00120002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 12), 30, DATEADD(DAY, -12, CURRENT_TIMESTAMP)),
+('00120003-0000-0000-0000-000000000001', 'aa000005-bbbb-cccc-dddd-ee0000000005', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 12), 30, DATEADD(DAY, -10, CURRENT_TIMESTAMP));
+
+-- Ch 13 (3 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00130001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 13), 35, DATEADD(DAY, -13, CURRENT_TIMESTAMP)),
+('00130002-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 13), 35, DATEADD(DAY, -11, CURRENT_TIMESTAMP)),
+('00130003-0000-0000-0000-000000000001', 'aa000005-bbbb-cccc-dddd-ee0000000005', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 13), 35, DATEADD(DAY, -9, CURRENT_TIMESTAMP));
+
+-- Ch 14 (3 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00140001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 14), 40, DATEADD(DAY, -12, CURRENT_TIMESTAMP)),
+('00140002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 14), 40, DATEADD(DAY, -10, CURRENT_TIMESTAMP)),
+('00140003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 14), 40, DATEADD(DAY, -8, CURRENT_TIMESTAMP));
+
+-- Ch 15 (2 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00150001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 15), 20, DATEADD(DAY, -11, CURRENT_TIMESTAMP)),
+('00150002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 15), 20, DATEADD(DAY, -9, CURRENT_TIMESTAMP));
+
+-- Ch 16 (2 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00160001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 16), 25, DATEADD(DAY, -10, CURRENT_TIMESTAMP)),
+('00160002-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 16), 25, DATEADD(DAY, -8, CURRENT_TIMESTAMP));
+
+-- Ch 17 (2 users)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00170001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 17), 30, DATEADD(DAY, -9, CURRENT_TIMESTAMP)),
+('00170002-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 17), 30, DATEADD(DAY, -7, CURRENT_TIMESTAMP));
+
+-- Ch 18 (1 user)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00180001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 18), 35, DATEADD(DAY, -8, CURRENT_TIMESTAMP));
+
+-- Ch 19 (1 user)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00190001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 19), 40, DATEADD(DAY, -7, CURRENT_TIMESTAMP));
+
+-- Ch 20 (1 user)
+INSERT INTO chapter_unlocks (id, user_id, chapter_id, coins_spent, unlocked_at) VALUES
+('00200001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', (SELECT id FROM chapters WHERE novel_id = 1 AND chapter_number = 20), 20, DATEADD(DAY, -6, CURRENT_TIMESTAMP));
+
+-- -------------------------------------------------------------------------
+-- S4. Coin Transactions tương ứng với chapter unlocks (UNLOCKED_CHAPTER)
+-- -------------------------------------------------------------------------
+INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, note, created_at) VALUES
+-- aa000001 (user2) - unlock ch 6-20
+('00060001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -25, 525, N'Unlock Shadow Academy Ch.6',  DATEADD(DAY, -20, CURRENT_TIMESTAMP)),
+('00070001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -30, 495, N'Unlock Shadow Academy Ch.7',  DATEADD(DAY, -19, CURRENT_TIMESTAMP)),
+('00080001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -35, 460, N'Unlock Shadow Academy Ch.8',  DATEADD(DAY, -18, CURRENT_TIMESTAMP)),
+('00090001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -40, 420, N'Unlock Shadow Academy Ch.9',  DATEADD(DAY, -17, CURRENT_TIMESTAMP)),
+('00100001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -20, 400, N'Unlock Shadow Academy Ch.10', DATEADD(DAY, -16, CURRENT_TIMESTAMP)),
+('00110001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -25, 375, N'Unlock Shadow Academy Ch.11', DATEADD(DAY, -15, CURRENT_TIMESTAMP)),
+('00120001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -30, 345, N'Unlock Shadow Academy Ch.12', DATEADD(DAY, -14, CURRENT_TIMESTAMP)),
+('00130001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -35, 310, N'Unlock Shadow Academy Ch.13', DATEADD(DAY, -13, CURRENT_TIMESTAMP)),
+('00140001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -40, 270, N'Unlock Shadow Academy Ch.14', DATEADD(DAY, -12, CURRENT_TIMESTAMP)),
+('00150001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -20, 250, N'Unlock Shadow Academy Ch.15', DATEADD(DAY, -11, CURRENT_TIMESTAMP)),
+('00160001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -25, 225, N'Unlock Shadow Academy Ch.16', DATEADD(DAY, -10, CURRENT_TIMESTAMP)),
+('00170001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -30, 195, N'Unlock Shadow Academy Ch.17', DATEADD(DAY, -9,  CURRENT_TIMESTAMP)),
+('00180001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -35, 160, N'Unlock Shadow Academy Ch.18', DATEADD(DAY, -8,  CURRENT_TIMESTAMP)),
+('00190001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -40, 120, N'Unlock Shadow Academy Ch.19', DATEADD(DAY, -7,  CURRENT_TIMESTAMP)),
+('00200001-0000-0000-0000-000000000001', 'aa000001-bbbb-cccc-dddd-ee0000000001', 'UNLOCKED_CHAPTER', -20, 100, N'Unlock Shadow Academy Ch.20', DATEADD(DAY, -6,  CURRENT_TIMESTAMP));
+
+INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, note, created_at) VALUES
+-- aa000002 (user3) - unlock ch 6-15
+('00060002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', 'UNLOCKED_CHAPTER', -25, 75, N'Unlock Shadow Academy Ch.6',  DATEADD(DAY, -18, CURRENT_TIMESTAMP)),
+('00070002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', 'UNLOCKED_CHAPTER', -30, 45, N'Unlock Shadow Academy Ch.7',  DATEADD(DAY, -17, CURRENT_TIMESTAMP)),
+('00080002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', 'UNLOCKED_CHAPTER', -35, 10, N'Unlock Shadow Academy Ch.8',  DATEADD(DAY, -16, CURRENT_TIMESTAMP)),
+('00090002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', 'UNLOCKED_CHAPTER', -40, 0,  N'Unlock Shadow Academy Ch.9',  DATEADD(DAY, -15, CURRENT_TIMESTAMP)),
+('00100002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', 'UNLOCKED_CHAPTER', -20, 0,  N'Unlock Shadow Academy Ch.10', DATEADD(DAY, -14, CURRENT_TIMESTAMP)),
+('00110002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', 'UNLOCKED_CHAPTER', -25, 0,  N'Unlock Shadow Academy Ch.11', DATEADD(DAY, -13, CURRENT_TIMESTAMP)),
+('00120002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', 'UNLOCKED_CHAPTER', -30, 0,  N'Unlock Shadow Academy Ch.12', DATEADD(DAY, -12, CURRENT_TIMESTAMP)),
+('00140002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', 'UNLOCKED_CHAPTER', -40, 0,  N'Unlock Shadow Academy Ch.14', DATEADD(DAY, -10, CURRENT_TIMESTAMP)),
+('00150002-0000-0000-0000-000000000001', 'aa000002-bbbb-cccc-dddd-ee0000000002', 'UNLOCKED_CHAPTER', -20, 0,  N'Unlock Shadow Academy Ch.15', DATEADD(DAY, -9,  CURRENT_TIMESTAMP));
+
+INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, note, created_at) VALUES
+-- aa000003 (user4) - unlock ch 6-14
+('00060003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', 'UNLOCKED_CHAPTER', -25, 0, N'Unlock Shadow Academy Ch.6',  DATEADD(DAY, -17, CURRENT_TIMESTAMP)),
+('00070003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', 'UNLOCKED_CHAPTER', -30, 0, N'Unlock Shadow Academy Ch.7',  DATEADD(DAY, -16, CURRENT_TIMESTAMP)),
+('00080003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', 'UNLOCKED_CHAPTER', -35, 0, N'Unlock Shadow Academy Ch.8',  DATEADD(DAY, -15, CURRENT_TIMESTAMP)),
+('00100003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', 'UNLOCKED_CHAPTER', -20, 0, N'Unlock Shadow Academy Ch.10', DATEADD(DAY, -12, CURRENT_TIMESTAMP)),
+('00130003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', 'UNLOCKED_CHAPTER', -35, 0, N'Unlock Shadow Academy Ch.13', DATEADD(DAY, -11, CURRENT_TIMESTAMP)),
+('00140003-0000-0000-0000-000000000001', 'aa000003-bbbb-cccc-dddd-ee0000000003', 'UNLOCKED_CHAPTER', -40, 0, N'Unlock Shadow Academy Ch.14', DATEADD(DAY, -8,  CURRENT_TIMESTAMP));
+
+INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, note, created_at) VALUES
+-- aa000004 (user5) - unlock ch 6-11, 16-17
+('00060004-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', 'UNLOCKED_CHAPTER', -25, 0, N'Unlock Shadow Academy Ch.6',  DATEADD(DAY, -16, CURRENT_TIMESTAMP)),
+('00070004-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', 'UNLOCKED_CHAPTER', -30, 0, N'Unlock Shadow Academy Ch.7',  DATEADD(DAY, -14, CURRENT_TIMESTAMP)),
+('00090004-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', 'UNLOCKED_CHAPTER', -40, 0, N'Unlock Shadow Academy Ch.9',  DATEADD(DAY, -13, CURRENT_TIMESTAMP)),
+('00110004-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', 'UNLOCKED_CHAPTER', -25, 0, N'Unlock Shadow Academy Ch.11', DATEADD(DAY, -11, CURRENT_TIMESTAMP)),
+('00160004-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', 'UNLOCKED_CHAPTER', -25, 0, N'Unlock Shadow Academy Ch.16', DATEADD(DAY, -8,  CURRENT_TIMESTAMP)),
+('00170004-0000-0000-0000-000000000001', 'aa000004-bbbb-cccc-dddd-ee0000000004', 'UNLOCKED_CHAPTER', -30, 0, N'Unlock Shadow Academy Ch.17', DATEADD(DAY, -7,  CURRENT_TIMESTAMP));
+
+INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, note, created_at) VALUES
+-- aa000005 (user6) - unlock ch 6-7, 12-13
+('00060005-0000-0000-0000-000000000001', 'aa000005-bbbb-cccc-dddd-ee0000000005', 'UNLOCKED_CHAPTER', -25, 0, N'Unlock Shadow Academy Ch.6',  DATEADD(DAY, -15, CURRENT_TIMESTAMP)),
+('00070005-0000-0000-0000-000000000001', 'aa000005-bbbb-cccc-dddd-ee0000000005', 'UNLOCKED_CHAPTER', -30, 0, N'Unlock Shadow Academy Ch.7',  DATEADD(DAY, -13, CURRENT_TIMESTAMP)),
+('00120005-0000-0000-0000-000000000001', 'aa000005-bbbb-cccc-dddd-ee0000000005', 'UNLOCKED_CHAPTER', -30, 0, N'Unlock Shadow Academy Ch.12', DATEADD(DAY, -10, CURRENT_TIMESTAMP)),
+('00130005-0000-0000-0000-000000000001', 'aa000005-bbbb-cccc-dddd-ee0000000005', 'UNLOCKED_CHAPTER', -35, 0, N'Unlock Shadow Academy Ch.13', DATEADD(DAY, -9,  CURRENT_TIMESTAMP));
+
+INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, note, created_at) VALUES
+-- aa000006 - unlock ch 8-9
+('00080006-0000-0000-0000-000000000001', 'aa000006-bbbb-cccc-dddd-ee0000000006', 'UNLOCKED_CHAPTER', -35, 0, N'Unlock Shadow Academy Ch.8',  DATEADD(DAY, -14, CURRENT_TIMESTAMP)),
+('00090006-0000-0000-0000-000000000001', 'aa000006-bbbb-cccc-dddd-ee0000000006', 'UNLOCKED_CHAPTER', -40, 0, N'Unlock Shadow Academy Ch.9',  DATEADD(DAY, -12, CURRENT_TIMESTAMP));
+
+INSERT INTO coin_transactions (id, user_id, type, amount, balance_after, note, created_at) VALUES
+-- aa000007 - unlock ch 10-11
+('00100007-0000-0000-0000-000000000001', 'aa000007-bbbb-cccc-dddd-ee0000000007', 'UNLOCKED_CHAPTER', -20, 0, N'Unlock Shadow Academy Ch.10', DATEADD(DAY, -11, CURRENT_TIMESTAMP)),
+('00110007-0000-0000-0000-000000000001', 'aa000007-bbbb-cccc-dddd-ee0000000007', 'UNLOCKED_CHAPTER', -25, 0, N'Unlock Shadow Academy Ch.11', DATEADD(DAY, -10, CURRENT_TIMESTAMP));
+
+-- -------------------------------------------------------------------------
+-- S5. Author Payment Tickets - lịch sử quyết toán doanh thu hàng tháng
+--     Tháng 01-05/2026: PAID | Tháng 06/2026: đã có sẵn ở trên | 07/2026: chờ
+-- -------------------------------------------------------------------------
+INSERT INTO author_payment_tickets (id, author_profile_id, month_year, total_coins, coin_rate, amount_vnd, status, paid_at, transaction_ref, created_at, updated_at) VALUES
+('00000101-0000-0000-0000-000000000001', '5c2d3e4f-6a7b-8c9d-0e1f-2a3b4c5d6e7f', '01/2026',  820, 1000,  820000, 'PAID', '2026-02-15 10:00:00', 'FT26020001', '2026-02-01 00:00:00', '2026-02-15 10:00:00'),
+('00000201-0000-0000-0000-000000000001', '5c2d3e4f-6a7b-8c9d-0e1f-2a3b4c5d6e7f', '02/2026',  960, 1000,  960000, 'PAID', '2026-03-15 10:00:00', 'FT26030002', '2026-03-01 00:00:00', '2026-03-15 10:00:00'),
+('00000301-0000-0000-0000-000000000001', '5c2d3e4f-6a7b-8c9d-0e1f-2a3b4c5d6e7f', '03/2026', 1150, 1000, 1150000, 'PAID', '2026-04-15 10:00:00', 'FT26040003', '2026-04-01 00:00:00', '2026-04-15 10:00:00'),
+('00000401-0000-0000-0000-000000000001', '5c2d3e4f-6a7b-8c9d-0e1f-2a3b4c5d6e7f', '04/2026', 1080, 1000, 1080000, 'PAID', '2026-05-15 10:00:00', 'FT26050004', '2026-05-01 00:00:00', '2026-05-15 10:00:00'),
+('00000501-0000-0000-0000-000000000001', '5c2d3e4f-6a7b-8c9d-0e1f-2a3b4c5d6e7f', '05/2026', 1430, 1000, 1430000, 'PAID', '2026-06-15 10:00:00', 'FT26060005', '2026-06-01 00:00:00', '2026-06-15 10:00:00');
+
+-- -------------------------------------------------------------------------
+-- S6. Cập nhật Author Profile: authorCoinBalance = tích lũy tháng 07/2026
+--     (Doanh thu xu từ chapter unlocks tháng này, chưa quyết toán)
+-- -------------------------------------------------------------------------
+UPDATE author_profiles
+SET author_coin_balance = 2340,
+    total_views         = 31200,
+    total_chapters      = 421,
+    updated_at          = CURRENT_TIMESTAMP
+WHERE user_id = '70eb648d-5444-5a43-bde1-06f8dab7d62a';
+
+-- -------------------------------------------------------------------------
+-- S7. Verify thống kê sau khi seed
+-- -------------------------------------------------------------------------
+SELECT 'Orders (COMPLETED)'  AS stat, COUNT(*) AS cnt FROM orders WHERE status = 'COMPLETED'
+UNION ALL SELECT 'New Users',          COUNT(*) FROM users WHERE email LIKE 'user%@sba.com' AND email != 'user@sba.com'
+UNION ALL SELECT 'Chapter Unlocks',    COUNT(*) FROM chapter_unlocks
+UNION ALL SELECT 'Coin Transactions',  COUNT(*) FROM coin_transactions
+UNION ALL SELECT 'Payment Tickets',    COUNT(*) FROM author_payment_tickets;
+
+-- =============================================================================
 -- SINGLE NOVEL BELL-CURVE DEMO (Empire of Glass = novel_id 10)
 -- NOTE: Đoạn này dùng DECLARE / CURSOR nên phải chạy thủ công trong SSMS.
 --       Spring SQL init không hỗ trợ T-SQL batch với biến cục bộ.
