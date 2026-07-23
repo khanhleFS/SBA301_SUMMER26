@@ -1,32 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Coins, CheckCircle2, Plus, Minus, X, Loader2, WalletCards, CreditCard, Smartphone } from 'lucide-react'
+import { Coins, CheckCircle2, Plus, Minus, X, Loader2 } from 'lucide-react'
 import Container from '@/components/shared/site/container'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { getActiveCoinPackages } from '@/services/coin-package-service'
 import { fetchProfileData } from '@/features/profile/services/profile.service'
 import { createOrder } from '@/services/payment-service'
-import type { MomoRequestType, MomoPaymentMethod } from './types/payment.types'
-
-const MOMO_PAYMENT_METHODS: MomoPaymentMethod[] = [
-  {
-    value: 'captureWallet',
-    title: 'Ví MoMo',
-    description: 'Thanh toán trực tiếp bằng ứng dụng MoMo hoặc quét QR.',
-    icon: Smartphone,
-  },
-  {
-    value: 'payWithATM',
-    title: 'Thẻ ATM / Internet Banking',
-    description: 'Thanh toán qua thẻ nội địa và ngân hàng liên kết.',
-    icon: WalletCards,
-  },
-  {
-    value: 'payWithCC',
-    title: 'Visa / Mastercard',
-    description: 'Thanh toán bằng thẻ quốc tế được MoMo hỗ trợ.',
-    icon: CreditCard,
-  },
-]
+import type { MomoRequestType } from './types/payment.types'
 
 export default function PaymentCreateFeature() {
 
@@ -56,7 +35,7 @@ export default function PaymentCreateFeature() {
   const [selectedPkgId, setSelectedPkgId] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedMomoMethod, setSelectedMomoMethod] = useState<MomoRequestType>('captureWallet')
+  const [selectedMomoMethod, setSelectedMomoMethod] = useState<MomoRequestType>('payWithATM')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   // Sync selected package once loaded
@@ -296,7 +275,7 @@ export default function PaymentCreateFeature() {
                   <div className="mt-4">
                     <button
                       onClick={() => {
-                        setSelectedMomoMethod('captureWallet')
+                        setSelectedMomoMethod('payWithATM')
                         setIsModalOpen(true)
                       }}
                       className="btn-primary flex w-full items-center justify-between px-5 py-4 text-lg rounded-xl shadow-md hover:shadow-lg transition-all"
@@ -337,50 +316,13 @@ export default function PaymentCreateFeature() {
               Bạn đang thanh toán <span className="font-bold text-primary">{formatVND(totalPrice)}</span> cho <span className="font-bold text-tertiary">{totalCoins.toLocaleString()} Coins</span>.
             </p>
 
-            <div className="mb-4">
-              <p className="mb-3 text-sm font-semibold text-on-surface">Chọn phương thức thanh toán MoMo</p>
-              <div className="grid gap-3">
-                {MOMO_PAYMENT_METHODS.map((method) => {
-                  const isSelected = selectedMomoMethod === method.value
-                  const Icon = method.icon
 
-                  return (
-                    <button
-                      key={method.value}
-                      type="button"
-                      onClick={() => setSelectedMomoMethod(method.value)}
-                      className={`flex items-start gap-3 rounded-xl border p-4 text-left transition-all ${isSelected
-                        ? 'border-primary bg-primary/5 shadow-sm ring-2 ring-primary/20'
-                        : 'border-outline/20 bg-surface-container-low hover:border-primary/40 hover:bg-surface-container'
-                        }`}
-                    >
-                      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${isSelected ? 'bg-primary text-white' : 'bg-surface-container text-on-surface'}`}>
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-bold text-on-surface">{method.title}</span>
-                        <span className="mt-0.5 block text-xs leading-5 text-on-surface-variant">{method.description}</span>
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
 
             <div className="mb-6 flex items-center gap-4 rounded-xl border border-outline/20 bg-surface-container-low p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white p-1 shrink-0 shadow-sm">
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
-                  alt="MoMo Logo"
-                  className="h-full w-full object-contain"
-                />
-              </div>
               <div className="flex min-w-0 flex-col">
-                <span className="text-base font-bold text-on-surface">{MOMO_PAYMENT_METHODS.find((method) => method.value === selectedMomoMethod)?.title ?? 'MoMo'}</span>
+                <span className="text-base font-bold text-on-surface">Thẻ ATM / Internet Banking</span>
                 <span className="text-xs font-medium text-on-surface-variant">
-                  {selectedMomoMethod === 'captureWallet' && 'Thanh toán qua ứng dụng hoặc quét mã QR MoMo'}
-                  {selectedMomoMethod === 'payWithATM' && 'Thanh toán bằng thẻ ATM / Internet Banking'}
-                  {selectedMomoMethod === 'payWithCC' && 'Thanh toán bằng thẻ Visa / Mastercard'}
+                  Thanh toán bằng thẻ ATM / Internet Banking
                 </span>
               </div>
             </div>
