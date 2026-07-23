@@ -7,6 +7,7 @@ import com.fpt.sba301_su26_groupproject.repository.OrderRepository;
 import com.fpt.sba301_su26_groupproject.repository.UserRepository;
 import com.fpt.sba301_su26_groupproject.service.AdminDashboardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,8 +70,9 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         }
         List<Long> weeklyRevenueVnd = java.util.Arrays.stream(weeklyArr).boxed().toList();
 
-        // === Recent 5 COMPLETED orders ===
-        List<Order> recentOrders = orderRepository.findTop5CompletedOrders(PageRequest.of(0, 5));
+        // === Recent orders (last 20 completed) ===
+        Page<Order> orderPage = orderRepository.findAllCompletedOrders(PageRequest.of(0, 5));
+        List<Order> recentOrders = orderPage.getContent(); // Lấy danh sách từ Page
         List<AdminDashboardResponseDTO.RecentOrderDTO> recentOrderDTOs = recentOrders.stream()
                 .map(o -> AdminDashboardResponseDTO.RecentOrderDTO.builder()
                         .orderId(o.getId())

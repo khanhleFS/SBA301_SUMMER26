@@ -17,11 +17,10 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface NovelRepository extends JpaRepository<Novel, Long>, JpaSpecificationExecutor<Novel> {
     List<Novel> findByAuthorId(UUID authorId);
 
-    @Query("SELECT COALESCE(SUM(n.viewCount), 0) FROM Novel n WHERE n.author.id = :authorId")
-    long sumViewCountByAuthorId(@Param("authorId") UUID authorId);
     Optional<Novel> findBySlug(String slug);
-    boolean existsBySlug(String slug);
+
     boolean existsByTitle(String title);
+
     @Query("SELECT COUNT(n) > 0 FROM Novel n WHERE n.title = :title AND n.id <> :id")
     boolean existsByTitleAndIdNot(@Param("title") String title, @Param("id") Long id);
 

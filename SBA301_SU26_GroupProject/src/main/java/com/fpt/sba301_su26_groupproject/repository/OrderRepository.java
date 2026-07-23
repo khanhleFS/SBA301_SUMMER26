@@ -2,6 +2,8 @@ package com.fpt.sba301_su26_groupproject.repository;
 
 import com.fpt.sba301_su26_groupproject.entity.Enumeration.OrderStatus;
 import com.fpt.sba301_su26_groupproject.entity.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,6 +43,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @Query("SELECT o FROM Order o WHERE o.status = 'COMPLETED' AND o.createdAt >= :startOfWeek AND o.createdAt <= :endOfWeek")
     List<Order> findCompletedOrdersBetween(@Param("startOfWeek") java.time.LocalDateTime startOfWeek, @Param("endOfWeek") java.time.LocalDateTime endOfWeek);
 
-    @Query("SELECT o FROM Order o JOIN FETCH o.user WHERE o.status = 'COMPLETED' ORDER BY o.createdAt DESC")
-    List<Order> findTop5CompletedOrders(org.springframework.data.domain.Pageable pageable);
+    @Query("SELECT o FROM Order o WHERE o.status = 'COMPLETED' ORDER BY o.createdAt DESC")
+    Page<Order> findAllCompletedOrders(Pageable pageable);
 }

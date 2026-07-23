@@ -10,6 +10,4 @@ public interface OTPRepository extends JpaRepository<OTP, UUID> {
     Optional<OTP> findByEmailAndOtpCode(String email, String otpCode);
 
     void deleteByEmail(String email);
-
-    void deleteByEmailAndOtpCode(String email, String otpCode);
 }
