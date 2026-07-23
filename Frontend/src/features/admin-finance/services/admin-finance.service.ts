@@ -92,7 +92,7 @@ export async function fetchFinanceData(): Promise<FinanceData> {
     fullName: o.username ?? '',
     method: 'MoMo / Bank',
     amount: o.amountVnd ?? 0,
-    coins: 0,
+    coins: o.coins ?? 0,
     status: o.status === 'COMPLETED' ? 'success' : 'pending',
     time: o.createdAt
       ? new Date(o.createdAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })

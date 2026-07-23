@@ -39,6 +39,8 @@ public record AdminDashboardResponseDTO(
             String username,
             @Schema(example = "100000")
             int amountVnd,
+            @Schema(example = "550")
+            int coins,
             @Schema(example = "COMPLETED")
             String status,
             @Schema(example = "2025-07-20T08:00:00")

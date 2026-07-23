@@ -77,6 +77,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                         .userEmail(o.getUser().getEmail())
                         .username(o.getUser().getUsername())
                         .amountVnd(o.getAmountVnd())
+                        .coins(o.getCoins() != null ? o.getCoins() : 0)
                         .status(o.getStatus().name())
                         .createdAt(o.getCreatedAt() != null ? o.getCreatedAt().format(FORMATTER) : null)
                         .build())
